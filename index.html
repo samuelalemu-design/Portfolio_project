@@ -1,0 +1,1040 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Samuel Alemu | Mechanical Design Engineer & Founder</title>
+  <meta name="description" content="Mechanical design engineer specializing in consumer products, Sheet Metal Design, parametric CAD modeling, DFM/DFA optimization, and manufacturing workflows. Founder at Yengus Design and Manufacturing, Addis Ababa, Ethiopia.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#hero" class="nav-brand">
+        <span class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        </span>
+        <div class="brand-text">
+          <span class="brand-name">SAMUEL ALEMU</span>
+          <span class="brand-title">MECHANICAL DESIGN ENGINEER | YENGUS DESIGN AND MANUFACTURING</span>
+        </div>
+      </a>
+
+      <nav class="nav-menu" id="nav-menu">
+        <a href="#about" class="nav-link">About</a>
+        <a href="#experience" class="nav-link">Experience</a>
+        <a href="#projects" class="nav-link">Projects</a>
+        <a href="#skills" class="nav-link">Skills</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="#contact" class="btn btn-primary btn-sm">Hire Engineer</a>
+        <button class="menu-toggle" id="menu-toggle" aria-label="Toggle Navigation Menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+      <div class="container hero-container">
+        <div class="hero-content">
+          <div class="badge badge-accent">
+            <span class="badge-dot"></span>
+            MECHANICAL DESIGN ENGINEER | YENGUS DESIGN AND MANUFACTURING
+          </div>
+          
+          <h1 class="hero-title">
+            Transforming Complex Mechanical Concepts into <span class="text-gradient">Production-Ready</span> Products
+          </h1>
+          
+          <p class="hero-description">
+            Mechanical design engineer specializing in consumer products, Sheet Metal Design, parametric CAD modeling, DFM/DFA optimization, and manufacturing workflows
+          </p>
+
+          <div class="hero-actions" style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <a href="#projects" class="btn btn-primary btn-lg">
+              <span>Explore Portfolio Projects</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="assets/Samuel_Alemu_CV.pdf" target="_blank" download="Samuel_Alemu_CV.pdf" class="btn btn-secondary btn-lg" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export CV (PDF)</span>
+            </a>
+            <a href="assets/Samuel_Alemu_Portfolio.pdf" target="_blank" download="Samuel_Alemu_Portfolio.pdf" class="btn btn-secondary btn-lg" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>Export Portfolio (PDF)</span>
+            </a>
+          </div>
+
+          <!-- Quick Stats Bar -->
+          <div class="stats-bar">
+            <div class="stat-item">
+              <span class="stat-number">24</span>
+              <span class="stat-label">Mechanical Projects</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-number">24</span>
+              <span class="stat-label">Project Categories</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="stat-number">Addis Ababa</span>
+              <span class="stat-label">Ethiopia</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual" style="display: flex; align-items: center; justify-content: center;">
+          <img src="assets/projects/p1/hero.jpg" alt="Samuel Alemu Mechanical CAD Assembly Render" class="hero-img" style="object-fit: contain; max-height: 480px; width: 100%; border-radius: 8px;">
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+        <!-- About / Engineering Philosophy Section -->
+    <section class="section about" id="about">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-subtitle">ENGINEERING PHILOSOPHY</span>
+          <h2 class="section-title">Precision Engineering from Parametric CAD to Shop-Floor Execution</h2>
+          <p class="section-description">
+            Combining 4+ years of mechanical design experience with parametric CAD automation, sheet metal DFM optimization, and digital manufacturing workflows that eliminate shop-floor misinterpretation.
+          </p>
+        </div>
+
+                <div class="grid grid-4 core-pillars">
+          <!-- Card 1: Precision Sheet Metal Design -->
+          <div class="card pillar-card">
+            <div class="pillar-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            </div>
+            <h3>Precision Sheet Metal Design</h3>
+            <p>Specialized in precision sheet metal design, automated DXF flat pattern generation, production-ready fabrication layouts, and seamless integration with shop-floor manufacturing processes.</p>
+          </div>
+
+          <!-- Card 2: Parametric CAD & Rule Automation -->
+          <div class="card pillar-card">
+            <div class="pillar-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+            </div>
+            <h3>Parametric CAD & Rule Automation</h3>
+            <p>Building top-down SolidWorks assemblies, dynamic Excel design tables, and DriveWorks rule sets that drive automated geometric configurations, design updates, and instant drawing generation.</p>
+          </div>
+
+          <!-- Card 3: DFM / DFA & Structural Integrity -->
+          <div class="card pillar-card">
+            <div class="pillar-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <h3>DFM / DFA & Structural Integrity</h3>
+            <p>Optimizing parts for real-world manufacturing across press brake limits, structural steel weldments, fastener clearances, and assembly ergonomics to ensure zero-rework production runs.</p>
+          </div>
+
+          <!-- Card 4: Digital Shop-Floor Pipelines -->
+          <div class="card pillar-card">
+            <div class="pillar-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M14 20h7v1h-7z"/><path d="M20 14v3"/></svg>
+            </div>
+            <h3>Digital Shop-Floor Pipelines</h3>
+            <p>Streamlining production through multi-level BOMs, KeyShot visualizations, InDesign manuals, and QR codes on 2D drawings linking operators directly to interactive WebGL 3D viewers.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Work Experience & Internship Section -->
+    <section class="section experience bg-alt" id="experience">
+      <div class="container">
+        <div class="section-header text-center" style="max-width: 800px; margin-left: auto; margin-right: auto; text-align: center; margin-bottom: 2.5rem;">
+          <span class="section-subtitle">CAREER & WORK HISTORY</span>
+          <h2 class="section-title">Professional Work Experience</h2>
+          <p class="section-description" style="margin-left: auto; margin-right: auto;">Proven industry track record in mechanical hardware design, machinery fabrication, maintenance engineering, and CNC CAD/CAM workflows.</p>
+        </div>
+
+        <div class="timeline">
+          
+          <!-- Experience 1: Andinet ICT Solutions -->
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content card">
+              <div class="timeline-header">
+                <div>
+                  <h3 class="role-title">Mechanical Designer</h3>
+                  <span class="company-name">Andinet ICT Solutions - Addis Ababa, Ethiopia</span>
+                </div>
+                <span class="timeline-date">09/2024 - Present</span>
+              </div>
+              <p class="timeline-text">
+                Delivering mechanical hardware design solutions and custom hardware component manufacturing/installation for business clients.
+              </p>
+              <ul class="timeline-list">
+                <li>Designing custom mechanical hardware parts and enclosures tailored to client requirements.</li>
+                <li>Assembling, testing, and installing physical hardware components on site.</li>
+                <li>Providing technical support and engineering troubleshooting for corporate customers.</li>
+              </ul>
+              <div class="timeline-tags">
+                <span class="tag">Mechanical Design</span>
+                <span class="tag">Hardware Assembly</span>
+                <span class="tag">SolidWorks</span>
+                <span class="tag">Technical Support</span>
+                <span class="tag">Addis Ababa, Ethiopia</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Experience 2: Nicodimos Industrial Machinery -->
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content card">
+              <div class="timeline-header">
+                <div>
+                  <h3 class="role-title">Mechanical Designer</h3>
+                  <span class="company-name">Nicodimos Industrial Machinery - Addis Ababa, Ethiopia</span>
+                </div>
+                <span class="timeline-date">10/2023 - 09/2024</span>
+              </div>
+              <p class="timeline-text">
+                Designed and manufactured specialized industrial machinery tailored to client specifications.
+              </p>
+              <ul class="timeline-list">
+                <li>Engineered custom industrial machinery models based on customer functional requirements.</li>
+                <li>Supervised shop-floor manufacturing processes, part machining, and quality standards.</li>
+                <li>Assembled, calibrated, and installed completed industrial machines for production use.</li>
+              </ul>
+              <div class="timeline-tags">
+                <span class="tag">Machinery Design</span>
+                <span class="tag">Manufacturing Supervision</span>
+                <span class="tag">Machine Assembly</span>
+                <span class="tag">SolidWorks</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Experience 3: Moya Food Complex -->
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content card">
+              <div class="timeline-header">
+                <div>
+                  <h3 class="role-title">Machine Operator & Maintenance Technician</h3>
+                  <span class="company-name">Moya Food Complex - Addis Ababa, Ethiopia</span>
+                </div>
+                <span class="timeline-date">10/2023 - 09/2024</span>
+              </div>
+              <p class="timeline-text">
+                Managed machine operation, preventive maintenance, and equipment engineering modifications for cookie food manufacturing lines.
+              </p>
+              <ul class="timeline-list">
+                <li>Installed, diagnosed, repaired, and maintained food processing and packaging machinery.</li>
+                <li>Operated production line machinery to ensure consistent output and minimal downtime.</li>
+                <li>Engineered design modifications to improve machine reliability and operational safety.</li>
+              </ul>
+              <div class="timeline-tags">
+                <span class="tag">Machine Maintenance</span>
+                <span class="tag">Equipment Operation</span>
+                <span class="tag">Repair & Diagnostics</span>
+                <span class="tag">Design Modification</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Internship: MIDI -->
+          <div class="timeline-item">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content card">
+              <div class="timeline-header">
+                <div>
+                  <h3 class="role-title">Internship Mechanical Engineer</h3>
+                  <span class="company-name">Metals Industry Development Institute (MIDI) - Addis Ababa, Ethiopia</span>
+                </div>
+                <span class="timeline-date">06/2021 - 08/2021</span>
+              </div>
+              <p class="timeline-text">
+                Worked on machine spare parts manufacturing, agricultural equipment design, and injection mold/die tooling.
+              </p>
+              <ul class="timeline-list">
+                <li>Designed 3D parts on CAD software and generated CNC machine code (G-code) for plastic injection molding dies.</li>
+                <li>Designed agricultural machinery and drafted detailed production blueprints for local fabrication.</li>
+              </ul>
+              <div class="timeline-tags">
+                <span class="tag">CAD Modeling</span>
+                <span class="tag">CNC Programming</span>
+                <span class="tag">Injection Molding Dies</span>
+                <span class="tag">Agricultural Machines</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="section projects" id="projects">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-subtitle">ENGINEERING PORTFOLIO</span>
+          <h2 class="section-title">24 Mechanical Engineering Projects</h2>
+          <p class="section-description">Complete dataset categorized into Real Projects, Experimental Projects, and Educational Projects.</p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="project-filters" id="project-filters">
+          <button class="filter-btn active" data-filter="All">All</button>
+          <button class="filter-btn" data-filter="Real Projects">Real Projects</button>
+          <button class="filter-btn" data-filter="Experimental Projects">Experimental Projects</button>
+          <button class="filter-btn" data-filter="Educational Projects">Educational Projects</button>
+        </div>
+
+        <!-- Projects Grid Container -->
+        <div class="grid grid-3 projects-grid" id="projects-grid">
+          <div class="project-card card" data-category="Real Projects" data-project="wood-engraving-cnc" id="card-wood-engraving-cnc">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="wood-engraving-cnc">
+              <img src="assets/projects/p1/hero.jpg" alt="Wood Engraving CNC" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Wood Engraving CNC</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="wood-engraving-cnc">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="wood-engraving-cnc">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="crop-harvester" id="card-crop-harvester">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="crop-harvester">
+              <img src="assets/projects/p3/hero.jpg" alt="Crop Harvester" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Crop Harvester</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="crop-harvester">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="crop-harvester">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="e-scooter" id="card-e-scooter">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="e-scooter">
+              <img src="assets/projects/p2/hero.jpg" alt="E-Scooter" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">E-Scooter</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="e-scooter">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="e-scooter">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="egg-incubator" id="card-egg-incubator">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="egg-incubator">
+              <img src="assets/projects/p4/hero.jpg" alt="Egg Incubator" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Egg Incubator</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="egg-incubator">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="egg-incubator">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="interactive-kiosk" id="card-interactive-kiosk">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="interactive-kiosk">
+              <img src="assets/projects/p5/hero.jpg" alt="Interactive Kiosk" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Interactive Kiosk</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="interactive-kiosk">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="interactive-kiosk">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="digital-signage" id="card-digital-signage">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="digital-signage">
+              <img src="assets/projects/p6/hero.jpg" alt="Digital Signage" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Digital Signage</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="digital-signage">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="digital-signage">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="attachments" data-project="digital-signage"><span>Attachments (9)</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="arcade-cabinet" id="card-arcade-cabinet">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="arcade-cabinet">
+              <img src="assets/projects/p7/hero.png" alt="Arcade Cabinet" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Arcade Cabinet</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="arcade-cabinet">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="arcade-cabinet">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="charcoal-stove" id="card-charcoal-stove">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="charcoal-stove">
+              <img src="assets/projects/p8/hero.jpg" alt="Charcoal Stove" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Charcoal Stove</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="charcoal-stove">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="charcoal-stove">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="distribution-box" id="card-distribution-box">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="distribution-box">
+              <img src="assets/projects/p9/hero.jpg" alt="Distribution Box" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Distribution Box</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="distribution-box">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="distribution-box">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="attachments" data-project="distribution-box"><span>Attachments (6)</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="trash-can-01" id="card-trash-can-01">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="trash-can-01">
+              <img src="assets/projects/p10/hero.jpg" alt="Trash Can 01" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Trash Can 01</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="trash-can-01">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="trash-can-01">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="attachments" data-project="trash-can-01"><span>Attachments (8)</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="street-light" id="card-street-light">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="street-light">
+              <img src="assets/projects/p13/hero.jpg" alt="Street Light" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Street Light</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="street-light">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="street-light">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="attachments" data-project="street-light"><span>Attachments (5)</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="6u-server-rack" id="card-6u-server-rack">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="6u-server-rack">
+              <img src="assets/projects/p14/hero.jpg" alt="6U Server Rack" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">6U Server Rack</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="6u-server-rack">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="6u-server-rack">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="flower-vase" id="card-flower-vase">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="flower-vase">
+              <img src="assets/projects/p15/hero.jpg" alt="Flower Vase" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Flower Vase</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="flower-vase">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="flower-vase">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="multi-fold-gate" id="card-multi-fold-gate">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="multi-fold-gate">
+              <img src="assets/projects/p16/hero.png" alt="Multi-Fold Gate" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Multi-Fold Gate</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="multi-fold-gate">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="multi-fold-gate">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="wheel-dolly" id="card-wheel-dolly">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="wheel-dolly">
+              <img src="assets/projects/p17/hero.jpg" alt="Wheel Dolly" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Wheel Dolly</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="wheel-dolly">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="wheel-dolly">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Real Projects" data-project="roller-skate" id="card-roller-skate">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="roller-skate">
+              <img src="assets/projects/p29/hero.png" alt="Roller Skate" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-real">Real Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Roller Skate</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="roller-skate">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="roller-skate">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Experimental Projects" data-project="brush-cutter" id="card-brush-cutter">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="brush-cutter">
+              <img src="assets/projects/p25/hero.jpg" alt="Brush Cutter" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-experimental">Experimental Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Brush Cutter</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="brush-cutter">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="brush-cutter">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Experimental Projects" data-project="ratchet" id="card-ratchet">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="ratchet">
+              <img src="assets/projects/p26/hero.jpg" alt="Ratchet" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-experimental">Experimental Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Ratchet</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="ratchet">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="ratchet">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Experimental Projects" data-project="laminator" id="card-laminator">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="laminator">
+              <img src="assets/projects/p27/hero.jpg" alt="Laminator" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-experimental">Experimental Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Laminator</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="laminator">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="laminator">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Educational Projects" data-project="maize-thresher" id="card-maize-thresher">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="maize-thresher">
+              <img src="assets/projects/p21/hero.jpg" alt="Maize Thresher" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-educational">Educational Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Maize Thresher</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="maize-thresher">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="maize-thresher">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Educational Projects" data-project="industrial-dolly" id="card-industrial-dolly">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="industrial-dolly">
+              <img src="assets/projects/p23/hero.jpg" alt="Industrial Dolly" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-educational">Educational Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Industrial Dolly</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="industrial-dolly">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="industrial-dolly">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Educational Projects" data-project="two-post-lift" id="card-two-post-lift">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="two-post-lift">
+              <img src="assets/projects/p19/hero.jpg" alt="Two Post Lift" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-educational">Educational Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Two Post Lift</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="two-post-lift">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="two-post-lift">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Educational Projects" data-project="rock-picker" id="card-rock-picker">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="rock-picker">
+              <img src="assets/projects/p18/hero.jpg" alt="Rock Picker" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-educational">Educational Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Rock Picker</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="rock-picker">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="rock-picker">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+          <div class="project-card card" data-category="Educational Projects" data-project="filing-cabinet" id="card-filing-cabinet">
+            <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="filing-cabinet">
+              <img src="assets/projects/p28/hero.png" alt="Filing Cabinet" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
+              <span class="project-category-badge badge-educational">Educational Projects</span>
+            </div>
+            <div class="project-body" style="padding: 1.25rem;">
+              <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">Filing Cabinet</h3>
+              
+              <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="filing-cabinet">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>Description</span>
+                </button>
+                <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="filing-cabinet">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>Technical Spec</span>
+                </button>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Technical Skills Matrix Section -->
+        <!-- Software Proficiency & Engineering Stack Section -->
+    <section class="section skills bg-alt" id="skills">
+      <div class="container">
+        <div class="section-header text-center">
+          <span class="section-subtitle">SOFTWARE & TOOLCHAIN</span>
+          <h2 class="section-title">Software Proficiency & Engineering Stack</h2>
+          <p class="section-description">Leveraging specialized software tools for parametric modeling, photorealistic rendering, technical manual design, engineering calculations, and shop-floor automation.</p>
+        </div>
+
+        <div class="software-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(310px, 1fr)); gap: 1.5rem;">
+          
+          <!-- Card 1: 3D CAD & Parametric Design -->
+          <div class="card software-card" style="display: flex; flex-direction: column; padding: 1.5rem;">
+            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+              <span class="software-badge" style="background: #e0f2fe; color: #0284c7; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">3D CAD & Parametric Design</span>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">SolidWorks</h3>
+            <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
+              3D Mechanical Design, Sheet Metal Development, Structural Weldments, Complex Assemblies, and Motion Analysis.
+            </p>
+          </div>
+
+          <!-- Card 2: Photorealistic Visuals -->
+          <div class="card software-card" style="display: flex; flex-direction: column; padding: 1.5rem;">
+            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+              <span class="software-badge" style="background: #fef3c7; color: #b45309; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Photorealistic Visuals</span>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">KeyShot Studio</h3>
+            <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
+              High-Resolution Product Rendering, Studio Lighting Environments, Material Textures, and Marketing Visuals.
+            </p>
+          </div>
+
+          <!-- Card 3: Technical Documentation -->
+          <div class="card software-card" style="display: flex; flex-direction: column; padding: 1.5rem;">
+            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+              <span class="software-badge" style="background: #fae8ff; color: #a21caf; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Technical Documentation</span>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">SolidWorks Composer & Adobe InDesign</h3>
+            <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
+              Exploded Assembly Views, Step-by-Step Instruction Manuals, Graphical Layouts, and Manufacturing Documentation.
+            </p>
+          </div>
+
+          <!-- Card 4: Calculations & CAD Automation -->
+          <div class="card software-card" style="display: flex; flex-direction: column; padding: 1.5rem;">
+            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+              <span class="software-badge" style="background: #dcfce7; color: #15803d; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Calculations & CAD Automation</span>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Microsoft Excel</h3>
+            <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
+              Dynamic Engineering Calculations, Design Tables, Formula-Driven Parametric Models, and Expense Estimation.
+            </p>
+          </div>
+
+          <!-- Card 5: Rule Automation & Digital Delivery -->
+          <div class="card software-card" style="display: flex; flex-direction: column; padding: 1.5rem;">
+            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+              <span class="software-badge" style="background: #e0e7ff; color: #4338ca; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Rule Automation & Digital Delivery</span>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">DriveWorks, SolidWorks VBA & WebGL</h3>
+            <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
+              Parametric Rule Automation, Custom Macro Scripts, Interactive 3D Model Viewers, and Shop-Floor QR Code Workflows.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section contact" id="contact">
+      <div class="container">
+        <div class="contact-card card">
+          <div class="grid grid-2 contact-layout">
+            
+                        <div class="contact-info">
+              <span class="badge badge-accent">GET IN TOUCH</span>
+              <h2 class="contact-title">Let's Engineer Your Next Machine</h2>
+              <p class="contact-desc">
+                Have a mechanical design requirement, machine manufacturing project, hardware assembly need, or maintenance challenge? Contact Samuel Alemu directly.
+              </p>
+
+              <div class="contact-details">
+                <div class="contact-detail-item">
+                  <div class="detail-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  </div>
+                  <div>
+                    <span class="detail-label">Direct Mobile Phone</span>
+                    <a href="tel:+251967588639" class="detail-value">(+251) 967588639</a>
+                  </div>
+                </div>
+
+                <div class="contact-detail-item">
+                  <div class="detail-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </div>
+                  <div>
+                    <span class="detail-label">Direct Email Address</span>
+                    <a href="mailto:samuelalemu@gmail.com" class="detail-value">samuelalemu@gmail.com</a>
+                  </div>
+                </div>
+
+                <div class="contact-detail-item">
+                  <div class="detail-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  </div>
+                  <div>
+                    <span class="detail-label">Location</span>
+                    <span class="detail-value">Addis Ababa, Ethiopia</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact Form -->
+            <form class="contact-form" id="contact-form" novalidate>
+              <div class="form-group">
+                <label for="name" class="form-label">Full Name *</label>
+                <input type="text" id="name" name="name" class="form-input" placeholder="e.g. Michael Abera" required>
+                <span class="form-error" id="name-error">Please enter your full name</span>
+              </div>
+
+              <div class="form-group">
+                <label for="email" class="form-label">Work Email *</label>
+                <input type="email" id="email" name="email" class="form-input" placeholder="michael@company.com" required>
+                <span class="form-error" id="email-error">Please enter a valid email address</span>
+              </div>
+
+              <div class="form-group">
+                <label for="service" class="form-label">Project Category</label>
+                <select id="service" name="service" class="form-select">
+                  <option value="Real Projects">Real Projects</option>
+                  <option value="Experimental Projects">Experimental Projects (Prototypes)</option>
+                  <option value="Educational Projects">Educational Projects (Academic Projects)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="message" class="form-label">Project Requirements / Scope *</label>
+                <textarea id="message" name="message" class="form-textarea" rows="4" placeholder="Briefly describe your mechanical specifications, CAD modeling needs, DFM goals..." required></textarea>
+                <span class="form-error" id="message-error">Please enter your project message</span>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn">
+                <span>Send Message</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Dedicated Modal Window (Clean White Background, Black Text, No Dark Bounding Shadings) -->
+  <dialog id="item-modal" class="project-modal" style="border: none; padding: 0; background: transparent;">
+    <div class="modal-wrapper" style="max-width: 920px; width: 94%; margin: auto; background: #ffffff; color: #0f172a; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+      
+      <!-- Modal Header -->
+      <div class="modal-header" style="padding: 1.25rem 1.5rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <span class="modal-category" id="item-modal-category" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #0284c7;">Machine Details</span>
+          <h2 class="modal-title" id="item-modal-title" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.25rem; color: #0f172a;">Machine Name</h2>
+        </div>
+        <button class="modal-close" id="item-modal-close" aria-label="Close window" style="font-size: 1.75rem; background: none; border: none; color: #64748b; cursor: pointer; padding: 0.25rem 0.5rem; line-height: 1;">&times;</button>
+      </div>
+
+      <!-- Modal Body (Clean White Background & Dark Black Text) -->
+      <div class="modal-body" id="item-modal-body" style="padding: 1.5rem; background: #ffffff; color: #0f172a; max-height: 75vh; overflow-y: auto;">
+        <!-- Dynamic content for Description / Specs / Lightbox Renderings / Attachments -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer" style="padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <span id="item-modal-counter" style="font-size: 0.85rem; color: #475569; font-weight: 600;"></span>
+        <button class="btn btn-secondary" id="item-modal-close-btn" style="background: #e2e8f0; color: #0f172a; border: 1px solid #cbd5e1;">Close Window</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-left">
+        <span class="footer-logo">SAMUEL ALEMU</span>
+        <p class="footer-copy">&copy; 2026 Samuel Alemu | Yengus Design and Manufacturing. All Mechanical Designs & CAD IP Protected. Addis Ababa, Ethiopia.</p>
+      </div>
+      <div class="footer-right">
+        <a href="#hero" class="back-to-top">
+          <span>Back to top</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
