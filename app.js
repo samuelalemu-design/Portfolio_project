@@ -1181,6 +1181,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminProjectCancel = document.getElementById('admin-project-cancel');
   const adminProjectModalTitle = document.getElementById('admin-project-modal-title');
 
+  const headerAdminControls = document.getElementById('header-admin-controls');
   const projectsAdminActions = document.getElementById('projects-admin-actions');
   const btnGoogleLogin = document.getElementById('btn-google-login');
 
@@ -1193,9 +1194,11 @@ document.addEventListener('DOMContentLoaded', () => {
     );
 
     if (isAdminLoggedIn()) {
+      if (headerAdminControls) headerAdminControls.style.display = 'inline-flex';
       if (projectsAdminActions) projectsAdminActions.style.display = 'flex';
       renderProjectCards();
     } else {
+      if (headerAdminControls) headerAdminControls.style.display = 'none';
       if (projectsAdminActions) projectsAdminActions.style.display = 'none';
       if (isRouteAdmin && adminLoginModal) {
         if (typeof adminLoginModal.showModal === 'function') adminLoginModal.showModal();
@@ -1231,6 +1234,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (adminLogoutBtn) {
     adminLogoutBtn.addEventListener('click', () => {
       localStorage.removeItem('adminLoggedIn');
+      if (headerAdminControls) headerAdminControls.style.display = 'none';
       if (projectsAdminActions) projectsAdminActions.style.display = 'none';
       showToast('Logged out of Admin Portal.');
 
