@@ -1396,7 +1396,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!renderingsPreviewBox) return;
     renderingsPreviewBox.innerHTML = urlList.map((url, i) => `
       <div style="position: relative; display: inline-block; margin: 4px;" data-preview-index="${i}">
-        <img src="${url}" style="height: 70px; width: 90px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;">
+        <img src="${url}" 
+             style="height: 70px; width: 90px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" 
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div style="display: none; height: 70px; width: 90px; background: #f1f5f9; border-radius: 6px; border: 1px solid #cbd5e1; flex-direction: column; align-items: center; justify-content: center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-top: 2px;">Render #${i+1}</span>
+        </div>
         <button type="button" class="btn-remove-rendering" data-index="${i}" style="position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; line-height: 1;">×</button>
       </div>
     `).join('');
