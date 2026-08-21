@@ -1069,10 +1069,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 10. Admin Portal & Project Creation/Editing System
+   * 10. Hidden Admin Portal (/admin) & Direct File Upload System
    * ------------------------------------------------------------------------ */
-  const adminBtn = document.getElementById('admin-btn');
-  const adminBtnLabel = document.getElementById('admin-btn-label');
+  const adminTopBar = document.getElementById('admin-top-bar');
+  const adminAddProjectBtn = document.getElementById('admin-add-project-btn');
+  const adminLogoutBtn = document.getElementById('admin-logout-btn');
+
   const adminLoginModal = document.getElementById('admin-login-modal');
   const adminLoginForm = document.getElementById('admin-login-form');
   const adminLoginClose = document.getElementById('admin-login-close');
@@ -1084,37 +1086,42 @@ document.addEventListener('DOMContentLoaded', () => {
   const adminProjectCancel = document.getElementById('admin-project-cancel');
   const adminProjectModalTitle = document.getElementById('admin-project-modal-title');
 
-  function updateAdminNavState() {
-    if (!adminBtnLabel) return;
+  function checkAdminRouteAndState() {
+    const isRouteAdmin = (
+      window.location.hash.toLowerCase() === '#admin' ||
+      window.location.pathname.toLowerCase().endsWith('/admin') ||
+      window.location.search.toLowerCase().includes('admin')
+    );
+
     if (isAdminLoggedIn()) {
-      adminBtnLabel.textContent = 'Admin Mode';
-      if (adminBtn) {
-        adminBtn.style.background = '#0284c7';
-        adminBtn.style.color = '#ffffff';
-        adminBtn.style.borderColor = '#0369a1';
-      }
+      if (adminTopBar) adminTopBar.style.display = 'block';
     } else {
-      adminBtnLabel.textContent = 'Admin';
-      if (adminBtn) {
-        adminBtn.style.background = '';
-        adminBtn.style.color = '';
-        adminBtn.style.borderColor = '';
+      if (adminTopBar) adminTopBar.style.display = 'none';
+      if (isRouteAdmin && adminLoginModal) {
+        if (typeof adminLoginModal.showModal === 'function') adminLoginModal.showModal();
+        else adminLoginModal.setAttribute('open', '');
       }
     }
   }
 
-  updateAdminNavState();
+  checkAdminRouteAndState();
+  window.addEventListener('hashchange', checkAdminRouteAndState);
 
-  if (adminBtn) {
-    adminBtn.addEventListener('click', () => {
-      if (isAdminLoggedIn()) {
-        openProjectFormModal(); // Open Add New Project directly
-      } else {
-        if (adminLoginModal) {
-          if (typeof adminLoginModal.showModal === 'function') adminLoginModal.showModal();
-          else adminLoginModal.setAttribute('open', '');
-        }
+  if (adminAddProjectBtn) {
+    adminAddProjectBtn.addEventListener('click', () => {
+      openProjectFormModal();
+    });
+  }
+
+  if (adminLogoutBtn) {
+    adminLogoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('adminLoggedIn');
+      if (adminTopBar) adminTopBar.style.display = 'none';
+      showToast('Logged out of Admin Portal.');
+      if (window.location.hash === '#admin') {
+        history.pushState("", document.title, window.location.pathname + window.location.search);
       }
+      renderProjectCards();
     });
   }
 
@@ -1137,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof adminLoginModal.close === 'function') adminLoginModal.close();
         else adminLoginModal.removeAttribute('open');
         showToast(`Welcome Admin Samuel Alemu (${ADMIN_EMAIL})! Admin mode activated.`);
-        updateAdminNavState();
+        checkAdminRouteAndState();
         renderProjectCards();
       } else {
         if (adminLoginError) adminLoginError.style.display = 'block';
@@ -1145,9 +1152,118 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* --- Direct File Upload Handlers (Hero Photo, Gallery Renderings, PDF Attachments) --- */
+  const btnUploadHero = document.getElementById('btn-upload-hero');
+  const projHeroFile = document.getElementById('proj-hero-file');
+  const heroPreviewBox = document.getElementById('hero-preview-box');
+  const heroPreviewImg = document.getElementById('hero-preview-img');
+  const heroPreviewFilename = document.getElementById('hero-preview-filename');
+
+  const btnUploadRenderings = document.getElementById('btn-upload-renderings');
+  const projRenderingsFile = document.getElementById('proj-renderings-file');
+  const renderingsPreviewBox = document.getElementById('renderings-preview-box');
+
+  const btnUploadDrawings = document.getElementById('btn-upload-drawings');
+  const projDrawingsFile = document.getElementById('proj-drawings-file');
+  const drawingsPreviewBox = document.getElementById('drawings-preview-box');
+
+  // Hero File Upload Trigger
+  if (btnUploadHero && projHeroFile) {
+    btnUploadHero.addEventListener('click', () => projHeroFile.click());
+    projHeroFile.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const dataUrl = evt.target.result;
+          document.getElementById('proj-image').value = dataUrl;
+          if (heroPreviewImg) heroPreviewImg.src = dataUrl;
+          if (heroPreviewFilename) heroPreviewFilename.textContent = file.name;
+          if (heroPreviewBox) heroPreviewBox.style.display = 'flex';
+          showToast(`Hero photo "${file.name}" loaded!`);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // Renderings Gallery Files Upload Trigger
+  if (btnUploadRenderings && projRenderingsFile) {
+    btnUploadRenderings.addEventListener('click', () => projRenderingsFile.click());
+    projRenderingsFile.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length > 0) {
+        let loadedCount = 0;
+        const dataUrls = [];
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            dataUrls.push(evt.target.result);
+            loadedCount++;
+            if (loadedCount === files.length) {
+              const currentInput = document.getElementById('proj-renderings');
+              const existing = currentInput.value.trim() ? currentInput.value.trim().split(',').map(s => s.trim()) : [];
+              const combined = existing.concat(dataUrls);
+              currentInput.value = combined.join(', ');
+
+              if (renderingsPreviewBox) {
+                renderingsPreviewBox.innerHTML = combined.map((url, i) => `
+                  <div style="position: relative; display: inline-block;">
+                    <img src="${url}" style="height: 60px; width: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;">
+                  </div>
+                `).join('');
+              }
+              showToast(`${files.length} gallery photos attached!`);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    });
+  }
+
+  // PDF Drawings / Attachments Upload Trigger
+  if (btnUploadDrawings && projDrawingsFile) {
+    btnUploadDrawings.addEventListener('click', () => projDrawingsFile.click());
+    projDrawingsFile.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length > 0) {
+        let loadedCount = 0;
+        const fileUrls = [];
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            fileUrls.push(evt.target.result);
+            loadedCount++;
+            if (loadedCount === files.length) {
+              const currentInput = document.getElementById('proj-drawings');
+              const existing = currentInput.value.trim() ? currentInput.value.trim().split(',').map(s => s.trim()) : [];
+              const combined = existing.concat(fileUrls);
+              currentInput.value = combined.join(', ');
+
+              if (drawingsPreviewBox) {
+                drawingsPreviewBox.innerHTML = combined.map((url, i) => `
+                  <div style="background: #e9d5ff; color: #6b21a8; padding: 0.35rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem;">
+                    <span>📄 Attachment ${i + 1}</span>
+                  </div>
+                `).join('');
+              }
+              showToast(`${files.length} PDF / drawing attachments added!`);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    });
+  }
+
   function openProjectFormModal(projectToEdit = null) {
     if (!adminProjectModal) return;
     adminProjectForm.reset();
+
+    if (heroPreviewBox) heroPreviewBox.style.display = 'none';
+    if (renderingsPreviewBox) renderingsPreviewBox.innerHTML = '';
+    if (drawingsPreviewBox) drawingsPreviewBox.innerHTML = '';
 
     if (projectToEdit) {
       if (adminProjectModalTitle) adminProjectModalTitle.textContent = '✏️ Edit Project';
@@ -1158,7 +1274,13 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('proj-specs').value = (projectToEdit.specs || []).join('\n');
       document.getElementById('proj-image').value = projectToEdit.image || '';
       document.getElementById('proj-renderings').value = (projectToEdit.renderings || []).join(', ');
+      if (document.getElementById('proj-drawings')) document.getElementById('proj-drawings').value = (projectToEdit.drawings || []).join(', ');
       document.getElementById('proj-tags').value = (projectToEdit.dfmTags || []).join(', ');
+
+      if (projectToEdit.image) {
+        if (heroPreviewImg) heroPreviewImg.src = projectToEdit.image;
+        if (heroPreviewBox) heroPreviewBox.style.display = 'flex';
+      }
     } else {
       if (adminProjectModalTitle) adminProjectModalTitle.textContent = '➕ Add New Project';
       document.getElementById('admin-edit-project-id').value = '';
@@ -1189,10 +1311,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const specsRaw = document.getElementById('proj-specs').value.trim();
       const image = document.getElementById('proj-image').value.trim();
       const renderingsRaw = document.getElementById('proj-renderings').value.trim();
+      const drawingsRaw = document.getElementById('proj-drawings') ? document.getElementById('proj-drawings').value.trim() : '';
       const tagsRaw = document.getElementById('proj-tags').value.trim();
 
       const specs = specsRaw ? specsRaw.split('\n').map(s => s.trim()).filter(Boolean) : ['SolidWorks 2024 Parametric 3D CAD', 'Sheet Metal Design & DFM Optimization'];
       const renderings = renderingsRaw ? renderingsRaw.split(',').map(r => r.trim()).filter(Boolean) : [image];
+      const drawings = drawingsRaw ? drawingsRaw.split(',').map(d => d.trim()).filter(Boolean) : [];
       const dfmTags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [category, 'SolidWorks CAD', 'DFM Optimization'];
 
       const projId = editId || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -1205,7 +1329,7 @@ document.addEventListener('DOMContentLoaded', () => {
         specs,
         image,
         renderings,
-        drawings: [],
+        drawings,
         dfmTags
       };
 
