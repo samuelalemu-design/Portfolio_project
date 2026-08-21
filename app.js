@@ -869,31 +869,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const thumbsHTML = gallery.map((imgSrc, idx) => `
-      <img src="${imgSrc}" alt="Thumb ${idx + 1}" style="width: 64px; height: 64px; object-fit: contain; background: #f8fafc; border-radius: 6px; cursor: pointer; border: 2px solid ${idx === currentRenderIndex ? '#2563eb' : '#cbd5e1'}; opacity: ${idx === currentRenderIndex ? '1' : '0.6'}; transition: all 0.2s ease;" onclick="window.selectRenderIndex(${idx})">
+      <img src="${imgSrc}" class="thumb-item ${idx === currentRenderIndex ? 'active' : ''}" alt="Thumb ${idx + 1}" onclick="window.selectRenderIndex(${idx})">
     `).join('');
 
     itemModalBody.innerHTML = `
-      <div style="display: flex; flex-direction: column; align-items: center; gap: 1.25rem; background: #ffffff;">
+      <div style="display: flex; flex-direction: column; background: #ffffff; padding-bottom: 70px;">
         
         <!-- Large Lightbox Viewer (Hero Image First, High-Contrast Blue Next/Prev Arrows) -->
-        <div style="position: relative; width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; display: flex; align-items: center; justify-content: center; min-height: 440px; max-height: 560px; overflow: hidden;">
+        <div style="position: relative; width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; display: flex; align-items: center; justify-content: center; min-height: 440px; max-height: 560px; overflow: hidden;" class="skeleton-shimmer">
           
+          <!-- Image Loading Spinner Overlay -->
+          <div class="img-loading-spinner" id="modal-img-spinner">
+            <div class="spinner-ring"></div>
+          </div>
+
           <!-- Left Previous Arrow Button -->
-          <button type="button" onclick="window.navRender(-1)" aria-label="Previous Image" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); background: #2563eb; color: #ffffff; border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; z-index: 10; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+          <button type="button" onclick="window.navRender(-1)" aria-label="Previous Image" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); background: #2563eb; color: #ffffff; border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; z-index: 20; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
 
           <!-- Large Main Image -->
-          <img src="${activeSrc}" alt="${currentProject.title} Image ${currentRenderIndex + 1}" style="max-height: 520px; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.25s ease;">
+          <img src="${activeSrc}" alt="${currentProject.title} Image ${currentRenderIndex + 1}" style="max-height: 520px; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.25s ease;" onload="document.getElementById('modal-img-spinner') && (document.getElementById('modal-img-spinner').style.display='none')" onerror="document.getElementById('modal-img-spinner') && (document.getElementById('modal-img-spinner').style.display='none')">
 
           <!-- Right Next Arrow Button -->
-          <button type="button" onclick="window.navRender(1)" aria-label="Next Image" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: #2563eb; color: #ffffff; border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; z-index: 10; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
+          <button type="button" onclick="window.navRender(1)" aria-label="Next Image" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: #2563eb; color: #ffffff; border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; z-index: 20; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
         </div>
 
-        <!-- Thumbnail Strip at Bottom -->
-        <div style="display: flex; gap: 0.6rem; overflow-x: auto; max-width: 100%; padding: 0.25rem 0;">
+        <!-- Fixed Bottom Thumbnail Strip (Statically Docked at Viewport Bottom) -->
+        <div class="docked-thumb-strip">
           ${thumbsHTML}
         </div>
       </div>
