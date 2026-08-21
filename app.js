@@ -610,6 +610,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
+   * Day / Night Theme Controller (Local Storage Sync & CSS Variables)
+   * ------------------------------------------------------------------------ */
+  const themeToggleBtn = document.getElementById('theme-toggle-btn');
+  const sunIcon = document.querySelector('.theme-icon-sun');
+  const moonIcon = document.querySelector('.theme-icon-moon');
+
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      document.body.classList.add('dark-mode');
+      if (sunIcon) sunIcon.style.display = 'none';
+      if (moonIcon) moonIcon.style.display = 'block';
+    } else {
+      document.body.classList.remove('dark-mode');
+      if (sunIcon) sunIcon.style.display = 'block';
+      if (moonIcon) moonIcon.style.display = 'none';
+    }
+    localStorage.setItem('portfolio_theme', theme);
+  }
+
+  const savedTheme = localStorage.getItem('portfolio_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  applyTheme(savedTheme);
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = document.body.classList.contains('dark-mode');
+      applyTheme(isDark ? 'light' : 'dark');
+      showToast(isDark ? 'Switched to Light Mode ☀️' : 'Switched to Dark Mode 🌙');
+    });
+  }
+
+  /* ------------------------------------------------------------------------
    * 1. Top Logo / Name Click Handler (Scroll to Top Home Page)
    * ------------------------------------------------------------------------ */
   const navBrand = document.querySelector('.nav-brand');
@@ -1160,8 +1191,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (isAdminLoggedIn()) {
       if (adminTopBar) adminTopBar.style.display = 'block';
+      document.body.classList.add('admin-mode-active');
     } else {
       if (adminTopBar) adminTopBar.style.display = 'none';
+      document.body.classList.remove('admin-mode-active');
       if (isRouteAdmin && adminLoginModal) {
         if (typeof adminLoginModal.showModal === 'function') adminLoginModal.showModal();
         else adminLoginModal.setAttribute('open', '');
@@ -1181,6 +1214,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (adminLogoutBtn) {
     adminLogoutBtn.addEventListener('click', () => {
       localStorage.removeItem('adminLoggedIn');
+      document.body.classList.remove('admin-mode-active');
       if (adminTopBar) adminTopBar.style.display = 'none';
       showToast('Logged out of Admin Portal.');
 
