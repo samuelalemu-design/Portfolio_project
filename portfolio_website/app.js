@@ -1169,6 +1169,59 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* ------------------------------------------------------------------------
+   * Canvas Image Compression & Async Multi-File Payload Handling
+   * ------------------------------------------------------------------------ */
+  function compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.75) {
+    return new Promise((resolve) => {
+      if (!file || !file.type) {
+        resolve(null);
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth || height > maxHeight) {
+            if (width / height > maxWidth / maxHeight) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressedDataUrl);
+        };
+        img.onerror = () => resolve(event.target.result);
+        img.src = event.target.result;
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  }
+
   /* --- Direct File Upload Handlers (Hero Photo, Gallery Renderings, PDF Attachments) --- */
   const btnUploadHero = document.getElementById('btn-upload-hero');
   const projHeroFile = document.getElementById('proj-hero-file');
@@ -1187,19 +1240,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // Hero File Upload Trigger
   if (btnUploadHero && projHeroFile) {
     btnUploadHero.addEventListener('click', () => projHeroFile.click());
-    projHeroFile.addEventListener('change', (e) => {
+    projHeroFile.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (file) {
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          const dataUrl = evt.target.result;
-          document.getElementById('proj-image').value = dataUrl;
-          if (heroPreviewImg) heroPreviewImg.src = dataUrl;
-          if (heroPreviewFilename) heroPreviewFilename.textContent = file.name;
-          if (heroPreviewBox) heroPreviewBox.style.display = 'flex';
-          showToast(`Hero photo "${file.name}" loaded!`);
-        };
-        reader.readAsDataURL(file);
+        showToast(`Processing & optimizing "${file.name}"...`);
+        try {
+          const dataUrl = await compressImage(file, 1200, 1200, 0.8);
+          if (dataUrl) {
+            document.getElementById('proj-image').value = dataUrl;
+            if (heroPreviewImg) heroPreviewImg.src = dataUrl;
+            if (heroPreviewFilename) heroPreviewFilename.textContent = file.name;
+            if (heroPreviewBox) heroPreviewBox.style.display = 'flex';
+            showToast(`Hero cover photo "${file.name}" loaded successfully!`);
+          }
+        } catch (err) {
+          console.error('Error processing hero image:', err);
+          showToast('Failed to process image file.', 'error');
+        }
       }
     });
   }
@@ -1207,80 +1264,124 @@ document.addEventListener('DOMContentLoaded', () => {
   // Renderings Gallery Files Upload Trigger
   if (btnUploadRenderings && projRenderingsFile) {
     btnUploadRenderings.addEventListener('click', () => projRenderingsFile.click());
-    projRenderingsFile.addEventListener('change', (e) => {
+    projRenderingsFile.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files);
       if (files.length > 0) {
-        let loadedCount = 0;
-        const dataUrls = [];
-        files.forEach(file => {
-          const reader = new FileReader();
-          reader.onload = (evt) => {
-            dataUrls.push(evt.target.result);
-            loadedCount++;
-            if (loadedCount === files.length) {
-              const currentInput = document.getElementById('proj-renderings');
-              const existing = currentInput.value.trim() ? currentInput.value.trim().split(',').map(s => s.trim()) : [];
-              const combined = existing.concat(dataUrls);
-              currentInput.value = combined.join(', ');
+        showToast(`Optimizing ${files.length} gallery photos asynchronously...`);
+        try {
+          const uploadPromises = files.map(file => compressImage(file, 1200, 1200, 0.75));
+          const compressedDataUrls = await Promise.all(uploadPromises);
+          const validUrls = compressedDataUrls.filter(Boolean);
 
-              if (renderingsPreviewBox) {
-                renderingsPreviewBox.innerHTML = combined.map((url, i) => `
-                  <div style="position: relative; display: inline-block;">
-                    <img src="${url}" style="height: 60px; width: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #cbd5e1;">
-                  </div>
-                `).join('');
-              }
-              showToast(`${files.length} gallery photos attached!`);
-            }
-          };
-          reader.readAsDataURL(file);
-        });
+          const currentInput = document.getElementById('proj-renderings');
+          const existing = currentInput.value.trim() ? currentInput.value.trim().split(',').map(s => s.trim()) : [];
+          const combined = existing.concat(validUrls);
+          currentInput.value = combined.join(', ');
+
+          renderGalleryPreviews(combined);
+          showToast(`${validUrls.length} gallery photos attached & optimized!`);
+          projRenderingsFile.value = '';
+        } catch (err) {
+          console.error('Error processing gallery photos:', err);
+          showToast('Failed to process gallery photos.', 'error');
+        }
       }
+    });
+  }
+
+  function renderGalleryPreviews(urlList) {
+    if (!renderingsPreviewBox) return;
+    renderingsPreviewBox.innerHTML = urlList.map((url, i) => `
+      <div style="position: relative; display: inline-block; margin: 4px;" data-preview-index="${i}">
+        <img src="${url}" style="height: 70px; width: 90px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;">
+        <button type="button" class="btn-remove-rendering" data-index="${i}" style="position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; line-height: 1;">×</button>
+      </div>
+    `).join('');
+
+    renderingsPreviewBox.querySelectorAll('.btn-remove-rendering').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.getAttribute('data-index'), 10);
+        const currentInput = document.getElementById('proj-renderings');
+        let arr = currentInput.value.trim().split(',').map(s => s.trim()).filter(Boolean);
+        arr.splice(idx, 1);
+        currentInput.value = arr.join(', ');
+        renderGalleryPreviews(arr);
+      });
     });
   }
 
   // PDF Drawings / Attachments Upload Trigger
   if (btnUploadDrawings && projDrawingsFile) {
     btnUploadDrawings.addEventListener('click', () => projDrawingsFile.click());
-    projDrawingsFile.addEventListener('change', (e) => {
+    projDrawingsFile.addEventListener('change', async (e) => {
       const files = Array.from(e.target.files);
       if (files.length > 0) {
-        let loadedCount = 0;
-        const fileUrls = [];
-        files.forEach(file => {
-          const reader = new FileReader();
-          reader.onload = (evt) => {
-            fileUrls.push(evt.target.result);
-            loadedCount++;
-            if (loadedCount === files.length) {
-              const currentInput = document.getElementById('proj-drawings');
-              const existing = currentInput.value.trim() ? currentInput.value.trim().split(',').map(s => s.trim()) : [];
-              const combined = existing.concat(fileUrls);
-              currentInput.value = combined.join(', ');
+        showToast(`Processing ${files.length} attachment files...`);
+        try {
+          const uploadPromises = files.map(file => compressImage(file, 1600, 1600, 0.8));
+          const fileUrls = await Promise.all(uploadPromises);
+          const validUrls = fileUrls.filter(Boolean);
 
-              if (drawingsPreviewBox) {
-                drawingsPreviewBox.innerHTML = combined.map((url, i) => `
-                  <div style="background: #e9d5ff; color: #6b21a8; padding: 0.35rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem;">
-                    <span>📄 Attachment ${i + 1}</span>
-                  </div>
-                `).join('');
-              }
-              showToast(`${files.length} PDF / drawing attachments added!`);
-            }
-          };
-          reader.readAsDataURL(file);
-        });
+          const currentInput = document.getElementById('proj-drawings');
+          const existing = currentInput.value.trim() ? currentInput.value.trim().split(',').map(s => s.trim()) : [];
+          const combined = existing.concat(validUrls);
+          currentInput.value = combined.join(', ');
+
+          renderDrawingPreviews(combined);
+          showToast(`${validUrls.length} PDF / drawing attachments added!`);
+          projDrawingsFile.value = '';
+        } catch (err) {
+          console.error('Error processing drawing attachments:', err);
+          showToast('Failed to process attachment files.', 'error');
+        }
       }
     });
   }
 
-  function openProjectFormModal(projectToEdit = null) {
-    if (!adminProjectModal) return;
-    adminProjectForm.reset();
+  function renderDrawingPreviews(urlList) {
+    if (!drawingsPreviewBox) return;
+    drawingsPreviewBox.innerHTML = urlList.map((url, i) => `
+      <div style="background: #faf5ff; color: #7e22ce; border: 1px solid #e9d5ff; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; margin: 4px;" data-drawing-index="${i}">
+        <span>📄 Attachment ${i + 1}</span>
+        <button type="button" class="btn-remove-drawing" data-index="${i}" style="background: #ef4444; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer;">×</button>
+      </div>
+    `).join('');
+
+    drawingsPreviewBox.querySelectorAll('.btn-remove-drawing').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.getAttribute('data-index'), 10);
+        const currentInput = document.getElementById('proj-drawings');
+        let arr = currentInput.value.trim().split(',').map(s => s.trim()).filter(Boolean);
+        arr.splice(idx, 1);
+        currentInput.value = arr.join(', ');
+        renderDrawingPreviews(arr);
+      });
+    });
+  }
+
+  function resetFormAndPreviews() {
+    if (adminProjectForm) adminProjectForm.reset();
+
+    if (projHeroFile) projHeroFile.value = '';
+    if (projRenderingsFile) projRenderingsFile.value = '';
+    if (projDrawingsFile) projDrawingsFile.value = '';
+
+    document.getElementById('proj-image').value = '';
+    document.getElementById('proj-renderings').value = '';
+    if (document.getElementById('proj-drawings')) document.getElementById('proj-drawings').value = '';
 
     if (heroPreviewBox) heroPreviewBox.style.display = 'none';
+    if (heroPreviewImg) heroPreviewImg.src = '';
+    if (heroPreviewFilename) heroPreviewFilename.textContent = '';
     if (renderingsPreviewBox) renderingsPreviewBox.innerHTML = '';
     if (drawingsPreviewBox) drawingsPreviewBox.innerHTML = '';
+  }
+
+  function openProjectFormModal(projectToEdit = null) {
+    if (!adminProjectModal) return;
+    resetFormAndPreviews();
 
     if (projectToEdit) {
       if (adminProjectModalTitle) adminProjectModalTitle.textContent = '✏️ Edit Project';
@@ -1298,6 +1399,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (heroPreviewImg) heroPreviewImg.src = projectToEdit.image;
         if (heroPreviewBox) heroPreviewBox.style.display = 'flex';
       }
+      if (projectToEdit.renderings && projectToEdit.renderings.length > 0) {
+        renderGalleryPreviews(projectToEdit.renderings);
+      }
+      if (projectToEdit.drawings && projectToEdit.drawings.length > 0) {
+        renderDrawingPreviews(projectToEdit.drawings);
+      }
     } else {
       if (adminProjectModalTitle) adminProjectModalTitle.textContent = '➕ Add New Project';
       document.getElementById('admin-edit-project-id').value = '';
@@ -1311,59 +1418,110 @@ document.addEventListener('DOMContentLoaded', () => {
     if (adminProjectModal) {
       if (typeof adminProjectModal.close === 'function') adminProjectModal.close();
       else adminProjectModal.removeAttribute('open');
+      resetFormAndPreviews();
     }
   }
 
   if (adminProjectClose) adminProjectClose.addEventListener('click', closeProjectFormModal);
   if (adminProjectCancel) adminProjectCancel.addEventListener('click', closeProjectFormModal);
 
+  function applyCurrentCategoryFilter() {
+    const activeBtn = document.querySelector('.filter-btn.active');
+    const filterValue = activeBtn ? activeBtn.getAttribute('data-filter') : 'all';
+    const cards = document.querySelectorAll('.project-card');
+
+    cards.forEach(card => {
+      const cardCategory = card.getAttribute('data-category');
+      if (filterValue === 'all' || filterValue === 'All' || filterValue === cardCategory) {
+        card.style.display = 'flex';
+        card.style.opacity = '1';
+        card.style.transform = 'scale(1)';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
   if (adminProjectForm) {
     adminProjectForm.addEventListener('submit', (e) => {
       e.preventDefault();
 
-      const editId = document.getElementById('admin-edit-project-id').value;
-      const title = document.getElementById('proj-title').value.trim();
-      const category = document.getElementById('proj-category').value;
-      const overview = document.getElementById('proj-overview').value.trim();
-      const specsRaw = document.getElementById('proj-specs').value.trim();
-      const image = document.getElementById('proj-image').value.trim();
-      const renderingsRaw = document.getElementById('proj-renderings').value.trim();
-      const drawingsRaw = document.getElementById('proj-drawings') ? document.getElementById('proj-drawings').value.trim() : '';
-      const tagsRaw = document.getElementById('proj-tags').value.trim();
+      try {
+        const editId = document.getElementById('admin-edit-project-id').value;
+        const title = document.getElementById('proj-title').value.trim();
+        const category = document.getElementById('proj-category').value;
+        const overview = document.getElementById('proj-overview').value.trim();
+        const specsRaw = document.getElementById('proj-specs').value.trim();
+        const image = document.getElementById('proj-image').value.trim();
+        const renderingsRaw = document.getElementById('proj-renderings').value.trim();
+        const drawingsRaw = document.getElementById('proj-drawings') ? document.getElementById('proj-drawings').value.trim() : '';
+        const tagsRaw = document.getElementById('proj-tags').value.trim();
 
-      const specs = specsRaw ? specsRaw.split('\n').map(s => s.trim()).filter(Boolean) : ['SolidWorks 2024 Parametric 3D CAD', 'Sheet Metal Design & DFM Optimization'];
-      const renderings = renderingsRaw ? renderingsRaw.split(',').map(r => r.trim()).filter(Boolean) : [image];
-      const drawings = drawingsRaw ? drawingsRaw.split(',').map(d => d.trim()).filter(Boolean) : [];
-      const dfmTags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [category, 'SolidWorks CAD', 'DFM Optimization'];
+        if (!title || !overview) {
+          showToast('Please fill in required fields: Project Title and Overview.', 'error');
+          return;
+        }
 
-      const projId = editId || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      const newProjObj = {
-        id: projId,
-        number: activeProjectsList.length + 1,
-        title,
-        category,
-        overview,
-        specs,
-        image,
-        renderings,
-        drawings,
-        dfmTags
-      };
+        const specs = specsRaw ? specsRaw.split('\n').map(s => s.trim()).filter(Boolean) : ['SolidWorks 2024 Parametric 3D CAD', 'Sheet Metal Design & DFM Optimization'];
+        const renderings = renderingsRaw ? renderingsRaw.split(',').map(r => r.trim()).filter(Boolean) : (image ? [image] : []);
+        const drawings = drawingsRaw ? drawingsRaw.split(',').map(d => d.trim()).filter(Boolean) : [];
+        const dfmTags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [category, 'SolidWorks CAD', 'DFM Optimization'];
 
-      const savedCustom = localStorage.getItem('custom_portfolio_projects');
-      let customArr = savedCustom ? JSON.parse(savedCustom) : [];
+        // Dynamic unique ID preventing React/DOM state key collisions on subsequent additions
+        const projId = editId || `proj-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
-      if (editId) {
-        customArr = customArr.filter(p => p.id !== editId);
+        const newProjObj = {
+          id: projId,
+          number: activeProjectsList.length + 1,
+          title,
+          category,
+          overview,
+          specs,
+          image: image || (renderings[0] || 'assets/projects/p1/hero.jpg'),
+          renderings: renderings.length > 0 ? renderings : [image || 'assets/projects/p1/hero.jpg'],
+          drawings,
+          dfmTags
+        };
+
+        const savedCustom = localStorage.getItem('custom_portfolio_projects');
+        let customArr = savedCustom ? JSON.parse(savedCustom) : [];
+
+        if (editId) {
+          customArr = customArr.filter(p => p.id !== editId);
+        }
+        customArr.push(newProjObj);
+
+        // Safe storage save with quota overflow protection
+        try {
+          localStorage.setItem('custom_portfolio_projects', JSON.stringify(customArr));
+        } catch (quotaErr) {
+          console.warn('Storage quota limit reached:', quotaErr);
+          showToast('Storage quota reached. Saving project with compressed media.', 'warning');
+          // Fallback truncation for heavy base64 strings if quota hit
+          newProjObj.renderings = newProjObj.renderings.slice(0, 2);
+          customArr[customArr.length - 1] = newProjObj;
+          try {
+            localStorage.setItem('custom_portfolio_projects', JSON.stringify(customArr));
+          } catch (e2) {
+            console.error('Failed fallback storage write:', e2);
+          }
+        }
+
+        projectsMap[newProjObj.id] = newProjObj;
+
+        resetFormAndPreviews();
+        closeProjectFormModal();
+
+        showToast(editId ? `Project "${title}" updated successfully!` : `New Project "${title}" published live!`);
+
+        // Instant UI synchronization without requiring page refresh
+        renderProjectCards();
+        applyCurrentCategoryFilter();
+
+      } catch (err) {
+        console.error('Error submitting project form:', err);
+        showToast(`Failed to create project: ${err.message}`, 'error');
       }
-      customArr.push(newProjObj);
-
-      localStorage.setItem('custom_portfolio_projects', JSON.stringify(customArr));
-
-      closeProjectFormModal();
-      showToast(editId ? `Project "${title}" updated successfully!` : `New Project "${title}" created and published!`);
-      
-      renderProjectCards();
     });
   }
 
@@ -1385,13 +1543,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = btn.getAttribute('data-id');
         const proj = projectsMap[id];
         if (proj && confirm(`Are you sure you want to delete project "${proj.title}"?`)) {
-          // Remove from custom projects list
           const savedCustom = localStorage.getItem('custom_portfolio_projects');
           let customArr = savedCustom ? JSON.parse(savedCustom) : [];
           customArr = customArr.filter(p => p.id !== id);
           localStorage.setItem('custom_portfolio_projects', JSON.stringify(customArr));
 
-          // Track deleted project ID permanently so default items are also hidden permanently
           const deletedIdsRaw = localStorage.getItem('deleted_portfolio_project_ids');
           let deletedIds = deletedIdsRaw ? JSON.parse(deletedIdsRaw) : [];
           if (!deletedIds.includes(id)) {
@@ -1402,6 +1558,7 @@ document.addEventListener('DOMContentLoaded', () => {
           delete projectsMap[id];
           showToast(`Project "${proj.title}" removed permanently.`);
           renderProjectCards();
+          applyCurrentCategoryFilter();
         }
       });
     });
