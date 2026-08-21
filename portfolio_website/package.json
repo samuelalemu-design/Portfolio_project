@@ -1,0 +1,16 @@
+{
+  "name": "portfolio-website",
+  "version": "1.0.0",
+  "description": "Samuel Alemu Mechanical Design Engineer Portfolio Website",
+  "main": "app.js",
+  "scripts": {
+    "start": "npx serve -s . -p $PORT",
+    "build": "echo \"Build complete\""
+  },
+  "dependencies": {
+    "serve": "^14.2.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
