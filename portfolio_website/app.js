@@ -576,19 +576,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const projectsMap = {};
   
   function getActiveProjects() {
+    const deletedIdsRaw = localStorage.getItem('deleted_portfolio_project_ids');
+    const deletedIds = deletedIdsRaw ? JSON.parse(deletedIdsRaw) : [];
+
+    const map = {};
+    projectsData.forEach(p => {
+      if (!deletedIds.includes(p.id)) {
+        map[p.id] = p;
+      }
+    });
+
     const savedCustom = localStorage.getItem('custom_portfolio_projects');
     if (savedCustom) {
       try {
         const customArr = JSON.parse(savedCustom);
-        const map = {};
-        projectsData.forEach(p => { map[p.id] = p; });
-        customArr.forEach(p => { map[p.id] = p; });
-        return Object.values(map);
+        customArr.forEach(p => {
+          if (!deletedIds.includes(p.id)) {
+            map[p.id] = p;
+          }
+        });
       } catch (e) {
         console.error('Error parsing custom_portfolio_projects', e);
       }
     }
-    return projectsData;
+    return Object.values(map);
   }
 
   let activeProjectsList = getActiveProjects();
@@ -1090,6 +1101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const isRouteAdmin = (
       window.location.hash.toLowerCase() === '#admin' ||
       window.location.pathname.toLowerCase().endsWith('/admin') ||
+      window.location.pathname.toLowerCase().endsWith('/admin.html') ||
       window.location.search.toLowerCase().includes('admin')
     );
 
@@ -1118,10 +1130,15 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.removeItem('adminLoggedIn');
       if (adminTopBar) adminTopBar.style.display = 'none';
       showToast('Logged out of Admin Portal.');
-      if (window.location.hash === '#admin') {
-        history.pushState("", document.title, window.location.pathname + window.location.search);
+
+      if (window.location.pathname.toLowerCase().includes('/admin')) {
+        window.location.href = '/';
+      } else {
+        if (window.location.hash === '#admin') {
+          history.pushState("", document.title, window.location.pathname + window.location.search);
+        }
+        renderProjectCards();
       }
-      renderProjectCards();
     });
   }
 
@@ -1368,12 +1385,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = btn.getAttribute('data-id');
         const proj = projectsMap[id];
         if (proj && confirm(`Are you sure you want to delete project "${proj.title}"?`)) {
+          // Remove from custom projects list
           const savedCustom = localStorage.getItem('custom_portfolio_projects');
           let customArr = savedCustom ? JSON.parse(savedCustom) : [];
           customArr = customArr.filter(p => p.id !== id);
           localStorage.setItem('custom_portfolio_projects', JSON.stringify(customArr));
-          
-          showToast(`Project "${proj.title}" removed.`);
+
+          // Track deleted project ID permanently so default items are also hidden permanently
+          const deletedIdsRaw = localStorage.getItem('deleted_portfolio_project_ids');
+          let deletedIds = deletedIdsRaw ? JSON.parse(deletedIdsRaw) : [];
+          if (!deletedIds.includes(id)) {
+            deletedIds.push(id);
+          }
+          localStorage.setItem('deleted_portfolio_project_ids', JSON.stringify(deletedIds));
+
+          delete projectsMap[id];
+          showToast(`Project "${proj.title}" removed permanently.`);
           renderProjectCards();
         }
       });
