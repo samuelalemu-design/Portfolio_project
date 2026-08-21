@@ -1,4 +1,4 @@
-﻿const projectsData = [
+const projectsData = [
     {
       id: 'wood-engraving-cnc',
       number: 1,
@@ -569,9 +569,34 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  const ADMIN_EMAIL = "samuelalemu2127@gmail.com";
+  const DEFAULT_ADMIN_PASS = "admin123";
+
   // Map for fast lookup by project ID
   const projectsMap = {};
-  projectsData.forEach(p => { projectsMap[p.id] = p; });
+  
+  function getActiveProjects() {
+    const savedCustom = localStorage.getItem('custom_portfolio_projects');
+    if (savedCustom) {
+      try {
+        const customArr = JSON.parse(savedCustom);
+        const map = {};
+        projectsData.forEach(p => { map[p.id] = p; });
+        customArr.forEach(p => { map[p.id] = p; });
+        return Object.values(map);
+      } catch (e) {
+        console.error('Error parsing custom_portfolio_projects', e);
+      }
+    }
+    return projectsData;
+  }
+
+  let activeProjectsList = getActiveProjects();
+  activeProjectsList.forEach(p => { projectsMap[p.id] = p; });
+
+  function isAdminLoggedIn() {
+    return localStorage.getItem('adminLoggedIn') === 'true';
+  }
 
   /* ------------------------------------------------------------------------
    * 1. Top Logo / Name Click Handler (Scroll to Top Home Page)
@@ -585,14 +610,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 2. Render Front-Level Project Cards (No "Other Renderings" Button)
+   * 2. Render Front-Level Project Cards & Admin Controls
    * ------------------------------------------------------------------------ */
   const projectsGrid = document.getElementById('projects-grid');
 
   function renderProjectCards() {
     if (!projectsGrid) return;
 
-    projectsGrid.innerHTML = projectsData.map(project => {
+    activeProjectsList = getActiveProjects();
+    activeProjectsList.forEach(p => { projectsMap[p.id] = p; });
+
+    const adminActive = isAdminLoggedIn();
+
+    projectsGrid.innerHTML = activeProjectsList.map(project => {
       let categoryClass = 'badge-real';
       if (project.category === 'Experimental Projects') categoryClass = 'badge-experimental';
       if (project.category === 'Educational Projects') categoryClass = 'badge-educational';
@@ -602,7 +632,18 @@ document.addEventListener('DOMContentLoaded', () => {
       return `
         <div class="project-card card" data-category="${project.category}" data-project="${project.id}" id="card-${project.id}">
           
-          <!-- Front-Level Hero Image Container (Clicking hero image opens Lightbox starting with Hero Image) -->
+          ${adminActive ? `
+          <!-- Admin On-Card Control Bar -->
+          <div style="background: #0f172a; color: #38bdf8; padding: 0.4rem 0.75rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; font-weight: 700; border-bottom: 1px solid #1e293b;">
+            <span>ADMIN CONTROLS</span>
+            <div style="display: flex; gap: 0.4rem;">
+              <button type="button" class="btn-admin-edit" data-id="${project.id}" style="background: #0284c7; color: #fff; border: none; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">✏️ Edit</button>
+              <button type="button" class="btn-admin-delete" data-id="${project.id}" style="background: #ef4444; color: #fff; border: none; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">🗑️ Delete</button>
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- Front-Level Hero Image Container -->
           <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="${project.id}">
             <img src="${project.image}" alt="${project.title}" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
             <span class="project-category-badge ${categoryClass}">${project.category}</span>
@@ -612,7 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="project-body" style="padding: 1.25rem;">
             <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">${project.title}</h3>
 
-            <!-- Action Buttons at Bottom (Description, Technical Spec, Attachments) -->
+            <!-- Action Buttons at Bottom -->
             <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
               
               <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="${project.id}">
@@ -640,6 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
 
     attachModalWindowListeners();
+    attachAdminCardListeners();
   }
 
   /* ------------------------------------------------------------------------
@@ -1024,6 +1066,194 @@ document.addEventListener('DOMContentLoaded', () => {
       toast.style.transition = 'all 0.3s ease';
       setTimeout(() => toast.remove(), 300);
     }, 4000);
+  }
+
+  /* ------------------------------------------------------------------------
+   * 10. Admin Portal & Project Creation/Editing System
+   * ------------------------------------------------------------------------ */
+  const adminBtn = document.getElementById('admin-btn');
+  const adminBtnLabel = document.getElementById('admin-btn-label');
+  const adminLoginModal = document.getElementById('admin-login-modal');
+  const adminLoginForm = document.getElementById('admin-login-form');
+  const adminLoginClose = document.getElementById('admin-login-close');
+  const adminLoginError = document.getElementById('admin-login-error');
+  
+  const adminProjectModal = document.getElementById('admin-project-modal');
+  const adminProjectForm = document.getElementById('admin-project-form');
+  const adminProjectClose = document.getElementById('admin-project-close');
+  const adminProjectCancel = document.getElementById('admin-project-cancel');
+  const adminProjectModalTitle = document.getElementById('admin-project-modal-title');
+
+  function updateAdminNavState() {
+    if (!adminBtnLabel) return;
+    if (isAdminLoggedIn()) {
+      adminBtnLabel.textContent = 'Admin Mode';
+      if (adminBtn) {
+        adminBtn.style.background = '#0284c7';
+        adminBtn.style.color = '#ffffff';
+        adminBtn.style.borderColor = '#0369a1';
+      }
+    } else {
+      adminBtnLabel.textContent = 'Admin';
+      if (adminBtn) {
+        adminBtn.style.background = '';
+        adminBtn.style.color = '';
+        adminBtn.style.borderColor = '';
+      }
+    }
+  }
+
+  updateAdminNavState();
+
+  if (adminBtn) {
+    adminBtn.addEventListener('click', () => {
+      if (isAdminLoggedIn()) {
+        openProjectFormModal(); // Open Add New Project directly
+      } else {
+        if (adminLoginModal) {
+          if (typeof adminLoginModal.showModal === 'function') adminLoginModal.showModal();
+          else adminLoginModal.setAttribute('open', '');
+        }
+      }
+    });
+  }
+
+  if (adminLoginClose && adminLoginModal) {
+    adminLoginClose.addEventListener('click', () => {
+      if (typeof adminLoginModal.close === 'function') adminLoginModal.close();
+      else adminLoginModal.removeAttribute('open');
+    });
+  }
+
+  if (adminLoginForm) {
+    adminLoginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('admin-email-input').value.trim();
+      const pass = document.getElementById('admin-password-input').value.trim();
+
+      if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && (pass === DEFAULT_ADMIN_PASS || pass === "admin")) {
+        localStorage.setItem('adminLoggedIn', 'true');
+        if (adminLoginError) adminLoginError.style.display = 'none';
+        if (typeof adminLoginModal.close === 'function') adminLoginModal.close();
+        else adminLoginModal.removeAttribute('open');
+        showToast(`Welcome Admin Samuel Alemu (${ADMIN_EMAIL})! Admin mode activated.`);
+        updateAdminNavState();
+        renderProjectCards();
+      } else {
+        if (adminLoginError) adminLoginError.style.display = 'block';
+      }
+    });
+  }
+
+  function openProjectFormModal(projectToEdit = null) {
+    if (!adminProjectModal) return;
+    adminProjectForm.reset();
+
+    if (projectToEdit) {
+      if (adminProjectModalTitle) adminProjectModalTitle.textContent = '✏️ Edit Project';
+      document.getElementById('admin-edit-project-id').value = projectToEdit.id;
+      document.getElementById('proj-title').value = projectToEdit.title || '';
+      document.getElementById('proj-category').value = projectToEdit.category || 'Real Projects';
+      document.getElementById('proj-overview').value = projectToEdit.overview || '';
+      document.getElementById('proj-specs').value = (projectToEdit.specs || []).join('\n');
+      document.getElementById('proj-image').value = projectToEdit.image || '';
+      document.getElementById('proj-renderings').value = (projectToEdit.renderings || []).join(', ');
+      document.getElementById('proj-tags').value = (projectToEdit.dfmTags || []).join(', ');
+    } else {
+      if (adminProjectModalTitle) adminProjectModalTitle.textContent = '➕ Add New Project';
+      document.getElementById('admin-edit-project-id').value = '';
+    }
+
+    if (typeof adminProjectModal.showModal === 'function') adminProjectModal.showModal();
+    else adminProjectModal.setAttribute('open', '');
+  }
+
+  function closeProjectFormModal() {
+    if (adminProjectModal) {
+      if (typeof adminProjectModal.close === 'function') adminProjectModal.close();
+      else adminProjectModal.removeAttribute('open');
+    }
+  }
+
+  if (adminProjectClose) adminProjectClose.addEventListener('click', closeProjectFormModal);
+  if (adminProjectCancel) adminProjectCancel.addEventListener('click', closeProjectFormModal);
+
+  if (adminProjectForm) {
+    adminProjectForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const editId = document.getElementById('admin-edit-project-id').value;
+      const title = document.getElementById('proj-title').value.trim();
+      const category = document.getElementById('proj-category').value;
+      const overview = document.getElementById('proj-overview').value.trim();
+      const specsRaw = document.getElementById('proj-specs').value.trim();
+      const image = document.getElementById('proj-image').value.trim();
+      const renderingsRaw = document.getElementById('proj-renderings').value.trim();
+      const tagsRaw = document.getElementById('proj-tags').value.trim();
+
+      const specs = specsRaw ? specsRaw.split('\n').map(s => s.trim()).filter(Boolean) : ['SolidWorks 2024 Parametric 3D CAD', 'Sheet Metal Design & DFM Optimization'];
+      const renderings = renderingsRaw ? renderingsRaw.split(',').map(r => r.trim()).filter(Boolean) : [image];
+      const dfmTags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [category, 'SolidWorks CAD', 'DFM Optimization'];
+
+      const projId = editId || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const newProjObj = {
+        id: projId,
+        number: activeProjectsList.length + 1,
+        title,
+        category,
+        overview,
+        specs,
+        image,
+        renderings,
+        drawings: [],
+        dfmTags
+      };
+
+      const savedCustom = localStorage.getItem('custom_portfolio_projects');
+      let customArr = savedCustom ? JSON.parse(savedCustom) : [];
+
+      if (editId) {
+        customArr = customArr.filter(p => p.id !== editId);
+      }
+      customArr.push(newProjObj);
+
+      localStorage.setItem('custom_portfolio_projects', JSON.stringify(customArr));
+
+      closeProjectFormModal();
+      showToast(editId ? `Project "${title}" updated successfully!` : `New Project "${title}" created and published!`);
+      
+      renderProjectCards();
+    });
+  }
+
+  function attachAdminCardListeners() {
+    if (!isAdminLoggedIn()) return;
+
+    document.querySelectorAll('.btn-admin-edit').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        const proj = projectsMap[id];
+        if (proj) openProjectFormModal(proj);
+      });
+    });
+
+    document.querySelectorAll('.btn-admin-delete').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        const proj = projectsMap[id];
+        if (proj && confirm(`Are you sure you want to delete project "${proj.title}"?`)) {
+          const savedCustom = localStorage.getItem('custom_portfolio_projects');
+          let customArr = savedCustom ? JSON.parse(savedCustom) : [];
+          customArr = customArr.filter(p => p.id !== id);
+          localStorage.setItem('custom_portfolio_projects', JSON.stringify(customArr));
+          
+          showToast(`Project "${proj.title}" removed.`);
+          renderProjectCards();
+        }
+      });
+    });
   }
 
 });
