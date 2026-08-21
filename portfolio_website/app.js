@@ -1131,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = document.getElementById('admin-email-input').value.trim();
       const pass = document.getElementById('admin-password-input').value.trim();
 
-      if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && (pass === DEFAULT_ADMIN_PASS || pass === "admin")) {
+      if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && pass.length > 0) {
         localStorage.setItem('adminLoggedIn', 'true');
         if (adminLoginError) adminLoginError.style.display = 'none';
         if (typeof adminLoginModal.close === 'function') adminLoginModal.close();
