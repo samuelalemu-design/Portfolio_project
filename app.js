@@ -868,12 +868,26 @@ document.addEventListener('DOMContentLoaded', () => {
       itemModalCounter.textContent = `Image ${currentRenderIndex + 1} of ${total} ${currentRenderIndex === 0 ? '(Hero Image)' : ''}`;
     }
 
-    const thumbsHTML = gallery.map((imgSrc, idx) => `
-      <img src="${imgSrc}" class="thumb-item ${idx === currentRenderIndex ? 'active' : ''}" alt="Thumb ${idx + 1}" onclick="window.selectRenderIndex(${idx})">
-    `).join('');
+    const thumbsHTML = gallery.map((imgSrc, idx) => {
+      const isActive = idx === currentRenderIndex;
+      return `
+        <div class="thumb-wrapper ${isActive ? 'active' : ''}" onclick="window.selectRenderIndex(${idx})" title="View Rendering #${idx + 1}">
+          <div class="thumb-spinner" id="thumb-spin-${idx}"></div>
+          <img src="${imgSrc}" 
+               alt="Thumbnail ${idx + 1}" 
+               class="thumb-img" 
+               onload="document.getElementById('thumb-spin-${idx}') && (document.getElementById('thumb-spin-${idx}').style.display='none')" 
+               onerror="this.style.display='none'; document.getElementById('thumb-spin-${idx}') && (document.getElementById('thumb-spin-${idx}').style.display='none'); document.getElementById('thumb-fallback-${idx}') && (document.getElementById('thumb-fallback-${idx}').style.display='flex')">
+          <div class="thumb-fallback" id="thumb-fallback-${idx}" style="display: none;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-top: 2px;">Render ${idx + 1}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
 
     itemModalBody.innerHTML = `
-      <div style="display: flex; flex-direction: column; background: #ffffff; padding-bottom: 70px;">
+      <div style="display: flex; flex-direction: column; background: #ffffff; padding-bottom: 75px;">
         
         <!-- Large Lightbox Viewer (Hero Image First, High-Contrast Blue Next/Prev Arrows) -->
         <div style="position: relative; width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; display: flex; align-items: center; justify-content: center; min-height: 440px; max-height: 560px; overflow: hidden;" class="skeleton-shimmer">
@@ -949,33 +963,67 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 6. Active Navigation Section Highlighting (IntersectionObserver)
+   * 6. Strict Navigation & Tab Content Filtering (Viewport State Isolation)
    * ------------------------------------------------------------------------ */
-  const sections = document.querySelectorAll('section[id]');
-  const navLinks = document.querySelectorAll('.nav-link');
+  const allTabSections = document.querySelectorAll('main section[id]');
+  const allNavTabLinks = document.querySelectorAll('.nav-link');
 
-  const observerOptions = {
-    root: null,
-    rootMargin: '-20% 0px -70% 0px',
-    threshold: 0
-  };
+  function activateStrictTab(targetId) {
+    if (!targetId || targetId === 'hero' || targetId === 'home' || targetId === 'all') {
+      allTabSections.forEach(sec => {
+        sec.style.display = '';
+        sec.classList.remove('tab-hidden');
+      });
+      allNavTabLinks.forEach(link => link.classList.remove('active'));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const id = entry.target.getAttribute('id');
-        navLinks.forEach(link => {
-          if (link.getAttribute('href') === `#${id}`) {
-            link.classList.add('active');
-          } else {
-            link.classList.remove('active');
-          }
-        });
+    // Completely hide non-selected sections!
+    allTabSections.forEach(sec => {
+      const secId = sec.getAttribute('id');
+      if (secId === targetId) {
+        sec.style.display = 'block';
+        sec.classList.remove('tab-hidden');
+      } else {
+        sec.style.display = 'none';
+        sec.classList.add('tab-hidden');
       }
     });
-  }, observerOptions);
 
-  sections.forEach(section => observer.observe(section));
+    // Update active navbar tab link state
+    allNavTabLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === `#${targetId}`) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Bind top navbar tabs
+  allNavTabLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      if (href && href.startsWith('#')) {
+        const targetId = href.replace('#', '');
+        activateStrictTab(targetId);
+        history.pushState(null, '', `#${targetId}`);
+      }
+    });
+  });
+
+  // Check initial URL hash for active tab section
+  if (window.location.hash && window.location.hash !== '#admin') {
+    const initId = window.location.hash.replace('#', '');
+    if (document.getElementById(initId)) {
+      activateStrictTab(initId);
+    }
+  }
 
   /* ------------------------------------------------------------------------
    * 7. Projects Category Filter (All, Real Projects, Experimental Projects, Educational Projects)
