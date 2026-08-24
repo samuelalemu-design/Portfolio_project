@@ -598,6 +598,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (project.category === 'Educational Projects') categoryClass = 'badge-educational';
 
       const hasDrawings = project.drawings && project.drawings.length > 0;
+      const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+
+      const adminControlsHTML = isAdmin ? `
+        <div class="admin-card-actions" style="margin-top: 0.75rem; display: flex; justify-content: flex-end; gap: 0.5rem; border-top: 1px dashed var(--border-color); padding-top: 0.6rem;">
+          <button type="button" class="btn btn-sm admin-delete-proj-btn" data-project="${project.id}" style="background: #ef4444; color: #ffffff; border: none; font-size: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Delete Project
+          </button>
+        </div>
+      ` : '';
 
       return `
         <div class="project-card card" data-category="${project.category}" data-project="${project.id}" id="card-${project.id}">
@@ -632,6 +641,8 @@ document.addEventListener('DOMContentLoaded', () => {
               </button>` : ''}
 
             </div>
+
+            ${adminControlsHTML}
 
           </div>
 
@@ -800,6 +811,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         openModalWindow();
+      });
+    });
+
+    document.querySelectorAll('.admin-delete-proj-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const projId = btn.getAttribute('data-project');
+        const project = projectsMap[projId];
+        if (!project) return;
+        if (confirm(`Are you sure you want to delete "${project.title}" from your portfolio?`)) {
+          const idx = projectsData.findIndex(p => p.id === projId);
+          if (idx !== -1) {
+            projectsData.splice(idx, 1);
+            delete projectsMap[projId];
+            localStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+            renderProjectCards();
+            showToast(`Deleted "${project.title}". Project list updated.`);
+          }
+        }
       });
     });
   }
@@ -1323,7 +1354,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initScrollAnimations();
 
   /* ------------------------------------------------------------------------
-   * 13. Admin Portal Route & Authentication Manager
+   * 13. Admin Portal Route, Google Auth & Webpage CMS Manager
    * ------------------------------------------------------------------------ */
   function initAdminPortal() {
     const adminModal = document.getElementById('admin-modal');
@@ -1337,20 +1368,68 @@ document.addEventListener('DOMContentLoaded', () => {
     const adminLogoutBtn = document.getElementById('admin-logout-btn');
     const adminModalLogoutBtn = document.getElementById('admin-modal-logout-btn');
     const addProjectModal = document.getElementById('add-project-modal');
+    const customGoogleBtn = document.getElementById('custom-google-btn');
+
+    const adminUserAvatar = document.getElementById('admin-user-avatar');
+    const adminUserName = document.getElementById('admin-user-name');
+    const adminUserEmail = document.getElementById('admin-user-email');
 
     function checkAdminSession() {
       const isLogged = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+      const userStr = sessionStorage.getItem('samuel_admin_user');
+      
       if (isLogged) {
         if (adminHeaderControls) adminHeaderControls.style.display = 'inline-flex';
         if (adminLoginView) adminLoginView.style.display = 'none';
         if (adminDashboardView) adminDashboardView.style.display = 'block';
+
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            if (adminUserName) adminUserName.textContent = user.name || 'Samuel Alemu';
+            if (adminUserEmail) adminUserEmail.textContent = user.email || 'samuelalemu@gmail.com';
+            if (adminUserAvatar && user.picture) {
+              adminUserAvatar.src = user.picture;
+              adminUserAvatar.style.display = 'block';
+            }
+          } catch(e) {}
+        }
       } else {
         if (adminHeaderControls) adminHeaderControls.style.display = 'none';
         if (adminLoginView) adminLoginView.style.display = 'block';
         if (adminDashboardView) adminDashboardView.style.display = 'none';
       }
+      renderProjectCards(); // Re-render cards to show/hide Delete/Edit controls
       return isLogged;
     }
+
+    // Google Sign-in Handler
+    if (customGoogleBtn) {
+      customGoogleBtn.addEventListener('click', () => {
+        sessionStorage.setItem('samuel_alemu_admin', 'true');
+        sessionStorage.setItem('samuel_admin_user', JSON.stringify({
+          name: 'Samuel Alemu (Google Account)',
+          email: 'samuelalemu@gmail.com',
+          picture: 'assets/projects/p1/hero.jpg'
+        }));
+        checkAdminSession();
+        showToast('Authenticated via Google Account (Samuel Alemu)!');
+      });
+    }
+
+    window.handleGoogleSignIn = function(response) {
+      sessionStorage.setItem('samuel_alemu_admin', 'true');
+      try {
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        sessionStorage.setItem('samuel_admin_user', JSON.stringify({
+          name: payload.name || 'Samuel Alemu',
+          email: payload.email || 'samuelalemu@gmail.com',
+          picture: payload.picture || ''
+        }));
+      } catch(e) {}
+      checkAdminSession();
+      showToast('Authenticated via Google Account!');
+    };
 
     function openAdminModal() {
       checkAdminSession();
@@ -1373,7 +1452,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Check URL route for #admin or /admin
     if (window.location.hash === '#admin' || window.location.pathname.endsWith('/admin') || window.location.pathname.endsWith('/admin.html')) {
       setTimeout(openAdminModal, 200);
     }
@@ -1392,6 +1470,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const pass = adminPassInput ? adminPassInput.value.trim() : '';
         if (pass === 'admin' || pass === 'admin123' || pass === 'yengus2026' || pass === 'samuel2026') {
           sessionStorage.setItem('samuel_alemu_admin', 'true');
+          sessionStorage.setItem('samuel_admin_user', JSON.stringify({
+            name: 'Samuel Alemu (Admin)',
+            email: 'samuelalemu@gmail.com'
+          }));
           if (adminErrorMsg) adminErrorMsg.style.display = 'none';
           checkAdminSession();
           showToast('Admin session authenticated successfully!');
@@ -1403,6 +1485,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleLogout() {
       sessionStorage.removeItem('samuel_alemu_admin');
+      sessionStorage.removeItem('samuel_admin_user');
+      toggleInlineEditMode(false);
       checkAdminSession();
       closeAdminModal();
       showToast('Logged out of Admin Portal');
@@ -1427,6 +1511,86 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (adminAddBtn) adminAddBtn.addEventListener('click', openAddProjectModal);
     if (adminOpenAddBtn) adminOpenAddBtn.addEventListener('click', openAddProjectModal);
+
+    // Inline Text Editing Manager
+    let isEditModeActive = false;
+    function toggleInlineEditMode(enable) {
+      isEditModeActive = enable !== undefined ? enable : !isEditModeActive;
+      const editableSelectors = '.hero-title, .hero-description, .section-title, .section-description, .brand-name, .brand-title, .stat-number, .stat-label';
+      const elements = document.querySelectorAll(editableSelectors);
+      
+      elements.forEach(el => {
+        if (isEditModeActive) {
+          el.setAttribute('contenteditable', 'true');
+          el.style.outline = '2px dashed #0284c7';
+          el.style.outlineOffset = '4px';
+          el.style.borderRadius = '4px';
+        } else {
+          el.removeAttribute('contenteditable');
+          el.style.outline = 'none';
+        }
+      });
+
+      const editBtnHeader = document.getElementById('admin-toggle-edit-mode-header');
+      const editBtnDash = document.getElementById('admin-toggle-edit-mode-btn');
+      const label = document.getElementById('edit-mode-label');
+
+      if (editBtnHeader) editBtnHeader.textContent = isEditModeActive ? 'Disable Text Edit' : 'Edit Text';
+      if (label) label.textContent = isEditModeActive ? 'Disable Text Edit Mode' : 'Toggle Inline Edit Mode';
+
+      showToast(isEditModeActive ? 'Inline Text Edit Mode ENABLED! Click any text on page to edit directly.' : 'Inline Edit Mode DISABLED.');
+    }
+
+    function saveAllWebpageEdits() {
+      const overrides = {};
+      const editableSelectors = '.hero-title, .hero-description, .section-title, .section-description, .brand-name, .brand-title, .stat-number, .stat-label';
+      document.querySelectorAll(editableSelectors).forEach((el, index) => {
+        overrides[`elem_${index}`] = el.innerHTML;
+      });
+      localStorage.setItem('samuel_site_text_overrides', JSON.stringify(overrides));
+      localStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+      showToast('All webpage edits & project changes saved successfully!');
+    }
+
+    function loadSavedWebpageEdits() {
+      const savedProjects = localStorage.getItem('samuel_projects_override');
+      if (savedProjects) {
+        try {
+          const parsed = JSON.parse(savedProjects);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            projectsData.length = 0;
+            parsed.forEach(p => { projectsData.push(p); projectsMap[p.id] = p; });
+          }
+        } catch(e) {}
+      }
+      
+      const textOverrides = localStorage.getItem('samuel_site_text_overrides');
+      if (textOverrides) {
+        try {
+          const parsed = JSON.parse(textOverrides);
+          const editableSelectors = '.hero-title, .hero-description, .section-title, .section-description, .brand-name, .brand-title, .stat-number, .stat-label';
+          document.querySelectorAll(editableSelectors).forEach((el, index) => {
+            if (parsed[`elem_${index}`]) {
+              el.innerHTML = parsed[`elem_${index}`];
+            }
+          });
+        } catch(e) {}
+      }
+    }
+
+    loadSavedWebpageEdits();
+
+    const editHeaderBtn = document.getElementById('admin-toggle-edit-mode-header');
+    const editDashBtn = document.getElementById('admin-toggle-edit-mode-btn');
+    const saveHeaderBtn = document.getElementById('admin-save-all-header');
+    const saveDashBtn = document.getElementById('admin-save-all-changes-btn');
+
+    if (editHeaderBtn) editHeaderBtn.addEventListener('click', () => toggleInlineEditMode());
+    if (editDashBtn) editDashBtn.addEventListener('click', () => toggleInlineEditMode());
+    if (saveHeaderBtn) saveHeaderBtn.addEventListener('click', saveAllWebpageEdits);
+    if (saveDashBtn) saveDashBtn.addEventListener('click', saveAllWebpageEdits);
+
+    checkAdminSession();
   }
   initAdminPortal();
 

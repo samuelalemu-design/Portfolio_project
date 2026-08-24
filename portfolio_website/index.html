@@ -13,6 +13,9 @@
   
   <!-- CSS Stylesheet -->
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -47,14 +50,14 @@
 
       <div class="nav-actions">
         <!-- Pinned Top Header Admin Actions (Shown when logged into Admin) -->
-        <div id="header-admin-controls" style="display: none; align-items: center; gap: 0.5rem;">
-          <button id="admin-add-project-btn" class="btn btn-primary btn-sm" style="background: #0284c7; color: #ffffff; border: none; font-weight: 700; padding: 0.4rem 0.85rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            <span>+ Add Project</span>
-          </button>
-          <button id="admin-logout-btn" class="btn btn-secondary btn-sm" style="background: #e2e8f0; color: #0f172a; border: 1px solid #cbd5e1; font-weight: 600; padding: 0.4rem 0.75rem; border-radius: 6px; cursor: pointer;">
-            <span>Logout</span>
-          </button>
+        <div id="header-admin-controls" style="display: none; align-items: center; gap: 0.4rem; background: var(--bg-card); padding: 0.25rem 0.6rem; border-radius: 30px; border: 1px solid var(--accent-primary);">
+          <span style="font-size: 0.725rem; font-weight: 700; color: var(--accent-teal); display: inline-flex; align-items: center; gap: 0.25rem;">
+            <span class="badge-dot" style="width: 6px; height: 6px;"></span> Admin Mode
+          </span>
+          <button id="admin-toggle-edit-mode-header" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.725rem; font-weight: 700;">Edit Text</button>
+          <button id="admin-add-project-btn" class="btn btn-primary btn-sm" style="background: #0284c7; color: #ffffff; border: none; font-weight: 700; padding: 0.2rem 0.55rem; font-size: 0.725rem;">+ Add Project</button>
+          <button id="admin-save-all-header" class="btn btn-primary btn-sm" style="background: #16a34a; color: #ffffff; border: none; font-weight: 700; padding: 0.2rem 0.55rem; font-size: 0.725rem;">Save Changes</button>
+          <button id="admin-logout-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.45rem; font-size: 0.725rem;">Logout</button>
         </div>
 
         <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Night/Day Mode" title="Toggle Night/Day Mode" role="switch" aria-checked="true">
@@ -142,21 +145,9 @@
           </div>
         </div>
 
-        <div class="hero-visual">
-          <div class="hero-cad-card">
-            <div class="hero-cad-header" style="justify-content: space-between;">
-              <div class="cad-badge">
-                <span class="cad-pulse"></span>
-                <span>FEATURED MACHINE ASSEMBLY</span>
-              </div>
-              <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-primary);">
-                <span>Wood Engraving CNC</span>
-              </div>
-            </div>
-            
-            <div class="hero-cad-viewport" style="padding: 0.75rem; display: flex; align-items: center; justify-content: center; background: var(--bg-alt); border-radius: 0 0 var(--radius-lg) var(--radius-lg); overflow: hidden; min-height: 460px;">
-              <img src="assets/projects/p1/hero.jpg" alt="Wood Engraving CNC Machine - Samuel Alemu Mechanical Design" style="width: 100%; height: 100%; max-height: 440px; object-fit: contain; border-radius: 8px;">
-            </div>
+        <div class="hero-visual" style="display: flex; align-items: center; justify-content: center;">
+          <div class="hero-image-card" style="background: #ffffff; border-radius: 24px; padding: 2.25rem; width: 100%; max-width: 580px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08); transition: transform 0.3s ease;">
+            <img src="assets/projects/p1/hero.jpg" alt="Wood Engraving CNC Machine - Samuel Alemu" class="hero-img" style="width: 100%; height: auto; max-height: 440px; object-fit: contain; display: block; border-radius: 8px;">
           </div>
         </div>
       </div>
@@ -1193,11 +1184,25 @@
       <!-- Login View -->
       <div id="admin-login-view">
         <div style="text-align: center; margin-bottom: 1.5rem;">
-          <div style="width: 48px; height: 48px; border-radius: 12px; background: var(--accent-light); color: var(--accent-primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.75rem;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <div style="width: 52px; height: 52px; border-radius: 14px; background: var(--accent-light); color: var(--accent-primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 0.75rem;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </div>
-          <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main);">Admin Authentication Portal</h3>
-          <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">Enter administrator password to access controls</p>
+          <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--text-main);">Admin Authentication Portal</h3>
+          <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem;">Sign in with your Google Account or Admin Password</p>
+        </div>
+
+        <!-- Google Sign-In Button Container -->
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; width: 100%;">
+          <button id="custom-google-btn" type="button" class="btn btn-secondary" style="width: 100%; justify-content: center; gap: 0.6rem; padding: 0.75rem; border: 1px solid var(--border-color); font-weight: 600; background: #ffffff; color: #0f172a; box-shadow: var(--shadow-sm); cursor: pointer;">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+            <span>Sign in with Google Account</span>
+          </button>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0; color: var(--text-muted); font-size: 0.8rem;">
+          <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
+          <span>OR PASSWORD LOGIN</span>
+          <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
         </div>
 
         <form id="admin-login-form" style="display: flex; flex-direction: column; gap: 1rem;">
@@ -1213,19 +1218,32 @@
       <!-- Dashboard View -->
       <div id="admin-dashboard-view" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
-          <div>
-            <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 0;">Admin Portal Active</h3>
-            <span style="font-size: 0.8rem; color: var(--accent-teal); font-family: var(--font-mono);">Logged in as Administrator</span>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <img id="admin-user-avatar" src="assets/projects/p1/hero.jpg" alt="Admin" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-primary); display: none;">
+            <div>
+              <h3 id="admin-user-name" style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 0;">Admin Portal Active</h3>
+              <span id="admin-user-email" style="font-size: 0.8rem; color: var(--accent-teal); font-family: var(--font-mono);">Logged in as Administrator</span>
+            </div>
           </div>
           <button id="admin-modal-logout-btn" class="btn btn-outline btn-sm" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">Logout</button>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 1rem;">
           <div style="background: var(--bg-alt); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">Project Management</h4>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.85rem;">Currently managing 24 mechanical design projects.</p>
-            <button id="admin-open-add-dialog-btn" class="btn btn-primary btn-sm" style="width: 100%; font-weight: 700;">+ Add New Machine Entry</button>
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">Website Content & Project Manager</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.85rem;">Inline text editing mode is active. You can edit any text on the website directly or manage projects below.</p>
+            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+              <button id="admin-toggle-edit-mode-btn" class="btn btn-secondary btn-sm" style="flex: 1; font-weight: 700; gap: 0.4rem;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <span id="edit-mode-label">Toggle Inline Edit Mode</span>
+              </button>
+              <button id="admin-open-add-dialog-btn" class="btn btn-primary btn-sm" style="flex: 1; font-weight: 700;">+ Add Project</button>
+            </div>
           </div>
+
+          <button id="admin-save-all-changes-btn" class="btn btn-primary btn-full" style="background: #16a34a; border: none; font-weight: 700; padding: 0.75rem;">
+            Save All Webpage Edits
+          </button>
         </div>
       </div>
 
