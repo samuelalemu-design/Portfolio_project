@@ -144,42 +144,18 @@
 
         <div class="hero-visual">
           <div class="hero-cad-card">
-            <div class="hero-cad-header">
+            <div class="hero-cad-header" style="justify-content: space-between;">
               <div class="cad-badge">
                 <span class="cad-pulse"></span>
-                <span>INTERACTIVE 3D CAD VIEWPORT</span>
+                <span>KEYSHOT 360° INTERACTIVE TURNTABLE (65 DS.127)</span>
               </div>
-              <div class="hero-view-modes">
-                <button id="hero-mode-3d" class="hero-mode-btn active" title="Interactive 3D View">3D CAD Model</button>
-                <button id="hero-mode-img" class="hero-mode-btn" title="HD CAD Render View">HD Render</button>
+              <div class="cad-hint" style="margin: 0; background: transparent; padding: 0; border: none; font-size: 0.75rem; color: var(--text-muted);">
+                <span>Drag left/right to rotate 360°</span>
               </div>
             </div>
             
-            <div class="hero-cad-viewport">
-              <div id="hero-3d-container" class="hero-3d-container">
-                <canvas id="hero-cad-canvas"></canvas>
-                <div class="hero-cad-controls">
-                  <button id="cad-btn-wireframe" class="cad-ctrl-btn" title="Toggle Wireframe View">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                    <span>Wireframe</span>
-                  </button>
-                  <button id="cad-btn-explode" class="cad-ctrl-btn" title="Toggle Exploded Assembly View">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                    <span>Explode View</span>
-                  </button>
-                  <button id="cad-btn-reset" class="cad-ctrl-btn" title="Reset Camera View">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                    <span>Reset View</span>
-                  </button>
-                </div>
-                <div class="cad-hint">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-                  <span>Drag to orbit • Scroll to zoom 3D assembly</span>
-                </div>
-              </div>
-              <div id="hero-img-container" class="hero-img-container" style="display: none;">
-                <img src="assets/projects/p1/hero.jpg" alt="Samuel Alemu Mechanical CAD Assembly Render" class="hero-img">
-              </div>
+            <div class="hero-cad-viewport" style="padding: 0; min-height: 480px; overflow: hidden; position: relative;">
+              <iframe src="assets/keyshot_xr/65 DS.127.html" style="width: 100%; height: 480px; border: none; display: block; border-radius: 0 0 var(--radius-lg) var(--radius-lg); background: #ffffff;" title="KeyShot 360° Interactive Product Turntable"></iframe>
             </div>
           </div>
         </div>
