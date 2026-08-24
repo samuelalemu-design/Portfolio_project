@@ -597,7 +597,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (project.category === 'Experimental Projects') categoryClass = 'badge-experimental';
       if (project.category === 'Educational Projects') categoryClass = 'badge-educational';
 
-      const hasDrawings = project.drawings && project.drawings.length > 0;
+      const drawingsList = (project.drawings || project.attachments || []);
+      const hasDrawings = drawingsList.length > 0;
+      const drawingCount = drawingsList.length;
       const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
 
       const adminControlsHTML = isAdmin ? `
@@ -640,7 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
               ${hasDrawings ? `
               <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="attachments" data-project="${project.id}">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
-                <span>Attachments (${project.drawings.length})</span>
+                <span>Attachments (${drawingCount})</span>
               </button>` : ''}
 
             </div>
@@ -779,11 +781,13 @@ document.addEventListener('DOMContentLoaded', () => {
           `;
         } else if (modalType === 'renderings') {
           // Build gallery with HERO IMAGE ALWAYS AS FIRST IMAGE (#1)
-          let allImages = [project.image];
-          if (project.renderings && project.renderings.length > 0) {
-            project.renderings.forEach(img => {
-              if (img !== project.image && !allImages.includes(img)) {
-                allImages.push(img);
+          let allImages = project.image ? [project.image] : [];
+          const rawGallery = project.renderings || project.allGalleryImages || project.gallery || project.galleryPhotos || [];
+          if (Array.isArray(rawGallery) && rawGallery.length > 0) {
+            rawGallery.forEach(img => {
+              const src = typeof img === 'object' ? (img.link || img.src || img.url) : img;
+              if (src && !allImages.includes(src)) {
+                allImages.push(src);
               }
             });
           }
@@ -791,22 +795,39 @@ document.addEventListener('DOMContentLoaded', () => {
           currentRenderIndex = 0; // Starts at index 0 (Hero Image!)
           renderLightboxView();
         } else if (modalType === 'attachments') {
-          if (!project.drawings || project.drawings.length === 0) return;
-          const itemsHTML = project.drawings.map((docSrc, idx) => `
-            <div style="padding: 0.75rem; text-align: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-              <img src="${docSrc}" alt="Drawing ${idx + 1}" style="max-height: 200px; width: 100%; object-fit: contain;">
-              <div style="margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.85rem; color: #64748b;">Drawing #${idx + 1}</span>
-                <a href="${docSrc}" target="_blank" class="btn btn-primary btn-sm" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">Open File</a>
+          const drawingsList = project.drawings || project.attachments || [];
+          if (!Array.isArray(drawingsList) || drawingsList.length === 0) return;
+
+          const itemsHTML = drawingsList.map((docItem, idx) => {
+            const fileLink = typeof docItem === 'object' ? (docItem.link || docItem.url || '') : docItem;
+            const fileName = typeof docItem === 'object' ? (docItem.title || docItem.name || `Drawing #${idx + 1}`) : `Drawing #${idx + 1}`;
+            const isPdf = typeof fileLink === 'string' && (fileLink.toLowerCase().includes('.pdf') || fileLink.startsWith('data:application/pdf'));
+
+            const previewGraphic = isPdf ? `
+              <div style="height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 6px; color: #ef4444;">
+                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span style="font-size: 0.75rem; font-weight: 700; margin-top: 0.25rem; color: #475569;">PDF DOCUMENT</span>
               </div>
-            </div>
-          `).join('');
+            ` : `
+              <img src="${fileLink}" alt="${fileName}" style="max-height: 130px; width: 100%; object-fit: contain; border-radius: 6px;">
+            `;
+
+            return `
+              <div style="padding: 0.75rem; text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 0.5rem;">
+                ${previewGraphic}
+                <div style="margin-top: 0.25rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+                  <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 120px;">${fileName}</span>
+                  <a href="${fileLink}" target="_blank" download="${fileName}" class="btn btn-primary btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">Open File</a>
+                </div>
+              </div>
+            `;
+          }).join('');
 
           itemModalBody.innerHTML = `
-            <div style="background: #ffffff; color: #0f172a; padding: 0.5rem;">
-              <h4 style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">Drawings & Attachments (${project.drawings.length})</h4>
-              <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1.25rem;">Technical blueprints, PDF drawings, and manual documentation for this machine.</p>
-              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.25rem;">
+            <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem;">
+              <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Drawings & Attachments (${drawingsList.length})</h4>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">Technical blueprints, PDF drawings, and engineering documentation for this machine.</p>
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
                 ${itemsHTML}
               </div>
             </div>
@@ -1543,8 +1564,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('inline-edit-proj-tags').value = Array.isArray(proj.dfmTags) ? proj.dfmTags.join(', ') : '';
 
         currentEditHeroImage = proj.image || '';
-        currentEditRenderings = Array.isArray(proj.allGalleryImages) ? [...proj.allGalleryImages] : [proj.image];
-        currentEditDrawings = Array.isArray(proj.drawings) ? [...proj.drawings] : [];
+        const existingRenderings = proj.renderings || proj.allGalleryImages || proj.gallery || proj.galleryPhotos || [];
+        currentEditRenderings = Array.isArray(existingRenderings) ? [...existingRenderings] : (proj.image ? [proj.image] : []);
+        
+        const existingDrawings = proj.drawings || proj.attachments || [];
+        currentEditDrawings = Array.isArray(existingDrawings) ? [...existingDrawings] : [];
 
         if (inlineFormHeading) inlineFormHeading.textContent = `Editing Project: ${proj.title}`;
       } else {
@@ -1729,7 +1753,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const dfmTags = rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : [category];
 
         const heroImage = currentEditHeroImage || (currentEditRenderings.length > 0 ? currentEditRenderings[0] : 'assets/projects/p1/hero.jpg');
-        const renderings = currentEditRenderings.length > 0 ? currentEditRenderings : [heroImage];
+        
+        let renderings = [...currentEditRenderings];
+        if (heroImage && !renderings.includes(heroImage)) {
+          renderings.unshift(heroImage);
+        }
 
         if (editId && projectsMap[editId]) {
           // Editing existing project
@@ -1741,8 +1769,12 @@ document.addEventListener('DOMContentLoaded', () => {
           proj.specs = specs;
           proj.dfmTags = dfmTags;
           proj.image = heroImage;
+          proj.renderings = renderings;
+          proj.gallery = renderings;
+          proj.galleryPhotos = renderings;
           proj.allGalleryImages = renderings;
-          proj.drawings = currentEditDrawings;
+          proj.drawings = [...currentEditDrawings];
+          proj.attachments = [...currentEditDrawings];
           showToast(`Project "${title}" updated successfully!`);
         } else {
           // Adding new project
@@ -1752,12 +1784,16 @@ document.addEventListener('DOMContentLoaded', () => {
             title: title,
             category: category,
             image: heroImage,
+            renderings: renderings,
+            gallery: renderings,
+            galleryPhotos: renderings,
+            allGalleryImages: renderings,
             overview: overview,
             description: overview,
             specs: specs,
             dfmTags: dfmTags,
-            allGalleryImages: renderings,
-            drawings: currentEditDrawings
+            drawings: [...currentEditDrawings],
+            attachments: [...currentEditDrawings]
           };
           projectsData.unshift(newProj);
           projectsMap[newId] = newProj;
