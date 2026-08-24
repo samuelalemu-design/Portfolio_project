@@ -1,4 +1,4 @@
-﻿const projectsData = [
+const projectsData = [
     {
       id: 'wood-engraving-cnc',
       number: 1,
@@ -1530,17 +1530,30 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentEditRenderings = [];
     let currentEditDrawings = [];
 
+    const adminWrapper = document.getElementById('admin-toolbar-wrapper');
+    const adminMenuToggleBtn = document.getElementById('admin-menu-toggle-btn');
+
+    if (adminMenuToggleBtn && adminHeaderControls) {
+      adminMenuToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        adminHeaderControls.classList.toggle('active');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (adminHeaderControls && !adminHeaderControls.contains(e.target) && e.target !== adminMenuToggleBtn) {
+          adminHeaderControls.classList.remove('active');
+        }
+      });
+    }
+
     function checkAdminSession() {
       const isLogged = sessionStorage.getItem('samuel_alemu_admin') === 'true';
       
-      if (adminHeaderControls) {
-        adminHeaderControls.style.display = isLogged ? 'inline-flex' : 'none';
+      if (adminWrapper) {
+        adminWrapper.style.display = isLogged ? 'inline-flex' : 'none';
       }
-      if (inlineAddBtn) {
-        inlineAddBtn.style.display = isLogged ? 'inline-flex' : 'none';
-      }
-      if (!isLogged && inlineContainer) {
-        inlineContainer.style.display = 'none';
+      if (!isLogged && adminHeaderControls) {
+        adminHeaderControls.classList.remove('active');
       }
 
       renderProjectCards();

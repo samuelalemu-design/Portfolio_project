@@ -431,17 +431,42 @@ h1, h2, h3, h4 {
   flex-shrink: 0;
 }
 
+/* --- Vertical Admin Toolbar Dropdown Panel --- */
+.admin-toolbar-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
 #header-admin-controls {
   display: none;
-  align-items: center;
-  gap: 12px;
-  margin-right: 16px;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
   background: var(--bg-card);
-  padding: 0.3rem 0.75rem;
-  border-radius: 30px;
-  border: 1px solid var(--accent-primary);
-  box-shadow: var(--shadow-sm);
-  flex-shrink: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 0.85rem;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 190px;
+  z-index: 1005;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+#header-admin-controls.active {
+  display: flex !important;
+}
+
+#header-admin-controls .btn {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.825rem;
+  border-radius: 8px;
 }
 
 /* --- Night / Day Mode Toggle Button --- */
@@ -988,6 +1013,28 @@ dialog.project-modal::backdrop {
   box-shadow: var(--shadow-sm);
 }
 
+/* Category Filter Active Color Matching with Card Badges */
+.filter-btn[data-filter="Real Projects"].active {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #2563eb !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+}
+
+.filter-btn[data-filter="Experimental Projects"].active {
+  background-color: #D9822B !important;
+  color: #ffffff !important;
+  border-color: #D9822B !important;
+  box-shadow: 0 4px 14px rgba(217, 130, 43, 0.4);
+}
+
+.filter-btn[data-filter="Educational Projects"].active {
+  background-color: #0d9488 !important;
+  color: #ffffff !important;
+  border-color: #0d9488 !important;
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);
+}
+
 .project-card {
   display: flex;
   flex-direction: column;
@@ -1026,19 +1073,19 @@ dialog.project-modal::backdrop {
 }
 
 .project-category-badge.badge-real {
-  background-color: rgba(37, 99, 235, 0.9);
+  background-color: #2563eb;
   color: #ffffff;
   border: 1px solid rgba(147, 197, 253, 0.4);
 }
 
 .project-category-badge.badge-experimental {
-  background-color: rgba(217, 119, 6, 0.9);
+  background-color: #D9822B;
   color: #ffffff;
   border: 1px solid rgba(253, 230, 138, 0.4);
 }
 
 .project-category-badge.badge-educational {
-  background-color: rgba(13, 148, 136, 0.9);
+  background-color: #0d9488;
   color: #ffffff;
   border: 1px solid rgba(153, 246, 228, 0.4);
 }

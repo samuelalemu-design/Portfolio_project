@@ -120,7 +120,7 @@ const projectsData = [
       number: 6,
       title: 'Digital Signage',
       category: 'Real Projects',
-      overview: 'A digital signage display is a large, high-resolution screen designed for commercial and public use. These displays typically feature 4K UHD resolution (3840 x 2160 pixels) for clear and detailed visuals1. They’re built to operate continuously (24/7) and often include advanced technologies like high brightness, dynamic colour range, and anti-glare coating to ensure visibility even in well-lit environments2. The ultra-slim design and various connectivity options, such as HDMI and USB, make them versatile for different settings like retail, corporate offices, and public spaces1. Moreover, they often come with integrated content management systems, enhancing user convenience and efficiency',
+      overview: 'A digital signage display is a large, high-resolution screen designed for commercial and public use. These displays typically feature 4K UHD resolution (3840 x 2160 pixels) for clear and detailed visuals1. Theyâ€™re built to operate continuously (24/7) and often include advanced technologies like high brightness, dynamic colour range, and anti-glare coating to ensure visibility even in well-lit environments2. The ultra-slim design and various connectivity options, such as HDMI and USB, make them versatile for different settings like retail, corporate offices, and public spaces1. Moreover, they often come with integrated content management systems, enhancing user convenience and efficiency',
       specs: [
         'SolidWorks 2024 Parametric 3D CAD',
         'Sheet Metal Design & DFM Optimization',
@@ -154,7 +154,7 @@ const projectsData = [
       number: 7,
       title: 'Arcade Cabinet',
       category: 'Real Projects',
-      overview: 'The arcade gaming machine features a high-resolution display screen and a set of responsive controls, including joysticks and buttons, for an engaging and interactive gaming experience. The design is user-friendly and lacks a coin system, ensuring seamless playability. Internally, it’s powered by robust hardware capable of running a wide variety of classic and modern video games. This machine is ideal for various entertainment venues, offering a nostalgic yet contemporary experience for gamers of all ages',
+      overview: 'The arcade gaming machine features a high-resolution display screen and a set of responsive controls, including joysticks and buttons, for an engaging and interactive gaming experience. The design is user-friendly and lacks a coin system, ensuring seamless playability. Internally, itâ€™s powered by robust hardware capable of running a wide variety of classic and modern video games. This machine is ideal for various entertainment venues, offering a nostalgic yet contemporary experience for gamers of all ages',
       specs: [
         'SolidWorks 2024 Parametric 3D CAD',
         'Sheet Metal Design & DFM Optimization',
@@ -281,7 +281,7 @@ const projectsData = [
       number: 14,
       title: '6U Server Rack',
       category: 'Real Projects',
-      overview: 'A 6U server rack is a compact, rack-mounted enclosure designed to securely house and organize IT hardware, servers, and networking equipment. The “6U” refers to its vertical space, meaning it can accommodate devices up to six rack units high (1U = 1.75 inches or 44.45 mm). This rack is engineered for efficient space management, cooling, and cable organization, making it an essential component in data canters, offices, and industrial setups.',
+      overview: 'A 6U server rack is a compact, rack-mounted enclosure designed to securely house and organize IT hardware, servers, and networking equipment. The â€œ6Uâ€ refers to its vertical space, meaning it can accommodate devices up to six rack units high (1U = 1.75 inches or 44.45 mm). This rack is engineered for efficient space management, cooling, and cable organization, making it an essential component in data canters, offices, and industrial setups.',
       specs: [
         'SolidWorks 2024 Parametric 3D CAD',
         'Sheet Metal Design & DFM Optimization',
@@ -389,7 +389,7 @@ const projectsData = [
       number: 25,
       title: 'Brush Cutter',
       category: 'Experimental Projects',
-      overview: 'brush cutter, also known as a brush saw or clearing saw, is a powerful gardening tool used to cut through thick vegetation, including weeds, grass, brush, and small trees. It’s particularly useful in areas where a regular lawn mower would struggle, like uneven terrain, dense undergrowth, and hard-to reach spots. Brush cutters can also be used for crop harvesting, especially for small-scale farming',
+      overview: 'brush cutter, also known as a brush saw or clearing saw, is a powerful gardening tool used to cut through thick vegetation, including weeds, grass, brush, and small trees. Itâ€™s particularly useful in areas where a regular lawn mower would struggle, like uneven terrain, dense undergrowth, and hard-to reach spots. Brush cutters can also be used for crop harvesting, especially for small-scale farming',
       specs: [
         'SolidWorks 2024 Parametric 3D CAD',
         'Sheet Metal Design & DFM Optimization',
@@ -750,7 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           `;
         } else if (modalType === 'specs') {
-          const specsListHTML = project.specs.map(spec => `<li style="padding: 0.4rem 0; font-size: 0.95rem; color: #1e293b;">• ${spec}</li>`).join('');
+          const specsListHTML = project.specs.map(spec => `<li style="padding: 0.4rem 0; font-size: 0.95rem; color: #1e293b;">â€¢ ${spec}</li>`).join('');
           const tagsHTML = project.dfmTags.map(tag => `<span class="tag" style="font-size: 0.8rem; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">${tag}</span>`).join('');
 
           itemModalBody.innerHTML = `
@@ -758,9 +758,9 @@ document.addEventListener('DOMContentLoaded', () => {
               <div>
                 <h4 style="font-size: 1rem; font-weight: 700; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Software & Modeling Tools</h4>
                 <ul style="list-style: none; padding-left: 0; margin: 0; color: #1e293b;">
-                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">• <strong>SolidWorks 2024 Parametric 3D CAD</strong> — Full part & assembly modeling</li>
-                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">• <strong>Sheet Metal Module</strong> — K-Factor bend tables & automated DXF flat patterns</li>
-                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">• <strong>Weldments & Structural Tubing</strong> — Frame weldment cut lists & DFM/DFA</li>
+                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">â€¢ <strong>SolidWorks 2024 Parametric 3D CAD</strong> â€” Full part & assembly modeling</li>
+                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">â€¢ <strong>Sheet Metal Module</strong> â€” K-Factor bend tables & automated DXF flat patterns</li>
+                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">â€¢ <strong>Weldments & Structural Tubing</strong> â€” Frame weldment cut lists & DFM/DFA</li>
                 </ul>
               </div>
 
@@ -1530,17 +1530,30 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentEditRenderings = [];
     let currentEditDrawings = [];
 
+    const adminWrapper = document.getElementById('admin-toolbar-wrapper');
+    const adminMenuToggleBtn = document.getElementById('admin-menu-toggle-btn');
+
+    if (adminMenuToggleBtn && adminHeaderControls) {
+      adminMenuToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        adminHeaderControls.classList.toggle('active');
+      });
+
+      document.addEventListener('click', (e) => {
+        if (adminHeaderControls && !adminHeaderControls.contains(e.target) && e.target !== adminMenuToggleBtn) {
+          adminHeaderControls.classList.remove('active');
+        }
+      });
+    }
+
     function checkAdminSession() {
       const isLogged = sessionStorage.getItem('samuel_alemu_admin') === 'true';
       
-      if (adminHeaderControls) {
-        adminHeaderControls.style.display = isLogged ? 'inline-flex' : 'none';
+      if (adminWrapper) {
+        adminWrapper.style.display = isLogged ? 'inline-flex' : 'none';
       }
-      if (inlineAddBtn) {
-        inlineAddBtn.style.display = isLogged ? 'inline-flex' : 'none';
-      }
-      if (!isLogged && inlineContainer) {
-        inlineContainer.style.display = 'none';
+      if (!isLogged && adminHeaderControls) {
+        adminHeaderControls.classList.remove('active');
       }
 
       renderProjectCards();
@@ -1719,7 +1732,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           updateInlineHeroPreviewUI();
           updateInlineRenderingsPreviewUI();
-          showToast('✓ Hero image ready!');
+          showToast('âœ“ Hero image ready!');
         }
       });
     }
@@ -1731,7 +1744,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="position: relative; width: 100px; height: 70px; border-radius: 8px; overflow: hidden; border: 2px solid var(--accent-primary);">
             <img src="${currentEditHeroImage}" alt="Hero Cover" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
-          <span style="font-size: 0.8rem; color: #16a34a; font-weight: 700;">✓ Hero Image Ready</span>
+          <span style="font-size: 0.8rem; color: #16a34a; font-weight: 700;">âœ“ Hero Image Ready</span>
         `;
       } else {
         heroPreviewContainer.innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">No hero image uploaded yet</span>';
@@ -1755,7 +1768,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           updateInlineHeroPreviewUI();
           updateInlineRenderingsPreviewUI();
-          showToast(`✓ ${files.length} gallery image(s) added!`);
+          showToast(`âœ“ ${files.length} gallery image(s) added!`);
         }
       });
     }
@@ -1766,7 +1779,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderingsGridPreview.innerHTML = currentEditRenderings.map((imgSrc, idx) => `
           <div class="preview-thumb-card" style="position: relative; width: 64px; height: 64px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); background: #ffffff;">
             <img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover;">
-            <button type="button" class="remove-rendering-btn" data-idx="${idx}" style="position: absolute; top: 2px; right: 2px; background: rgba(239,68,68,0.9); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+            <button type="button" class="remove-rendering-btn" data-idx="${idx}" style="position: absolute; top: 2px; right: 2px; background: rgba(239,68,68,0.9); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;">âœ•</button>
           </div>
         `).join('');
 
@@ -1814,7 +1827,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (currentEditDrawings.length > 0) {
         drawingsListPreview.innerHTML = currentEditDrawings.map((dw, idx) => `
           <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 0.4rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem;">
-            <span style="font-weight: 600; color: var(--text-main);">📄 ${dw.title || 'Drawing File'}</span>
+            <span style="font-weight: 600; color: var(--text-main);">ðŸ“„ ${dw.title || 'Drawing File'}</span>
             <button type="button" class="remove-drawing-btn" data-idx="${idx}" style="background: transparent; color: #ef4444; border: none; cursor: pointer; font-weight: 700;">Remove</button>
           </div>
         `).join('');
