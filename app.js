@@ -1097,21 +1097,57 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ------------------------------------------------------------------------
-   * 8. Interactive Contact Form Validation & Toast Notification
+   * 8. Interactive Contact Form Validation, Security & Rate-Limiting
    * ------------------------------------------------------------------------ */
   const contactForm = document.getElementById('contact-form');
   const submitBtn = document.getElementById('submit-btn');
+  const messageInput = document.getElementById('message');
+  const charCounter = document.getElementById('message-char-counter');
+
+  function sanitizeInput(str) {
+    if (!str) return '';
+    return str
+      .replace(/<[^>]*>?/gm, '')
+      .replace(/javascript:/gi, '')
+      .replace(/[<>'"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[c])
+      .trim();
+  }
+
+  if (messageInput && charCounter) {
+    const updateCharCounter = () => {
+      const len = messageInput.value.length;
+      charCounter.textContent = `${len} / 1500`;
+      if (len < 15 || len > 1500) {
+        charCounter.style.color = '#ef4444';
+      } else {
+        charCounter.style.color = 'var(--text-muted)';
+      }
+    };
+    messageInput.addEventListener('input', updateCharCounter);
+    updateCharCounter();
+  }
 
   if (contactForm) {
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      // 1. Rate-Limiting Cooldown Check (60 seconds per session)
+      const COOLDOWN_TIME_MS = 60000;
+      const lastSubmit = sessionStorage.getItem('samuel_contact_last_submit');
+      if (lastSubmit) {
+        const elapsed = Date.now() - parseInt(lastSubmit, 10);
+        if (elapsed < COOLDOWN_TIME_MS) {
+          const secondsLeft = Math.ceil((COOLDOWN_TIME_MS - elapsed) / 1000);
+          showToast(`Rate limit active: Please wait ${secondsLeft}s before sending another message.`);
+          return;
+        }
+      }
 
       let isValid = true;
 
       const nameInput = document.getElementById('name');
       const emailInput = document.getElementById('email');
       const serviceSelect = document.getElementById('service');
-      const messageInput = document.getElementById('message');
 
       const validateInput = (input, condition) => {
         const group = input ? input.closest('.form-group') : null;
@@ -1123,21 +1159,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       };
 
-      if (nameInput) validateInput(nameInput, nameInput.value.trim().length > 1);
+      // Validation Rules
+      if (nameInput) validateInput(nameInput, nameInput.value.trim().length >= 2);
       
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (emailInput) validateInput(emailInput, emailRegex.test(emailInput.value.trim()));
+      // Strict Email Format Regex (user@domain.com)
+      const strictEmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (emailInput) validateInput(emailInput, strictEmailRegex.test(emailInput.value.trim()));
       
-      if (messageInput) validateInput(messageInput, messageInput.value.trim().length > 5);
+      // Message Character Limits (Min 15, Max 1500)
+      const msgLen = messageInput ? messageInput.value.trim().length : 0;
+      if (messageInput) validateInput(messageInput, msgLen >= 15 && msgLen <= 1500);
 
       if (isValid && submitBtn) {
-        const originalText = submitBtn.innerHTML;
-        const nameVal = nameInput ? nameInput.value.trim() : '';
-        const emailVal = emailInput ? emailInput.value.trim() : '';
-        const serviceVal = serviceSelect ? serviceSelect.value : 'Real Projects';
-        const messageVal = messageInput ? messageInput.value.trim() : '';
-
+        // Double-Submit Protection: Immediately disable button
         submitBtn.disabled = true;
+
+        const originalText = submitBtn.innerHTML;
+        const nameVal = sanitizeInput(nameInput ? nameInput.value : '');
+        const emailVal = sanitizeInput(emailInput ? emailInput.value : '');
+        const serviceVal = sanitizeInput(serviceSelect ? serviceSelect.value : 'Real Projects');
+        const messageVal = sanitizeInput(messageInput ? messageInput.value : '');
+
         submitBtn.innerHTML = `
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 0.8s linear infinite"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/></svg>
           <span>Transmitting Inquiry to Samuel Alemu...</span>
@@ -1163,8 +1205,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const resData = await response.json();
 
           if (response.ok || resData.success === 'true' || resData.success === true) {
+            // Record rate limit timestamp
+            sessionStorage.setItem('samuel_contact_last_submit', Date.now().toString());
             showToast('Thank you! Your inquiry has been sent directly to Samuel Alemu.');
             contactForm.reset();
+            if (charCounter) charCounter.textContent = '0 / 1500';
           } else {
             throw new Error(resData.message || 'Server response failed');
           }
