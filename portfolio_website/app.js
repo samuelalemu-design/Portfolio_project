@@ -750,33 +750,62 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           `;
         } else if (modalType === 'specs') {
-          const specsListHTML = project.specs.map(spec => `<li style="padding: 0.4rem 0; font-size: 0.95rem; color: #1e293b;">â€¢ ${spec}</li>`).join('');
-          const tagsHTML = project.dfmTags.map(tag => `<span class="tag" style="font-size: 0.8rem; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">${tag}</span>`).join('');
+          // Clean HTML bullets and encoding for Technical Spec modal
+          const deliverablesHTML = (project.specs && project.specs.length > 0)
+            ? project.specs.map(spec => `<li style="padding: 0.35rem 0; font-size: 0.95rem; color: var(--text-main); display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #2563eb; font-weight: 800;">&bull;</span> <span>${spec}</span></li>`).join('')
+            : `
+              <li style="padding: 0.35rem 0; font-size: 0.95rem; color: var(--text-main); display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #2563eb; font-weight: 800;">&bull;</span> <span>SolidWorks 2024 Parametric 3D CAD Assembly &amp; Part Modeling</span></li>
+              <li style="padding: 0.35rem 0; font-size: 0.95rem; color: var(--text-main); display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #2563eb; font-weight: 800;">&bull;</span> <span>Sheet Metal Design &amp; DFM Optimization (K-Factor Bend Tables)</span></li>
+              <li style="padding: 0.35rem 0; font-size: 0.95rem; color: var(--text-main); display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #2563eb; font-weight: 800;">&bull;</span> <span>Shop-Floor Manufacturing Blueprints &amp; Structural Weldment Cut Lists</span></li>
+            `;
+
+          // Generate auto-fill pill tags derived from deliverables, tools, and category
+          const derivedTags = new Set(project.dfmTags || []);
+          derivedTags.add(project.category || 'Real Projects');
+          derivedTags.add('Sheet Metal Design');
+          derivedTags.add('DFM Optimized');
+          derivedTags.add('SolidWorks CAD');
+
+          const tagsHTML = Array.from(derivedTags).map(tag => `<span class="badge" style="font-size: 0.8rem; background: rgba(13, 148, 136, 0.12); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.3); font-weight: 600; padding: 0.3rem 0.75rem; border-radius: 20px;"># ${tag}</span>`).join('');
 
           itemModalBody.innerHTML = `
-            <div style="background: #ffffff; color: #0f172a; display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem;">
+            <div style="background: var(--bg-card); color: var(--text-main); display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem;">
+              
+              <!-- 1. Technical and DFM deliverables -->
               <div>
-                <h4 style="font-size: 1rem; font-weight: 700; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Software & Modeling Tools</h4>
-                <ul style="list-style: none; padding-left: 0; margin: 0; color: #1e293b;">
-                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">â€¢ <strong>SolidWorks 2024 Parametric 3D CAD</strong> â€” Full part & assembly modeling</li>
-                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">â€¢ <strong>Sheet Metal Module</strong> â€” K-Factor bend tables & automated DXF flat patterns</li>
-                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">â€¢ <strong>Weldments & Structural Tubing</strong> â€” Frame weldment cut lists & DFM/DFA</li>
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  Technical and DFM deliverables
+                </h4>
+                <ul style="list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 0.2rem;">
+                  ${deliverablesHTML}
                 </ul>
               </div>
 
+              <!-- 2. Software and tools used -->
               <div>
-                <h4 style="font-size: 1rem; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Key Technical Specifications</h4>
-                <ul style="list-style: none; padding-left: 0; margin: 0;">
-                  ${specsListHTML}
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  Software and tools used
+                </h4>
+                <ul style="list-style: none; padding-left: 0; margin: 0; color: var(--text-main); display: flex; flex-direction: column; gap: 0.35rem;">
+                  <li style="font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #0284c7; font-weight: 800;">&bull;</span> <span><strong>SolidWorks 2024 Parametric 3D CAD</strong> &mdash; Full part &amp; assembly modeling</span></li>
+                  <li style="font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #0284c7; font-weight: 800;">&bull;</span> <span><strong>Sheet Metal Module</strong> &mdash; K-Factor bend tables &amp; automated DXF flat patterns</span></li>
+                  <li style="font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #0284c7; font-weight: 800;">&bull;</span> <span><strong>Weldments &amp; Structural Tubing</strong> &mdash; Frame weldment cut lists &amp; DFM/DFA</span></li>
                 </ul>
               </div>
 
+              <!-- 3. DFM and manufacturing tags -->
               <div>
-                <h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 0.75rem;">DFM Optimization Badges</h4>
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0d9488; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                  DFM and manufacturing tags
+                </h4>
                 <div class="dfm-tags" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                   ${tagsHTML}
                 </div>
               </div>
+
             </div>
           `;
         } else if (modalType === 'renderings') {
