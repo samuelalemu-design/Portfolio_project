@@ -601,9 +601,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
 
       const adminControlsHTML = isAdmin ? `
-        <div class="admin-card-actions" style="margin-top: 0.75rem; display: flex; justify-content: flex-end; gap: 0.5rem; border-top: 1px dashed var(--border-color); padding-top: 0.6rem;">
+        <div class="admin-card-actions" style="margin-top: 0.75rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; border-top: 1px dashed var(--border-color); padding-top: 0.6rem;">
+          <button type="button" class="btn btn-outline btn-sm live-edit-card-btn" data-project="${project.id}" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; font-weight: 700; color: #0284c7; border-color: #0284c7; display: inline-flex; align-items: center; gap: 0.3rem;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> <span>Edit Card</span>
+          </button>
           <button type="button" class="btn btn-sm admin-delete-proj-btn" data-project="${project.id}" style="background: #ef4444; color: #ffffff; border: none; font-size: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Delete Project
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> <span>Delete</span>
           </button>
         </div>
       ` : '';
@@ -814,6 +817,17 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    document.querySelectorAll('.live-edit-card-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const projId = btn.getAttribute('data-project');
+        if (typeof window.openAdminEditModal === 'function') {
+          window.openAdminEditModal(projId);
+        }
+      });
+    });
+
     document.querySelectorAll('.admin-delete-proj-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -826,7 +840,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (idx !== -1) {
             projectsData.splice(idx, 1);
             delete projectsMap[projId];
-            localStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+            saveProjectsToStorage();
             renderProjectCards();
             showToast(`Deleted "${project.title}". Project list updated.`);
           }
@@ -1351,7 +1365,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     elementsToAnimate.forEach(el => observer.observe(el));
   }
-  initScrollAnimations();
+  /* ------------------------------------------------------------------------
+   * Image File Compressor (Canvas DataURL Optimization)
+   * ------------------------------------------------------------------------ */
+  function compressImageFile(file, maxDimension = 900, quality = 0.78) {
+    return new Promise((resolve) => {
+      if (!file || !file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressedDataUrl);
+        };
+        img.onerror = () => resolve(e.target.result);
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function saveProjectsToStorage() {
+    try {
+      localStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+    } catch (err) {
+      console.warn('localStorage quota exceeded, saving to sessionStorage fallback:', err);
+      try {
+        sessionStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+      } catch (e2) {}
+    }
+  }
 
   /* ------------------------------------------------------------------------
    * 13. Admin Portal Route, Google Auth & Webpage CMS Manager
@@ -1671,26 +1740,30 @@ document.addEventListener('DOMContentLoaded', () => {
       switchAdminTab('form');
     }
 
-    // File Upload Handlers (Hero Photo, Renderings Grid, PDF Attachments)
+    window.openAdminEditModal = function(projectId) {
+      openAdminModal();
+      openEditProjectForm(projectId);
+    };
+
+    // File Upload Handlers with Canvas Base64 Compression
     const btnHeroUpload = document.getElementById('btn-trigger-hero-upload');
     const inputHeroFile = document.getElementById('edit-hero-file-input');
     const heroPreviewContainer = document.getElementById('edit-hero-preview-container');
 
     if (btnHeroUpload && inputHeroFile) {
       btnHeroUpload.addEventListener('click', () => inputHeroFile.click());
-      inputHeroFile.addEventListener('change', (e) => {
+      inputHeroFile.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (file) {
-          const reader = new FileReader();
-          reader.onload = (evt) => {
-            currentEditHeroImage = evt.target.result;
-            if (!currentEditRenderings.includes(currentEditHeroImage)) {
-              currentEditRenderings.unshift(currentEditHeroImage);
-            }
-            updateHeroPreviewUI();
-            updateRenderingsPreviewUI();
-          };
-          reader.readAsDataURL(file);
+          showToast('Optimizing and compressing hero image...');
+          const compressed = await compressImageFile(file, 900, 0.78);
+          currentEditHeroImage = compressed;
+          if (!currentEditRenderings.includes(currentEditHeroImage)) {
+            currentEditRenderings.unshift(currentEditHeroImage);
+          }
+          updateHeroPreviewUI();
+          updateRenderingsPreviewUI();
+          showToast('✓ Hero image ready!');
         }
       });
     }
@@ -1715,22 +1788,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnRenderingsUpload && inputRenderingsFile) {
       btnRenderingsUpload.addEventListener('click', () => inputRenderingsFile.click());
-      inputRenderingsFile.addEventListener('change', (e) => {
+      inputRenderingsFile.addEventListener('change', async (e) => {
         const files = Array.from(e.target.files);
-        let loadedCount = 0;
-        files.forEach(file => {
-          const reader = new FileReader();
-          reader.onload = (evt) => {
-            currentEditRenderings.push(evt.target.result);
-            if (!currentEditHeroImage) currentEditHeroImage = evt.target.result;
-            loadedCount++;
-            if (loadedCount === files.length) {
-              updateHeroPreviewUI();
-              updateRenderingsPreviewUI();
-            }
-          };
-          reader.readAsDataURL(file);
-        });
+        if (files.length > 0) {
+          showToast(`Optimizing & compressing ${files.length} gallery image(s)...`);
+          for (const file of files) {
+            const compressed = await compressImageFile(file, 900, 0.75);
+            currentEditRenderings.push(compressed);
+            if (!currentEditHeroImage) currentEditHeroImage = compressed;
+          }
+          updateHeroPreviewUI();
+          updateRenderingsPreviewUI();
+          showToast(`✓ ${files.length} gallery image(s) added!`);
+        }
       });
     }
 
@@ -1853,10 +1923,10 @@ document.addEventListener('DOMContentLoaded', () => {
           };
           projectsData.unshift(newProj);
           projectsMap[newId] = newProj;
-          showToast(`New machine entry "${title}" created successfully!`);
+          showToast(`New project "${title}" added successfully!`);
         }
 
-        localStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+        saveProjectsToStorage();
         renderProjectCards();
         switchAdminTab('list');
       });
