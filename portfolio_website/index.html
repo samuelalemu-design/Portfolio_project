@@ -24,7 +24,7 @@
 
   <!-- Header / Navigation Bar -->
   <header class="navbar" id="navbar">
-    <div class="container nav-container">
+    <div class="container nav-container" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
       <a href="#hero" class="nav-brand">
         <span class="brand-logo">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -50,37 +50,31 @@
 
       <div class="nav-actions">
         <!-- Pinned Top Header Admin Actions (Shown when logged into Admin) -->
-        <div id="header-admin-controls" style="display: none; align-items: center; gap: 0.4rem; background: var(--bg-card); padding: 0.25rem 0.6rem; border-radius: 30px; border: 1px solid var(--accent-primary);">
+        <div id="header-admin-controls">
           <span style="font-size: 0.725rem; font-weight: 700; color: var(--accent-teal); display: inline-flex; align-items: center; gap: 0.25rem;">
             <span class="badge-dot" style="width: 6px; height: 6px;"></span> Admin Mode
           </span>
           <button id="admin-toggle-edit-mode-header" class="btn btn-outline btn-sm" style="padding: 0.2rem 0.5rem; font-size: 0.725rem; font-weight: 700;">Edit Text</button>
-          <button id="admin-add-project-btn" class="btn btn-primary btn-sm" style="background: #0284c7; color: #ffffff; border: none; font-weight: 700; padding: 0.2rem 0.55rem; font-size: 0.725rem;">+ Add Project</button>
+          <button id="admin-add-project-btn" class="btn btn-primary btn-sm" onclick="if(typeof window.openAdminAddModal==='function')window.openAdminAddModal();" style="background: #0284c7; color: #ffffff; border: none; font-weight: 700; padding: 0.2rem 0.55rem; font-size: 0.725rem;">+ Add Project</button>
           <button id="admin-save-all-header" class="btn btn-primary btn-sm" style="background: #16a34a; color: #ffffff; border: none; font-weight: 700; padding: 0.2rem 0.55rem; font-size: 0.725rem;">Save Changes</button>
           <button id="admin-logout-btn" class="btn btn-secondary btn-sm" style="padding: 0.2rem 0.45rem; font-size: 0.725rem;">Logout</button>
         </div>
 
-        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Night/Day Mode" title="Toggle Night/Day Mode" role="switch" aria-checked="true">
-          <span class="theme-toggle-track">
-            <svg class="theme-icon sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-            <svg class="theme-icon moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-          </span>
-          <span class="theme-toggle-label">
-            <span class="label-night">Night</span>
-            <span class="label-day">Day</span>
-          </span>
+        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Night/Day Mode" title="Toggle Night/Day Mode">
+          <svg class="theme-icon sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
         </button>
 
         <a href="#contact" class="btn btn-primary btn-sm">Hire Engineer</a>
@@ -498,7 +492,7 @@
                   <span>Description</span>
                 </button>
                 <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="specs" data-project="crop-harvester">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1 the 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                   <span>Technical Spec</span>
                 </button>
                 
@@ -971,13 +965,12 @@
       </div>
     </section>
 
-    <!-- Technical Skills Matrix Section -->
-        <!-- Software Proficiency & Engineering Stack Section -->
+    <!-- Software Proficiency & Engineering Stack Section -->
     <section class="section skills bg-alt" id="skills">
       <div class="container">
         <div class="section-header text-center">
-          <span class="section-subtitle">SOFTWARE & TOOLCHAIN</span>
-          <h2 class="section-title">Software Proficiency & Engineering Stack</h2>
+          <span class="section-subtitle">SOFTWARE &amp; TOOLCHAIN</span>
+          <h2 class="section-title">Software Proficiency &amp; Engineering Stack</h2>
           <p class="section-description">Leveraging specialized software tools for parametric modeling, photorealistic rendering, technical manual design, engineering calculations, and shop-floor automation.</p>
         </div>
 
@@ -985,8 +978,19 @@
           
           <!-- Card 1: 3D CAD & Parametric Design -->
           <div class="card software-card" style="display: flex; flex-direction: column; padding: 1.5rem;">
-            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-              <span class="software-badge" style="background: #e0f2fe; color: #0284c7; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">3D CAD & Parametric Design</span>
+            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+              <span class="software-badge" style="background: #e0f2fe; color: #0284c7; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">3D CAD &amp; Parametric Design</span>
+            </div>
+            <div class="software-card-logo" style="height: 36px; margin-bottom: 12px; display: flex; align-items: center;">
+              <svg width="140" height="36" viewBox="0 0 140 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 36px; width: auto; object-fit: contain;">
+                <path d="M16 2L30 9.5V26.5L16 34L2 26.5V9.5L16 2Z" fill="#ED1C24"/>
+                <path d="M16 2L30 9.5L16 17.5L2 9.5L16 2Z" fill="#C4161C"/>
+                <path d="M16 17.5L30 9.5V26.5L16 34V17.5Z" fill="#B21016"/>
+                <path d="M10 12L16 15.5L22 12L16 8.5L10 12Z" fill="#FFFFFF"/>
+                <path d="M11 17L16 20L21 17V21L16 24L11 21V17Z" fill="#FFFFFF" opacity="0.9"/>
+                <text x="36" y="22" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="14" fill="currentColor">SOLIDWORKS</text>
+                <text x="36" y="30" font-family="'Inter', sans-serif" font-weight="700" font-size="6.5" fill="#ED1C24" letter-spacing="1">DASSAULT SYSTEMES</text>
+              </svg>
             </div>
             <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">SolidWorks</h3>
             <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
@@ -996,8 +1000,22 @@
 
           <!-- Card 2: Photorealistic Visuals -->
           <div class="card software-card" style="display: flex; flex-direction: column; padding: 1.5rem;">
-            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
               <span class="software-badge" style="background: #fef3c7; color: #b45309; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Photorealistic Visuals</span>
+            </div>
+            <div class="software-card-logo" style="height: 36px; margin-bottom: 12px; display: flex; align-items: center;">
+              <svg width="140" height="36" viewBox="0 0 140 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 36px; width: auto; object-fit: contain;">
+                <circle cx="18" cy="18" r="16" fill="url(#keyshot-grad-inline)" stroke="#00A3E0" stroke-width="1.2"/>
+                <path d="M12 9H16V15L21 9H26L20 16L26 27H21L16 18V27H12V9Z" fill="#FFFFFF"/>
+                <defs>
+                  <linearGradient id="keyshot-grad-inline" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00C4FF"/>
+                    <stop offset="100%" stop-color="#005588"/>
+                  </linearGradient>
+                </defs>
+                <text x="40" y="21" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="15" fill="currentColor">KeyShot</text>
+                <text x="40" y="30" font-family="'Inter', sans-serif" font-weight="700" font-size="7" fill="#00C4FF" letter-spacing="1">STUDIO</text>
+              </svg>
             </div>
             <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">KeyShot Studio</h3>
             <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
@@ -1007,10 +1025,21 @@
 
           <!-- Card 3: Technical Documentation -->
           <div class="card software-card" style="display: flex; flex-direction: column; padding: 1.5rem;">
-            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
               <span class="software-badge" style="background: #fae8ff; color: #a21caf; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Technical Documentation</span>
             </div>
-            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">SolidWorks Composer & Adobe InDesign</h3>
+            <div class="software-card-logo" style="height: 36px; margin-bottom: 12px; display: flex; align-items: center;">
+              <svg width="170" height="36" viewBox="0 0 170 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 36px; width: auto; object-fit: contain;">
+                <rect x="0" y="2" width="32" height="32" rx="6" fill="#49021F" stroke="#FF3366" stroke-width="1.2"/>
+                <text x="7" y="24" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="16" fill="#FF33A6">Id</text>
+                <rect x="38" y="2" width="32" height="32" rx="6" fill="#0F172A" stroke="#38BDF8" stroke-width="1.2"/>
+                <path d="M46 10H62V13H46V10ZM46 16H58V19H46V16ZM46 22H62V24H46V22Z" fill="#38BDF8"/>
+                <circle cx="58" cy="18" r="2.5" fill="#ED1C24"/>
+                <text x="76" y="18" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="10.5" fill="currentColor">Composer &amp;</text>
+                <text x="76" y="29" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="10.5" fill="#FF33A6">Adobe InDesign</text>
+              </svg>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">SolidWorks Composer &amp; Adobe InDesign</h3>
             <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
               Exploded Assembly Views, Step-by-Step Instruction Manuals, Graphical Layouts, and Manufacturing Documentation.
             </p>
@@ -1018,8 +1047,16 @@
 
           <!-- Card 4: Calculations & CAD Automation -->
           <div class="card software-card" style="display: flex; flex-direction: column; padding: 1.5rem;">
-            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-              <span class="software-badge" style="background: #dcfce7; color: #15803d; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Calculations & CAD Automation</span>
+            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+              <span class="software-badge" style="background: #dcfce7; color: #15803d; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Calculations &amp; CAD Automation</span>
+            </div>
+            <div class="software-card-logo" style="height: 36px; margin-bottom: 12px; display: flex; align-items: center;">
+              <svg width="130" height="36" viewBox="0 0 130 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 36px; width: auto; object-fit: contain;">
+                <rect x="0" y="2" width="32" height="32" rx="5" fill="#107C41"/>
+                <path d="M9 10L14 10L16.5 16L19 10L24 10L19 18L24.5 26L19.5 26L16.5 19.5L13.5 26L8.5 26L14 18L9 10Z" fill="#FFFFFF"/>
+                <text x="38" y="21" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="15" fill="currentColor">Excel</text>
+                <text x="38" y="30" font-family="'Inter', sans-serif" font-weight="700" font-size="7" fill="#107C41" letter-spacing="1">MICROSOFT 365</text>
+              </svg>
             </div>
             <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Microsoft Excel</h3>
             <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
@@ -1029,10 +1066,23 @@
 
           <!-- Card 5: Rule Automation & Digital Delivery -->
           <div class="card software-card" style="display: flex; flex-direction: column; padding: 1.5rem;">
-            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-              <span class="software-badge" style="background: #e0e7ff; color: #4338ca; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Rule Automation & Digital Delivery</span>
+            <div class="software-card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+              <span class="software-badge" style="background: #e0e7ff; color: #4338ca; font-weight: 700; font-size: 0.725rem; padding: 0.25rem 0.65rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;">Rule Automation &amp; Digital Delivery</span>
             </div>
-            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">DriveWorks, SolidWorks VBA & WebGL</h3>
+            <div class="software-card-logo" style="height: 36px; margin-bottom: 12px; display: flex; align-items: center;">
+              <svg width="180" height="36" viewBox="0 0 180 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 36px; width: auto; object-fit: contain;">
+                <rect x="0" y="2" width="32" height="32" rx="6" fill="#0055A5"/>
+                <path d="M8 10H24V15H17V19H24V24H8V10Z" fill="#FFFFFF"/>
+                <circle cx="12" cy="17" r="2" fill="#00C4FF"/>
+                <rect x="38" y="2" width="32" height="32" rx="6" fill="#1E293B" stroke="#990000" stroke-width="1.2"/>
+                <path d="M46 12L54 7L62 12L54 17L46 12Z" fill="#990000"/>
+                <path d="M46 12L54 17V28L46 23V12Z" fill="#0066CC"/>
+                <path d="M62 12L54 17V28L62 23V12Z" fill="#009933"/>
+                <text x="76" y="17" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="10" fill="currentColor">DriveWorks, VBA</text>
+                <text x="76" y="28" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="10" fill="#38BDF8">&amp; WebGL Engine</text>
+              </svg>
+            </div>
+            <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">DriveWorks, SolidWorks VBA &amp; WebGL</h3>
             <p style="font-size: 0.925rem; color: var(--text-muted); line-height: 1.55; margin: 0;">
               Parametric Rule Automation, Custom Macro Scripts, Interactive 3D Model Viewers, and Shop-Floor QR Code Workflows.
             </p>
@@ -1173,6 +1223,104 @@
         <span id="item-modal-counter" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;"></span>
         <button class="btn btn-secondary" id="item-modal-close-btn" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color);">Close Window</button>
       </div>
+    </div>
+  </dialog>
+
+  <!-- In-Context Inline Project Editor Form (Add / Edit Machine Project) -->
+  <dialog id="inline-project-editor-container" class="project-modal" style="border: none; padding: 0; background: transparent;">
+    <div class="modal-wrapper" style="max-width: 860px; width: 94%; margin: auto; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg);">
+      
+      <!-- Form Header -->
+      <div style="padding: 1.25rem 1.5rem; background: var(--bg-alt); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: var(--accent-primary); display: flex; align-items: center; justify-content: center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div>
+            <h3 id="inline-form-heading-text" style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin: 0;">Add New Machine Project Entry</h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Manage CAD drawings, hero photos, technical specs &amp; DFM tags</span>
+          </div>
+        </div>
+        <button type="button" id="btn-close-inline-form" style="font-size: 1.75rem; background: none; border: none; color: var(--text-muted); cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <!-- Form Body -->
+      <form id="inline-project-editor-form" style="padding: 1.5rem; max-height: 75vh; overflow-y: auto; display: flex; flex-direction: column; gap: 1.25rem;">
+        <input type="hidden" id="inline-edit-proj-id">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">Machine Project Title *</label>
+            <input type="text" id="inline-edit-proj-title" placeholder="e.g. Wood Engraving CNC Machine" required style="width: 100%; padding: 0.75rem 1rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-weight: 600;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">Project Category *</label>
+            <select id="inline-edit-proj-category" style="width: 100%; padding: 0.75rem 1rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-weight: 600;">
+              <option value="Real Projects">Real Projects (Client &amp; Fabrication)</option>
+              <option value="Experimental Projects">Experimental Projects (Prototypes)</option>
+              <option value="Educational Projects">Educational Projects (Academic)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">Project Overview &amp; Engineering Description *</label>
+          <textarea id="inline-edit-proj-overview" rows="3" placeholder="Detailed mechanical design description, sheet metal DFM notes, operational specs..." style="width: 100%; padding: 0.75rem 1rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);" required></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">Technical Specifications (One per line)</label>
+            <textarea id="inline-edit-proj-specs" rows="3" placeholder="SolidWorks 2024 Parametric 3D CAD&#10;Sheet Metal Design &amp; DFM Optimization&#10;Shop-Floor Blueprints" style="width: 100%; padding: 0.75rem 1rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);"></textarea>
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">DFM &amp; Category Tags (Comma separated)</label>
+            <input type="text" id="inline-edit-proj-tags" placeholder="Real Projects, SolidWorks CAD, DFM Optimization, Sheet Metal" style="width: 100%; padding: 0.75rem 1rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);">
+          </div>
+        </div>
+
+        <!-- Upload Sections -->
+        <div style="background: var(--bg-alt); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Hero Cover Upload -->
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-main); display: block;">Hero Cover Image</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Main card display image (JPG/PNG)</span>
+            </div>
+            <button type="button" id="inline-btn-trigger-hero-upload" class="btn btn-outline btn-sm" style="font-weight: 700;">Select Hero Image</button>
+            <input type="file" id="inline-edit-hero-file-input" accept="image/*" style="display: none;">
+          </div>
+          <div id="inline-edit-hero-preview-container" style="display: flex; align-items: center; gap: 0.75rem;"></div>
+
+          <!-- Gallery Renderings Upload -->
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+            <div>
+              <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-main); display: block;">Gallery Renderings</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Add multiple HD rendering photos</span>
+            </div>
+            <button type="button" id="inline-btn-trigger-renderings-upload" class="btn btn-outline btn-sm" style="font-weight: 700;">+ Add Gallery Images</button>
+            <input type="file" id="inline-edit-renderings-file-input" accept="image/*" multiple style="display: none;">
+          </div>
+          <div id="inline-edit-renderings-grid-preview" style="display: flex; gap: 0.5rem; flex-wrap: wrap;"></div>
+
+          <!-- Technical Drawings / PDF Upload -->
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+            <div>
+              <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-main); display: block;">Drawings &amp; PDF Attachments</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Upload CAD drawings or PDF blueprints</span>
+            </div>
+            <button type="button" id="inline-btn-trigger-drawings-upload" class="btn btn-outline btn-sm" style="font-weight: 700;">+ Add Attachments</button>
+            <input type="file" id="inline-edit-drawings-file-input" accept="image/*,application/pdf" multiple style="display: none;">
+          </div>
+          <div id="inline-edit-drawings-grid-preview" style="display: flex; gap: 0.5rem; flex-wrap: wrap;"></div>
+        </div>
+
+        <!-- Form Actions -->
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.5rem;">
+          <button type="button" id="inline-btn-cancel-edit-form" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.75rem; font-weight: 800;">Save Project</button>
+        </div>
+      </form>
     </div>
   </dialog>
 

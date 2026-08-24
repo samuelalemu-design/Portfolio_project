@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" width="200" height="50">
+  <g transform="translate(5, 5)">
+    <rect x="0" y="0" width="40" height="40" rx="6" fill="#107C41"/>
+    <path fill="#FFFFFF" d="M12 10 L17 10 L20 17 L23 10 L28 10 L23 20 L29 30 L24 30 L20 22 L16 30 L11 30 L17 20 Z"/>
+  </g>
+  <text x="52" y="27" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="18" fill="currentColor">Excel</text>
+  <text x="52" y="38" font-family="'Inter', sans-serif" font-weight="600" font-size="9" fill="#107C41" letter-spacing="1">MICROSOFT 365</text>
+</svg>

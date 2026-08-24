@@ -348,13 +348,15 @@ h1, h2, h3, h4 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 4.5rem;
+  width: 100%;
+  min-height: 4.5rem;
 }
 
 .nav-brand {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-shrink: 0;
 }
 
 .brand-logo {
@@ -391,7 +393,7 @@ h1, h2, h3, h4 {
 .nav-menu {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .nav-link {
@@ -400,6 +402,7 @@ h1, h2, h3, h4 {
   color: var(--text-muted);
   position: relative;
   padding: 0.25rem 0;
+  white-space: nowrap;
 }
 
 .nav-link:hover, .nav-link.active {
@@ -424,34 +427,49 @@ h1, h2, h3, h4 {
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+#header-admin-controls {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  margin-right: 16px;
+  background: var(--bg-card);
+  padding: 0.3rem 0.75rem;
+  border-radius: 30px;
+  border: 1px solid var(--accent-primary);
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
 }
 
 /* --- Night / Day Mode Toggle Button --- */
 .theme-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: var(--radius-full);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   background: var(--bg-alt);
   border: 1px solid var(--border-color);
   color: var(--text-main);
   cursor: pointer;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  transition: all var(--transition-normal);
-  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   outline: none;
   box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+  padding: 0;
+  flex-shrink: 0;
+  user-select: none;
 }
 
 .theme-toggle-btn:hover {
   background: var(--bg-card-hover);
   border-color: var(--accent-primary);
   box-shadow: var(--shadow-glow);
-  transform: translateY(-1px);
+  transform: scale(1.08);
 }
 
 .theme-toggle-btn:focus-visible {
@@ -459,77 +477,97 @@ h1, h2, h3, h4 {
   outline-offset: 2px;
 }
 
-.theme-toggle-track {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  position: relative;
-  transition: all var(--transition-smooth);
-}
-
-.theme-toggle-btn:hover .theme-toggle-track {
-  border-color: var(--accent-primary);
-}
-
 .theme-icon {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) scale(0.8) rotate(-45deg);
-  opacity: 0;
+  transform: translate(-50%, -50%);
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease, color 0.3s ease;
 }
 
-/* Dark / Night Mode state */
+/* Dark / Night Mode state -> Show Sun SVG Symbol (Golden Yellow) */
 :root[data-theme="dark"] .theme-icon.sun-icon {
-  opacity: 1;
+  display: block !important;
+  opacity: 1 !important;
   transform: translate(-50%, -50%) scale(1) rotate(0deg);
-  color: #fbbf24;
+  color: #fbbf24 !important;
 }
 
 :root[data-theme="dark"] .theme-icon.moon-icon {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.5) rotate(90deg);
+  display: none !important;
+  opacity: 0 !important;
+  transform: translate(-50%, -50%) scale(0.4) rotate(90deg);
 }
 
-:root[data-theme="dark"] .label-night {
-  display: inline;
-}
-:root[data-theme="dark"] .label-day {
-  display: none;
-}
-
-/* Light / Day Mode state */
+/* Light / Day Mode state -> Show Moon SVG Symbol (Sky Blue) */
 :root[data-theme="light"] .theme-icon.moon-icon {
-  opacity: 1;
+  display: block !important;
+  opacity: 1 !important;
   transform: translate(-50%, -50%) scale(1) rotate(0deg);
-  color: #0284c7;
+  color: #0284c7 !important;
 }
 
 :root[data-theme="light"] .theme-icon.sun-icon {
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0.5) rotate(-90deg);
+  display: none !important;
+  opacity: 0 !important;
+  transform: translate(-50%, -50%) scale(0.4) rotate(-90deg);
 }
 
-:root[data-theme="light"] .label-day {
-  display: inline;
-}
-:root[data-theme="light"] .label-night {
-  display: none;
+/* --- Software Proficiency Card Logo Styles --- */
+.software-card-logo {
+  height: 36px;
+  object-fit: contain;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
 }
 
-.theme-toggle-label {
-  font-family: var(--font-mono);
-  letter-spacing: 0.04em;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--text-muted);
+.software-card-logo svg, .software-card-logo img {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  transition: transform var(--transition-fast);
+}
+
+.software-card:hover .software-card-logo svg,
+.software-card:hover .software-card-logo img {
+  transform: scale(1.05);
+}
+
+/* --- Pop-Up Modal & Dialog Backdrop Styles --- */
+dialog.project-modal {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: none !important;
+  margin: 0 !important;
+  padding: 1.5rem !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box;
+}
+
+dialog.project-modal:not([open]) {
+  display: none !important;
+}
+
+dialog.project-modal::backdrop {
+  background: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .menu-toggle {
@@ -1795,56 +1833,6 @@ button,
   background: linear-gradient(90deg, #f8fafc 25%, #f1f5f9 37%, #f8fafc 63%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-}
-
-/* ==========================================================================
-   THEME TOGGLE BUTTON & GLASSMORPHIC COMPONENT STYLES
-   ========================================================================== */
-.theme-toggle-btn {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  color: var(--text-main);
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  overflow: hidden;
-}
-
-.theme-toggle-btn:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--accent-primary);
-  color: var(--accent-primary);
-  transform: rotate(15deg) scale(1.05);
-  box-shadow: var(--shadow-glow);
-}
-
-.theme-icon {
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
-}
-
-:root[data-theme="dark"] .sun-icon {
-  display: block;
-  color: #fbbf24;
-}
-
-:root[data-theme="dark"] .moon-icon {
-  display: none;
-}
-
-:root[data-theme="light"] .sun-icon {
-  display: none;
-}
-
-:root[data-theme="light"] .moon-icon {
-  display: block;
-  color: #0284c7;
 }
 
 /* ==========================================================================

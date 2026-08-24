@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50" width="200" height="50">
+  <g transform="translate(5, 5)">
+    <!-- Red Cube Icon -->
+    <path fill="#ED1C24" d="M20 0 L38 10 L38 30 L20 40 L2 30 L2 10 Z"/>
+    <path fill="#C4161C" d="M20 0 L38 10 L20 21 L2 10 Z"/>
+    <path fill="#B21016" d="M20 21 L38 10 L38 30 L20 40 Z"/>
+    <path fill="#E2231A" d="M2 10 L20 21 L20 40 L2 30 Z"/>
+    <!-- SW Cutout inside Cube -->
+    <path fill="#FFFFFF" d="M12 14 L20 18 L28 14 L20 10 Z"/>
+    <path fill="#FFFFFF" opacity="0.9" d="M14 20 L20 23 L26 20 L26 25 L20 28 L14 25 Z"/>
+  </g>
+  <text x="52" y="28" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="18" fill="currentColor" letter-spacing="0.5">SOLIDWORKS</text>
+  <text x="52" y="38" font-family="'Inter', sans-serif" font-weight="600" font-size="8" fill="#ED1C24" letter-spacing="1.5">DASSAULT SYSTEMES</text>
+</svg>

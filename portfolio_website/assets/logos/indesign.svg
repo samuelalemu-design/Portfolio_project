@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 50" width="240" height="50">
+  <g transform="translate(5, 5)">
+    <rect x="0" y="0" width="40" height="40" rx="8" fill="#49021F"/>
+    <rect x="1" y="1" width="38" height="38" rx="7" fill="none" stroke="#FF3366" stroke-width="1.5"/>
+    <text x="7" y="27" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="18" fill="#FF33A6">Id</text>
+  </g>
+  <g transform="translate(55, 5)">
+    <rect x="0" y="0" width="40" height="40" rx="8" fill="#0F172A" stroke="#38BDF8" stroke-width="1.5"/>
+    <path fill="#38BDF8" d="M12 12 L28 12 L28 16 L12 16 Z M12 19 L24 19 L24 23 L12 23 Z M12 26 L28 26 L28 28 L12 28 Z"/>
+    <circle cx="26" cy="21" r="3" fill="#ED1C24"/>
+  </g>
+  <text x="104" y="24" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="13" fill="currentColor">Composer &amp;</text>
+  <text x="104" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="13" fill="#FF33A6">Adobe InDesign</text>
+</svg>

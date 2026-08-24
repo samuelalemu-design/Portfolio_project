@@ -22,24 +22,15 @@ if (Test-Path $datasetScript) {
     & powershell -ExecutionPolicy Bypass -File $datasetScript
 }
 
-# 3. Concatenate dataset.js + app_logic.js -> app.js
-$dsPath = "C:\Users\admin\.gemini\antigravity-ide\brain\7e4b9959-d07c-407e-8a29-7b52abfc3c18\scratch\dataset.js"
-$lgPath = "C:\Users\admin\.gemini\antigravity-ide\brain\7e4b9959-d07c-407e-8a29-7b52abfc3c18\scratch\app_logic.js"
-
-if ((Test-Path $dsPath) -and (Test-Path $lgPath)) {
-    Get-Content $dsPath, $lgPath | Set-Content "app.js" -Encoding utf8
-    Get-Content $dsPath, $lgPath | Set-Content "portfolio_website\app.js" -Encoding utf8
-}
-
-# 4. Update index.html pre-rendered project cards & active project counts (Purges deleted machines)
-$updateFrontScript = "C:\Users\admin\.gemini\antigravity-ide\brain\7e4b9959-d07c-407e-8a29-7b52abfc3c18\scratch\update_index_html_front.ps1"
-if (Test-Path $updateFrontScript) {
-    & powershell -ExecutionPolicy Bypass -File $updateFrontScript
-}
-
-# 5. Sync HTML & assets to deployment folder
+# Sync HTML, CSS, JS & assets to deployment folders
 Copy-Item "index.html" "portfolio_website\index.html" -Force
 Copy-Item "styles.css" "portfolio_website\styles.css" -Force
+Copy-Item "app.js" "portfolio_website\app.js" -Force
+
+Copy-Item "index.html" "website\index.html" -Force
+Copy-Item "styles.css" "website\styles.css" -Force
+Copy-Item "app.js" "website\app.js" -Force
+
 if (Test-Path "assets") {
     Copy-Item "assets\*" "portfolio_website\assets" -Recurse -Force
 }

@@ -953,6 +953,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  /* Touchpad & Touch Swipe Gesture Controls for Gallery Viewer */
+  let lastGestureTime = 0;
+  const GESTURE_DEBOUNCE_MS = 250;
+
+  function handleGalleryWheel(e) {
+    if (!itemModal || !itemModal.hasAttribute('open')) return;
+    if (Math.abs(e.deltaX) > 30) {
+      const now = Date.now();
+      if (now - lastGestureTime < GESTURE_DEBOUNCE_MS) return;
+      lastGestureTime = now;
+
+      if (e.deltaX > 0) {
+        window.navRender(1);
+      } else {
+        window.navRender(-1);
+      }
+    }
+  }
+
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  function handleTouchStart(e) {
+    if (!itemModal || !itemModal.hasAttribute('open')) return;
+    if (e.touches && e.touches.length > 0) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }
+  }
+
+  function handleTouchEnd(e) {
+    if (!itemModal || !itemModal.hasAttribute('open')) return;
+    if (!e.changedTouches || e.changedTouches.length === 0) return;
+
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+
+    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      const now = Date.now();
+      if (now - lastGestureTime < GESTURE_DEBOUNCE_MS) return;
+      lastGestureTime = now;
+
+      if (deltaX < 0) {
+        window.navRender(1);
+      } else {
+        window.navRender(-1);
+      }
+    }
+  }
+
+  if (itemModal) {
+    itemModal.addEventListener('wheel', handleGalleryWheel, { passive: true });
+    itemModal.addEventListener('touchstart', handleTouchStart, { passive: true });
+    itemModal.addEventListener('touchend', handleTouchEnd, { passive: true });
+  }
+
   // Initial render
   renderProjectCards();
 
@@ -1520,14 +1579,22 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Authenticated via Google Account!');
     };
 
+    function clearAdminRouteHash() {
+      if (window.location.hash === '#admin') {
+        history.pushState("", document.title, window.location.pathname + window.location.search);
+      }
+    }
+
     function handleLogout() {
       sessionStorage.removeItem('samuel_alemu_admin');
       sessionStorage.removeItem('samuel_admin_user');
+      history.pushState("", document.title, window.location.pathname + window.location.search);
       checkAdminSession();
       showToast('Logged out of Admin Portal');
     }
 
-    if (adminLogoutBtn) adminLogoutBtn.addEventListener('click', handleLogout);
+    const logoutButtons = document.querySelectorAll('#admin-logout-btn, .admin-logout-btn');
+    logoutButtons.forEach(btn => btn.addEventListener('click', handleLogout));
 
     if (window.location.hash === '#admin' || window.location.pathname.endsWith('/admin') || window.location.pathname.endsWith('/admin.html')) {
       const isLogged = sessionStorage.getItem('samuel_alemu_admin') === 'true';
@@ -1547,7 +1614,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           adminLoginModal.removeAttribute('open');
         }
+        clearAdminRouteHash();
       });
+    }
+
+    if (adminLoginModal) {
+      adminLoginModal.addEventListener('close', clearAdminRouteHash);
     }
 
     // In-Context Inline Editor Functions
@@ -1590,23 +1662,44 @@ document.addEventListener('DOMContentLoaded', () => {
       updateInlineRenderingsPreviewUI();
       updateInlineDrawingsPreviewUI();
 
-      inlineContainer.style.display = 'block';
-      inlineContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      inlineContainer.setAttribute('open', '');
+      if (typeof inlineContainer.showModal === 'function') {
+        try {
+          inlineContainer.showModal();
+        } catch (e) {}
+      }
     }
 
     function closeInlineProjectEditor() {
       if (inlineContainer) {
-        inlineContainer.style.display = 'none';
+        inlineContainer.removeAttribute('open');
+        if (typeof inlineContainer.close === 'function') {
+          try { inlineContainer.close(); } catch (e) {}
+        }
       }
     }
 
-    if (inlineAddBtn) inlineAddBtn.addEventListener('click', () => openInlineProjectEditor());
-    if (inlineCloseBtn) inlineCloseBtn.addEventListener('click', closeInlineProjectEditor);
-    if (inlineCancelBtn) inlineCancelBtn.addEventListener('click', closeInlineProjectEditor);
+    window.openAdminAddModal = function() {
+      openInlineProjectEditor(null);
+    };
 
     window.openAdminEditModal = function(projectId) {
       openInlineProjectEditor(projectId);
     };
+
+    const allAddProjectBtns = document.querySelectorAll('#admin-add-project-btn, .admin-add-project-btn, #inline-add-proj-btn');
+    allAddProjectBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        openInlineProjectEditor(null);
+      });
+    });
+
+    if (inlineCloseBtn) inlineCloseBtn.addEventListener('click', closeInlineProjectEditor);
+    if (inlineCancelBtn) inlineCancelBtn.addEventListener('click', closeInlineProjectEditor);
 
     // File Upload Handlers (Hero Cover Photo, Renderings Grid, PDF Attachments)
     const btnHeroUpload = document.getElementById('inline-btn-trigger-hero-upload');
