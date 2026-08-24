@@ -569,76 +569,9 @@ const projectsData = [
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  const ADMIN_EMAIL = "samuelalemu2127@gmail.com";
-  const DEFAULT_ADMIN_PASS = "admin123";
-
   // Map for fast lookup by project ID
   const projectsMap = {};
-  
-  function getActiveProjects() {
-    const deletedIdsRaw = localStorage.getItem('deleted_portfolio_project_ids');
-    const deletedIds = deletedIdsRaw ? JSON.parse(deletedIdsRaw) : [];
-
-    const map = {};
-    projectsData.forEach(p => {
-      if (!deletedIds.includes(p.id)) {
-        map[p.id] = p;
-      }
-    });
-
-    const savedCustom = localStorage.getItem('custom_portfolio_projects');
-    if (savedCustom) {
-      try {
-        const customArr = JSON.parse(savedCustom);
-        customArr.forEach(p => {
-          if (!deletedIds.includes(p.id)) {
-            map[p.id] = p;
-          }
-        });
-      } catch (e) {
-        console.error('Error parsing custom_portfolio_projects', e);
-      }
-    }
-    return Object.values(map);
-  }
-
-  let activeProjectsList = getActiveProjects();
-  activeProjectsList.forEach(p => { projectsMap[p.id] = p; });
-
-  function isAdminLoggedIn() {
-    return localStorage.getItem('adminLoggedIn') === 'true';
-  }
-
-  /* ------------------------------------------------------------------------
-   * Day / Night Theme Controller (Local Storage Sync & CSS Variables)
-   * ------------------------------------------------------------------------ */
-  const themeToggleBtn = document.getElementById('theme-toggle-btn');
-  const sunIcon = document.querySelector('.theme-icon-sun');
-  const moonIcon = document.querySelector('.theme-icon-moon');
-
-  function applyTheme(theme) {
-    if (theme === 'dark') {
-      document.body.classList.add('dark-mode');
-      if (sunIcon) sunIcon.style.display = 'none';
-      if (moonIcon) moonIcon.style.display = 'block';
-    } else {
-      document.body.classList.remove('dark-mode');
-      if (sunIcon) sunIcon.style.display = 'block';
-      if (moonIcon) moonIcon.style.display = 'none';
-    }
-    localStorage.setItem('portfolio_theme', theme);
-  }
-
-  const savedTheme = localStorage.getItem('portfolio_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  applyTheme(savedTheme);
-
-  if (themeToggleBtn) {
-    themeToggleBtn.addEventListener('click', () => {
-      const isDark = document.body.classList.contains('dark-mode');
-      applyTheme(isDark ? 'light' : 'dark');
-      showToast(isDark ? 'Switched to Light Mode ☀️' : 'Switched to Dark Mode 🌙');
-    });
-  }
+  projectsData.forEach(p => { projectsMap[p.id] = p; });
 
   /* ------------------------------------------------------------------------
    * 1. Top Logo / Name Click Handler (Scroll to Top Home Page)
@@ -652,19 +585,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 2. Render Front-Level Project Cards & Admin Controls
+   * 2. Render Front-Level Project Cards (No "Other Renderings" Button)
    * ------------------------------------------------------------------------ */
   const projectsGrid = document.getElementById('projects-grid');
 
   function renderProjectCards() {
     if (!projectsGrid) return;
 
-    activeProjectsList = getActiveProjects();
-    activeProjectsList.forEach(p => { projectsMap[p.id] = p; });
-
-    const adminActive = isAdminLoggedIn();
-
-    projectsGrid.innerHTML = activeProjectsList.map(project => {
+    projectsGrid.innerHTML = projectsData.map(project => {
       let categoryClass = 'badge-real';
       if (project.category === 'Experimental Projects') categoryClass = 'badge-experimental';
       if (project.category === 'Educational Projects') categoryClass = 'badge-educational';
@@ -674,18 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return `
         <div class="project-card card" data-category="${project.category}" data-project="${project.id}" id="card-${project.id}">
           
-          ${adminActive ? `
-          <!-- Admin On-Card Control Bar -->
-          <div style="background: #0f172a; color: #38bdf8; padding: 0.4rem 0.75rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; font-weight: 700; border-bottom: 1px solid #1e293b;">
-            <span>ADMIN CONTROLS</span>
-            <div style="display: flex; gap: 0.4rem;">
-              <button type="button" class="btn-admin-edit" data-id="${project.id}" style="background: #0284c7; color: #fff; border: none; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">✏️ Edit</button>
-              <button type="button" class="btn-admin-delete" data-id="${project.id}" style="background: #ef4444; color: #fff; border: none; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem; font-weight: 600;">🗑️ Delete</button>
-            </div>
-          </div>
-          ` : ''}
-
-          <!-- Front-Level Hero Image Container -->
+          <!-- Front-Level Hero Image Container (Clicking hero image opens Lightbox starting with Hero Image) -->
           <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="${project.id}">
             <img src="${project.image}" alt="${project.title}" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
             <span class="project-category-badge ${categoryClass}">${project.category}</span>
@@ -695,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="project-body" style="padding: 1.25rem;">
             <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">${project.title}</h3>
 
-            <!-- Action Buttons at Bottom -->
+            <!-- Action Buttons at Bottom (Description, Technical Spec, Attachments) -->
             <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
               
               <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="${project.id}">
@@ -723,7 +640,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }).join('');
 
     attachModalWindowListeners();
-    attachAdminCardListeners();
   }
 
   /* ------------------------------------------------------------------------
@@ -753,6 +669,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeItemModal() {
     if (itemModal) {
       document.body.style.overflow = ''; // Unlock background page scroll!
+      const modalNavPrev = document.getElementById('modal-nav-prev');
+      const modalNavNext = document.getElementById('modal-nav-next');
+      if (modalNavPrev) modalNavPrev.style.display = 'none';
+      if (modalNavNext) modalNavNext.style.display = 'none';
+
       if (typeof itemModal.close === 'function') {
         itemModal.close();
       } else {
@@ -884,7 +805,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 4. Lightbox Renderer with Hero Image First & High-Contrast Blue Arrows
+   * 4. Lightbox Renderer with Window-Fixed Navigation Buttons
    * ------------------------------------------------------------------------ */
   function renderLightboxView() {
     const gallery = (currentProject && currentProject.allGalleryImages) ? currentProject.allGalleryImages : [currentProject.image];
@@ -899,51 +820,47 @@ document.addEventListener('DOMContentLoaded', () => {
       itemModalCounter.textContent = `Image ${currentRenderIndex + 1} of ${total} ${currentRenderIndex === 0 ? '(Hero Image)' : ''}`;
     }
 
-    const thumbsHTML = gallery.map((imgSrc, idx) => {
-      const isActive = idx === currentRenderIndex;
-      return `
-        <div class="thumb-wrapper ${isActive ? 'active' : ''}" onclick="window.selectRenderIndex(${idx})" title="View Rendering #${idx + 1}">
-          <div class="thumb-spinner" id="thumb-spin-${idx}"></div>
-          <img src="${imgSrc}" 
-               alt="Thumbnail ${idx + 1}" 
-               class="thumb-img" 
-               onload="document.getElementById('thumb-spin-${idx}') && (document.getElementById('thumb-spin-${idx}').style.display='none')" 
-               onerror="this.style.display='none'; document.getElementById('thumb-spin-${idx}') && (document.getElementById('thumb-spin-${idx}').style.display='none'); document.getElementById('thumb-fallback-${idx}') && (document.getElementById('thumb-fallback-${idx}').style.display='flex')">
-          <div class="thumb-fallback" id="thumb-fallback-${idx}" style="display: none;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            <span style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-top: 2px;">Render ${idx + 1}</span>
-          </div>
-        </div>
-      `;
-    }).join('');
+    const modalNavPrev = document.getElementById('modal-nav-prev');
+    const modalNavNext = document.getElementById('modal-nav-next');
+
+    const showNav = total > 1;
+    if (showNav) {
+      if (modalNavPrev) modalNavPrev.style.display = 'flex';
+      if (modalNavNext) modalNavNext.style.display = 'flex';
+    } else {
+      if (modalNavPrev) modalNavPrev.style.display = 'none';
+      if (modalNavNext) modalNavNext.style.display = 'none';
+    }
+
+    if (modalNavPrev) {
+      modalNavPrev.onclick = function(e) {
+        e.stopPropagation();
+        window.navRender(-1);
+      };
+    }
+    if (modalNavNext) {
+      modalNavNext.onclick = function(e) {
+        e.stopPropagation();
+        window.navRender(1);
+      };
+    }
+
+    const thumbsHTML = gallery.map((imgSrc, idx) => `
+      <img src="${imgSrc}" alt="Thumb ${idx + 1}" style="width: 64px; height: 64px; object-fit: contain; background: var(--bg-alt); border-radius: 6px; cursor: pointer; border: 2px solid ${idx === currentRenderIndex ? 'var(--accent-primary)' : 'var(--border-color)'}; opacity: ${idx === currentRenderIndex ? '1' : '0.65'}; transition: all 0.2s ease;" onclick="window.selectRenderIndex(${idx})">
+    `).join('');
 
     itemModalBody.innerHTML = `
-      <div style="display: flex; flex-direction: column; background: #ffffff; padding-bottom: 75px;">
+      <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 1rem; width: 100%; background: var(--bg-card); color: var(--text-main);">
         
-        <!-- Large Lightbox Viewer (Hero Image First, High-Contrast Blue Next/Prev Arrows) -->
-        <div style="position: relative; width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; display: flex; align-items: center; justify-content: center; min-height: 440px; max-height: 560px; overflow: hidden;" class="skeleton-shimmer">
+        <!-- Lightbox Stage Container -->
+        <div class="lightbox-stage" style="position: relative; width: 100%; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; display: flex; align-items: center; justify-content: center; min-height: 440px; max-height: 520px; overflow: hidden; flex-shrink: 0;">
           
-          <!-- Image Loading Spinner Overlay -->
-          <div class="img-loading-spinner" id="modal-img-spinner">
-            <div class="spinner-ring"></div>
-          </div>
-
-          <!-- Left Previous Arrow Button -->
-          <button type="button" onclick="window.navRender(-1)" aria-label="Previous Image" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); background: #2563eb; color: #ffffff; border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; z-index: 20; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-          </button>
-
           <!-- Large Main Image -->
-          <img src="${activeSrc}" alt="${currentProject.title} Image ${currentRenderIndex + 1}" style="max-height: 520px; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.25s ease;" onload="document.getElementById('modal-img-spinner') && (document.getElementById('modal-img-spinner').style.display='none')" onerror="document.getElementById('modal-img-spinner') && (document.getElementById('modal-img-spinner').style.display='none')">
-
-          <!-- Right Next Arrow Button -->
-          <button type="button" onclick="window.navRender(1)" aria-label="Next Image" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); background: #2563eb; color: #ffffff; border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; user-select: none; -webkit-user-select: none; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; z-index: 20; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
+          <img src="${activeSrc}" alt="${currentProject.title} Image ${currentRenderIndex + 1}" style="max-height: 480px; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.25s ease;">
         </div>
 
-        <!-- Fixed Bottom Thumbnail Strip (Statically Docked at Viewport Bottom) -->
-        <div class="docked-thumb-strip">
+        <!-- Thumbnail Strip at Bottom -->
+        <div style="display: flex; gap: 0.6rem; overflow-x: auto; max-width: 100%; padding: 0.35rem 0; width: 100%; justify-content: center;">
           ${thumbsHTML}
         </div>
       </div>
@@ -994,67 +911,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 6. Strict Navigation & Tab Content Filtering (Viewport State Isolation)
+   * 6. Active Navigation Section Highlighting (IntersectionObserver)
    * ------------------------------------------------------------------------ */
-  const allTabSections = document.querySelectorAll('main section[id]');
-  const allNavTabLinks = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
 
-  function activateStrictTab(targetId) {
-    if (!targetId || targetId === 'hero' || targetId === 'home' || targetId === 'all') {
-      allTabSections.forEach(sec => {
-        sec.style.display = '';
-        sec.classList.remove('tab-hidden');
-      });
-      allNavTabLinks.forEach(link => link.classList.remove('active'));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
+  const observerOptions = {
+    root: null,
+    rootMargin: '-20% 0px -70% 0px',
+    threshold: 0
+  };
 
-    // Completely hide non-selected sections!
-    allTabSections.forEach(sec => {
-      const secId = sec.getAttribute('id');
-      if (secId === targetId) {
-        sec.style.display = 'block';
-        sec.classList.remove('tab-hidden');
-      } else {
-        sec.style.display = 'none';
-        sec.classList.add('tab-hidden');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.getAttribute('id');
+        navLinks.forEach(link => {
+          if (link.getAttribute('href') === `#${id}`) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
       }
     });
+  }, observerOptions);
 
-    // Update active navbar tab link state
-    allNavTabLinks.forEach(link => {
-      const href = link.getAttribute('href');
-      if (href === `#${targetId}`) {
-        link.classList.add('active');
-      } else {
-        link.classList.remove('active');
-      }
-    });
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  // Bind top navbar tabs
-  allNavTabLinks.forEach(link => {
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      const href = link.getAttribute('href');
-      if (href && href.startsWith('#')) {
-        const targetId = href.replace('#', '');
-        activateStrictTab(targetId);
-        history.pushState(null, '', `#${targetId}`);
-      }
-    });
-  });
-
-  // Check initial URL hash for active tab section
-  if (window.location.hash && window.location.hash !== '#admin') {
-    const initId = window.location.hash.replace('#', '');
-    if (document.getElementById(initId)) {
-      activateStrictTab(initId);
-    }
-  }
+  sections.forEach(section => observer.observe(section));
 
   /* ------------------------------------------------------------------------
    * 7. Projects Category Filter (All, Real Projects, Experimental Projects, Educational Projects)
@@ -1164,517 +1047,279 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 10. Hidden Admin Portal (/admin) & Direct File Upload System
+   * 10. Theme Manager (Night / Dark Titanium <-> Day / Light Blueprint)
    * ------------------------------------------------------------------------ */
-  const adminTopBar = document.getElementById('admin-top-bar');
-  const adminAddProjectBtn = document.getElementById('admin-add-project-btn');
-  const adminLogoutBtn = document.getElementById('admin-logout-btn');
+  function initThemeManager() {
+    const themeBtn = document.getElementById('theme-toggle-btn');
+    
+    // Check local storage or system preference
+    const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    const savedTheme = localStorage.getItem('samuel_alemu_theme') || (prefersLight ? 'light' : 'dark');
 
-  const adminLoginModal = document.getElementById('admin-login-modal');
-  const adminLoginForm = document.getElementById('admin-login-form');
-  const adminLoginClose = document.getElementById('admin-login-close');
-  const adminLoginError = document.getElementById('admin-login-error');
-  
-  const adminProjectModal = document.getElementById('admin-project-modal');
-  const adminProjectForm = document.getElementById('admin-project-form');
-  const adminProjectClose = document.getElementById('admin-project-close');
-  const adminProjectCancel = document.getElementById('admin-project-cancel');
-  const adminProjectModalTitle = document.getElementById('admin-project-modal-title');
-
-  const headerAdminControls = document.getElementById('header-admin-controls');
-  const projectsAdminActions = document.getElementById('projects-admin-actions');
-  const btnGoogleLogin = document.getElementById('btn-google-login');
-
-  function checkAdminRouteAndState() {
-    const isRouteAdmin = (
-      window.location.hash.toLowerCase() === '#admin' ||
-      window.location.pathname.toLowerCase().endsWith('/admin') ||
-      window.location.pathname.toLowerCase().endsWith('/admin.html') ||
-      window.location.search.toLowerCase().includes('admin')
-    );
-
-    if (isAdminLoggedIn()) {
-      if (headerAdminControls) headerAdminControls.style.display = 'inline-flex';
-      if (projectsAdminActions) projectsAdminActions.style.display = 'flex';
-      renderProjectCards();
-    } else {
-      if (headerAdminControls) headerAdminControls.style.display = 'none';
-      if (projectsAdminActions) projectsAdminActions.style.display = 'none';
-      if (isRouteAdmin && adminLoginModal) {
-        if (typeof adminLoginModal.showModal === 'function') adminLoginModal.showModal();
-        else adminLoginModal.setAttribute('open', '');
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      if (themeBtn) {
+        themeBtn.setAttribute('aria-checked', theme === 'dark' ? 'true' : 'false');
+        themeBtn.setAttribute('title', theme === 'dark' ? 'Click to switch to Day (Light) mode' : 'Click to switch to Night (Dark) mode');
       }
     }
+
+    applyTheme(savedTheme);
+
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
+        localStorage.setItem('samuel_alemu_theme', newTheme);
+        showToast(`Switched to ${newTheme === 'dark' ? 'Night (Dark Titanium)' : 'Day (Light Blueprint)'} mode`);
+      });
+    }
   }
-
-  if (btnGoogleLogin) {
-    btnGoogleLogin.addEventListener('click', () => {
-      showToast('Authenticating with Google OAuth...');
-      setTimeout(() => {
-        localStorage.setItem('adminLoggedIn', 'true');
-        showToast('Signed in via Google OAuth: samuelalemu2127@gmail.com');
-        if (adminLoginModal) {
-          if (typeof adminLoginModal.close === 'function') adminLoginModal.close();
-          else adminLoginModal.removeAttribute('open');
-        }
-        checkAdminRouteAndState();
-      }, 800);
-    });
-  }
-
-  checkAdminRouteAndState();
-  window.addEventListener('hashchange', checkAdminRouteAndState);
-
-  if (adminAddProjectBtn) {
-    adminAddProjectBtn.addEventListener('click', () => {
-      openProjectFormModal();
-    });
-  }
-
-  if (adminLogoutBtn) {
-    adminLogoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('adminLoggedIn');
-      if (headerAdminControls) headerAdminControls.style.display = 'none';
-      if (projectsAdminActions) projectsAdminActions.style.display = 'none';
-      showToast('Logged out of Admin Portal.');
-
-      if (window.location.pathname.toLowerCase().includes('/admin')) {
-        window.location.href = '/';
-      } else {
-        if (window.location.hash === '#admin') {
-          history.pushState("", document.title, window.location.pathname + window.location.search);
-        }
-        renderProjectCards();
-      }
-    });
-  }
-
-  if (adminLoginClose && adminLoginModal) {
-    adminLoginClose.addEventListener('click', () => {
-      if (typeof adminLoginModal.close === 'function') adminLoginModal.close();
-      else adminLoginModal.removeAttribute('open');
-    });
-  }
-
-  if (adminLoginForm) {
-    adminLoginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = document.getElementById('admin-email-input').value.trim();
-      const pass = document.getElementById('admin-password-input').value.trim();
-
-      if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && pass.length > 0) {
-        localStorage.setItem('adminLoggedIn', 'true');
-        if (adminLoginError) adminLoginError.style.display = 'none';
-        if (typeof adminLoginModal.close === 'function') adminLoginModal.close();
-        else adminLoginModal.removeAttribute('open');
-        showToast(`Welcome Admin Samuel Alemu (${ADMIN_EMAIL})! Admin mode activated.`);
-        checkAdminRouteAndState();
-        renderProjectCards();
-      } else {
-        if (adminLoginError) adminLoginError.style.display = 'block';
-      }
-    });
-  }
+  initThemeManager();
 
   /* ------------------------------------------------------------------------
-   * Canvas Image Compression & Async Multi-File Payload Handling
+   * 11. Interactive 3D WebGL CAD Viewer (Three.js Mechanical Assembly)
    * ------------------------------------------------------------------------ */
-  function compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.75) {
-    return new Promise((resolve) => {
-      if (!file || !file.type) {
-        resolve(null);
-        return;
-      }
+  function initHero3DViewer() {
+    const canvas = document.getElementById('hero-cad-canvas');
+    const container = document.getElementById('hero-3d-container');
+    const imgContainer = document.getElementById('hero-img-container');
+    const btnMode3D = document.getElementById('hero-mode-3d');
+    const btnModeImg = document.getElementById('hero-mode-img');
 
-      if (!file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(file);
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          let width = img.width;
-          let height = img.height;
-
-          if (width > maxWidth || height > maxHeight) {
-            if (width / height > maxWidth / maxHeight) {
-              height = Math.round((height * maxWidth) / width);
-              width = maxWidth;
-            } else {
-              width = Math.round((width * maxHeight) / height);
-              height = maxHeight;
-            }
-          }
-
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-          resolve(compressedDataUrl);
-        };
-        img.onerror = () => resolve(event.target.result);
-        img.src = event.target.result;
-      };
-      reader.onerror = () => resolve(null);
-      reader.readAsDataURL(file);
-    });
-  }
-
-  /* --- Direct File Upload Handlers (Hero Photo, Gallery Renderings, PDF Attachments) --- */
-  const btnUploadHero = document.getElementById('btn-upload-hero');
-  const projHeroFile = document.getElementById('proj-hero-file');
-  const heroPreviewBox = document.getElementById('hero-preview-box');
-  const heroPreviewImg = document.getElementById('hero-preview-img');
-  const heroPreviewFilename = document.getElementById('hero-preview-filename');
-
-  const btnUploadRenderings = document.getElementById('btn-upload-renderings');
-  const projRenderingsFile = document.getElementById('proj-renderings-file');
-  const renderingsPreviewBox = document.getElementById('renderings-preview-box');
-
-  const btnUploadDrawings = document.getElementById('btn-upload-drawings');
-  const projDrawingsFile = document.getElementById('proj-drawings-file');
-  const drawingsPreviewBox = document.getElementById('drawings-preview-box');
-
-  // Hero File Upload Trigger
-  if (btnUploadHero && projHeroFile) {
-    btnUploadHero.addEventListener('click', () => projHeroFile.click());
-    projHeroFile.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        showToast(`Processing & optimizing "${file.name}"...`);
-        try {
-          const dataUrl = await compressImage(file, 1200, 1200, 0.8);
-          if (dataUrl) {
-            document.getElementById('proj-image').value = dataUrl;
-            if (heroPreviewImg) heroPreviewImg.src = dataUrl;
-            if (heroPreviewFilename) heroPreviewFilename.textContent = file.name;
-            if (heroPreviewBox) heroPreviewBox.style.display = 'flex';
-            showToast(`Hero cover photo "${file.name}" loaded successfully!`);
-          }
-        } catch (err) {
-          console.error('Error processing hero image:', err);
-          showToast('Failed to process image file.', 'error');
-        }
-      }
-    });
-  }
-
-  // Renderings Gallery Files Upload Trigger
-  if (btnUploadRenderings && projRenderingsFile) {
-    btnUploadRenderings.addEventListener('click', () => projRenderingsFile.click());
-    projRenderingsFile.addEventListener('change', async (e) => {
-      const files = Array.from(e.target.files);
-      if (files.length > 0) {
-        showToast(`Optimizing ${files.length} gallery photos asynchronously...`);
-        try {
-          const uploadPromises = files.map(file => compressImage(file, 1200, 1200, 0.75));
-          const compressedDataUrls = await Promise.all(uploadPromises);
-          const validUrls = compressedDataUrls.filter(Boolean);
-
-          const currentInput = document.getElementById('proj-renderings');
-          const existing = currentInput.value.trim() ? currentInput.value.trim().split(',').map(s => s.trim()) : [];
-          const combined = existing.concat(validUrls);
-          currentInput.value = combined.join(', ');
-
-          renderGalleryPreviews(combined);
-          showToast(`${validUrls.length} gallery photos attached & optimized!`);
-          projRenderingsFile.value = '';
-        } catch (err) {
-          console.error('Error processing gallery photos:', err);
-          showToast('Failed to process gallery photos.', 'error');
-        }
-      }
-    });
-  }
-
-  function renderGalleryPreviews(urlList) {
-    if (!renderingsPreviewBox) return;
-    renderingsPreviewBox.innerHTML = urlList.map((url, i) => `
-      <div style="position: relative; display: inline-block; margin: 4px;" data-preview-index="${i}">
-        <img src="${url}" 
-             style="height: 70px; width: 90px; object-fit: cover; border-radius: 6px; border: 1px solid #cbd5e1;" 
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-        <div style="display: none; height: 70px; width: 90px; background: #f1f5f9; border-radius: 6px; border: 1px solid #cbd5e1; flex-direction: column; align-items: center; justify-content: center;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          <span style="font-size: 0.65rem; color: #64748b; font-weight: 600; margin-top: 2px;">Render #${i+1}</span>
-        </div>
-        <button type="button" class="btn-remove-rendering" data-index="${i}" style="position: absolute; top: -6px; right: -6px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; cursor: pointer; line-height: 1;">×</button>
-      </div>
-    `).join('');
-
-    renderingsPreviewBox.querySelectorAll('.btn-remove-rendering').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const idx = parseInt(btn.getAttribute('data-index'), 10);
-        const currentInput = document.getElementById('proj-renderings');
-        let arr = currentInput.value.trim().split(',').map(s => s.trim()).filter(Boolean);
-        arr.splice(idx, 1);
-        currentInput.value = arr.join(', ');
-        renderGalleryPreviews(arr);
-      });
-    });
-  }
-
-  // PDF Drawings / Attachments Upload Trigger
-  if (btnUploadDrawings && projDrawingsFile) {
-    btnUploadDrawings.addEventListener('click', () => projDrawingsFile.click());
-    projDrawingsFile.addEventListener('change', async (e) => {
-      const files = Array.from(e.target.files);
-      if (files.length > 0) {
-        showToast(`Processing ${files.length} attachment files...`);
-        try {
-          const uploadPromises = files.map(file => compressImage(file, 1600, 1600, 0.8));
-          const fileUrls = await Promise.all(uploadPromises);
-          const validUrls = fileUrls.filter(Boolean);
-
-          const currentInput = document.getElementById('proj-drawings');
-          const existing = currentInput.value.trim() ? currentInput.value.trim().split(',').map(s => s.trim()) : [];
-          const combined = existing.concat(validUrls);
-          currentInput.value = combined.join(', ');
-
-          renderDrawingPreviews(combined);
-          showToast(`${validUrls.length} PDF / drawing attachments added!`);
-          projDrawingsFile.value = '';
-        } catch (err) {
-          console.error('Error processing drawing attachments:', err);
-          showToast('Failed to process attachment files.', 'error');
-        }
-      }
-    });
-  }
-
-  function renderDrawingPreviews(urlList) {
-    if (!drawingsPreviewBox) return;
-    drawingsPreviewBox.innerHTML = urlList.map((url, i) => `
-      <div style="background: #faf5ff; color: #7e22ce; border: 1px solid #e9d5ff; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; margin: 4px;" data-drawing-index="${i}">
-        <span>📄 Attachment ${i + 1}</span>
-        <button type="button" class="btn-remove-drawing" data-index="${i}" style="background: #ef4444; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer;">×</button>
-      </div>
-    `).join('');
-
-    drawingsPreviewBox.querySelectorAll('.btn-remove-drawing').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const idx = parseInt(btn.getAttribute('data-index'), 10);
-        const currentInput = document.getElementById('proj-drawings');
-        let arr = currentInput.value.trim().split(',').map(s => s.trim()).filter(Boolean);
-        arr.splice(idx, 1);
-        currentInput.value = arr.join(', ');
-        renderDrawingPreviews(arr);
-      });
-    });
-  }
-
-  function resetFormAndPreviews() {
-    if (adminProjectForm) adminProjectForm.reset();
-
-    if (projHeroFile) projHeroFile.value = '';
-    if (projRenderingsFile) projRenderingsFile.value = '';
-    if (projDrawingsFile) projDrawingsFile.value = '';
-
-    document.getElementById('proj-image').value = '';
-    document.getElementById('proj-renderings').value = '';
-    if (document.getElementById('proj-drawings')) document.getElementById('proj-drawings').value = '';
-
-    if (heroPreviewBox) heroPreviewBox.style.display = 'none';
-    if (heroPreviewImg) heroPreviewImg.src = '';
-    if (heroPreviewFilename) heroPreviewFilename.textContent = '';
-    if (renderingsPreviewBox) renderingsPreviewBox.innerHTML = '';
-    if (drawingsPreviewBox) drawingsPreviewBox.innerHTML = '';
-  }
-
-  function openProjectFormModal(projectToEdit = null) {
-    if (!adminProjectModal) return;
-    resetFormAndPreviews();
-
-    if (projectToEdit) {
-      if (adminProjectModalTitle) adminProjectModalTitle.textContent = '✏️ Edit Project';
-      document.getElementById('admin-edit-project-id').value = projectToEdit.id;
-      document.getElementById('proj-title').value = projectToEdit.title || '';
-      document.getElementById('proj-category').value = projectToEdit.category || 'Real Projects';
-      document.getElementById('proj-overview').value = projectToEdit.overview || '';
-      document.getElementById('proj-specs').value = (projectToEdit.specs || []).join('\n');
-      document.getElementById('proj-image').value = projectToEdit.image || '';
-      document.getElementById('proj-renderings').value = (projectToEdit.renderings || []).join(', ');
-      if (document.getElementById('proj-drawings')) document.getElementById('proj-drawings').value = (projectToEdit.drawings || []).join(', ');
-      document.getElementById('proj-tags').value = (projectToEdit.dfmTags || []).join(', ');
-
-      if (projectToEdit.image) {
-        if (heroPreviewImg) heroPreviewImg.src = projectToEdit.image;
-        if (heroPreviewBox) heroPreviewBox.style.display = 'flex';
-      }
-      if (projectToEdit.renderings && projectToEdit.renderings.length > 0) {
-        renderGalleryPreviews(projectToEdit.renderings);
-      }
-      if (projectToEdit.drawings && projectToEdit.drawings.length > 0) {
-        renderDrawingPreviews(projectToEdit.drawings);
-      }
-    } else {
-      if (adminProjectModalTitle) adminProjectModalTitle.textContent = '➕ Add New Project';
-      document.getElementById('admin-edit-project-id').value = '';
+    if (!canvas || !container || typeof THREE === 'undefined') {
+      return;
     }
 
-    if (typeof adminProjectModal.showModal === 'function') adminProjectModal.showModal();
-    else adminProjectModal.setAttribute('open', '');
-  }
+    // View Mode Toggle (3D CAD vs HD Render)
+    if (btnMode3D && btnModeImg) {
+      btnMode3D.addEventListener('click', () => {
+        btnMode3D.classList.add('active');
+        btnModeImg.classList.remove('active');
+        container.style.display = 'block';
+        if (imgContainer) imgContainer.style.display = 'none';
+      });
 
-  function closeProjectFormModal() {
-    if (adminProjectModal) {
-      if (typeof adminProjectModal.close === 'function') adminProjectModal.close();
-      else adminProjectModal.removeAttribute('open');
-      resetFormAndPreviews();
+      btnModeImg.addEventListener('click', () => {
+        btnModeImg.classList.add('active');
+        btnMode3D.classList.remove('active');
+        container.style.display = 'none';
+        if (imgContainer) imgContainer.style.display = 'flex';
+      });
     }
-  }
 
-  if (adminProjectClose) adminProjectClose.addEventListener('click', closeProjectFormModal);
-  if (adminProjectCancel) adminProjectCancel.addEventListener('click', closeProjectFormModal);
+    // Three.js Scene Setup
+    const scene = new THREE.Scene();
+    const width = container.clientWidth || 500;
+    const height = container.clientHeight || 420;
 
-  function applyCurrentCategoryFilter() {
-    const activeBtn = document.querySelector('.filter-btn.active');
-    const filterValue = activeBtn ? activeBtn.getAttribute('data-filter') : 'all';
-    const cards = document.querySelectorAll('.project-card');
+    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.set(22, 18, 26);
 
-    cards.forEach(card => {
-      const cardCategory = card.getAttribute('data-category');
-      if (filterValue === 'all' || filterValue === 'All' || filterValue === cardCategory) {
-        card.style.display = 'flex';
-        card.style.opacity = '1';
-        card.style.transform = 'scale(1)';
-      } else {
-        card.style.display = 'none';
-      }
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Orbit Controls
+    let controls;
+    if (typeof THREE.OrbitControls !== 'undefined') {
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2 + 0.1;
+      controls.minDistance = 10;
+      controls.maxDistance = 60;
+    }
+
+    // Ambient & Directional Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
+
+    const dirLight1 = new THREE.DirectionalLight(0x38bdf8, 1.2);
+    dirLight1.position.set(20, 40, 20);
+    dirLight1.castShadow = true;
+    scene.add(dirLight1);
+
+    const dirLight2 = new THREE.DirectionalLight(0xf43f5e, 0.5);
+    dirLight2.position.set(-20, -20, -20);
+    scene.add(dirLight2);
+
+    // Mechanical Assembly Group
+    const assemblyGroup = new THREE.Group();
+    scene.add(assemblyGroup);
+
+    // Metallic Materials
+    const titaniumMat = new THREE.MeshStandardMaterial({
+      color: 0x94a3b8,
+      metalness: 0.85,
+      roughness: 0.25,
+      wireframe: false
     });
-  }
 
-  if (adminProjectForm) {
-    adminProjectForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-
-      try {
-        const editId = document.getElementById('admin-edit-project-id').value;
-        const title = document.getElementById('proj-title').value.trim();
-        const category = document.getElementById('proj-category').value;
-        const overview = document.getElementById('proj-overview').value.trim();
-        const specsRaw = document.getElementById('proj-specs').value.trim();
-        const image = document.getElementById('proj-image').value.trim();
-        const renderingsRaw = document.getElementById('proj-renderings').value.trim();
-        const drawingsRaw = document.getElementById('proj-drawings') ? document.getElementById('proj-drawings').value.trim() : '';
-        const tagsRaw = document.getElementById('proj-tags').value.trim();
-
-        if (!title || !overview) {
-          showToast('Please fill in required fields: Project Title and Overview.', 'error');
-          return;
-        }
-
-        const specs = specsRaw ? specsRaw.split('\n').map(s => s.trim()).filter(Boolean) : ['SolidWorks 2024 Parametric 3D CAD', 'Sheet Metal Design & DFM Optimization'];
-        const renderings = renderingsRaw ? renderingsRaw.split(',').map(r => r.trim()).filter(Boolean) : (image ? [image] : []);
-        const drawings = drawingsRaw ? drawingsRaw.split(',').map(d => d.trim()).filter(Boolean) : [];
-        const dfmTags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [category, 'SolidWorks CAD', 'DFM Optimization'];
-
-        // Dynamic unique ID preventing React/DOM state key collisions on subsequent additions
-        const projId = editId || `proj-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-
-        const newProjObj = {
-          id: projId,
-          number: activeProjectsList.length + 1,
-          title,
-          category,
-          overview,
-          specs,
-          image: image || (renderings[0] || 'assets/projects/p1/hero.jpg'),
-          renderings: renderings.length > 0 ? renderings : [image || 'assets/projects/p1/hero.jpg'],
-          drawings,
-          dfmTags
-        };
-
-        const savedCustom = localStorage.getItem('custom_portfolio_projects');
-        let customArr = savedCustom ? JSON.parse(savedCustom) : [];
-
-        if (editId) {
-          customArr = customArr.filter(p => p.id !== editId);
-        }
-        customArr.push(newProjObj);
-
-        // Safe storage save with quota overflow protection
-        try {
-          localStorage.setItem('custom_portfolio_projects', JSON.stringify(customArr));
-        } catch (quotaErr) {
-          console.warn('Storage quota limit reached:', quotaErr);
-          showToast('Storage quota reached. Saving project with compressed media.', 'warning');
-          // Fallback truncation for heavy base64 strings if quota hit
-          newProjObj.renderings = newProjObj.renderings.slice(0, 2);
-          customArr[customArr.length - 1] = newProjObj;
-          try {
-            localStorage.setItem('custom_portfolio_projects', JSON.stringify(customArr));
-          } catch (e2) {
-            console.error('Failed fallback storage write:', e2);
-          }
-        }
-
-        projectsMap[newProjObj.id] = newProjObj;
-
-        resetFormAndPreviews();
-        closeProjectFormModal();
-
-        showToast(editId ? `Project "${title}" updated successfully!` : `New Project "${title}" published live!`);
-
-        // Instant UI synchronization without requiring page refresh
-        renderProjectCards();
-        applyCurrentCategoryFilter();
-
-      } catch (err) {
-        console.error('Error submitting project form:', err);
-        showToast(`Failed to create project: ${err.message}`, 'error');
-      }
+    const anodizedCyanMat = new THREE.MeshStandardMaterial({
+      color: 0x0284c7,
+      metalness: 0.7,
+      roughness: 0.3,
+      wireframe: false
     });
-  }
 
-  function attachAdminCardListeners() {
-    if (!isAdminLoggedIn()) return;
+    const brassMat = new THREE.MeshStandardMaterial({
+      color: 0xd97706,
+      metalness: 0.9,
+      roughness: 0.2,
+      wireframe: false
+    });
 
-    document.querySelectorAll('.btn-admin-edit').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = btn.getAttribute('data-id');
-        const proj = projectsMap[id];
-        if (proj) openProjectFormModal(proj);
+    const darkSteelMat = new THREE.MeshStandardMaterial({
+      color: 0x334155,
+      metalness: 0.95,
+      roughness: 0.3,
+      wireframe: false
+    });
+
+    // Sub-assembly components
+    const explodedParts = [];
+
+    // Part 1: Base CNC Mounting Plate
+    const baseGeo = new THREE.CylinderGeometry(8, 8.5, 1.2, 32);
+    const baseMesh = new THREE.Mesh(baseGeo, darkSteelMat);
+    baseMesh.position.y = -3;
+    baseMesh.castShadow = true;
+    baseMesh.receiveShadow = true;
+    assemblyGroup.add(baseMesh);
+
+    // Part 2: Main Bevel Gear
+    const gearGeo = new THREE.CylinderGeometry(6, 6, 2, 24);
+    const gearMesh = new THREE.Mesh(gearGeo, titaniumMat);
+    gearMesh.position.y = -1;
+    gearMesh.castShadow = true;
+    assemblyGroup.add(gearMesh);
+    explodedParts.push({ mesh: gearMesh, origY: -1, explodeY: 2 });
+
+    // Teeth on main gear
+    for (let i = 0; i < 16; i++) {
+      const toothGeo = new THREE.BoxGeometry(0.8, 2, 1.2);
+      const toothMesh = new THREE.Mesh(toothGeo, anodizedCyanMat);
+      const angle = (i / 16) * Math.PI * 2;
+      toothMesh.position.set(Math.cos(angle) * 6.2, -1, Math.sin(angle) * 6.2);
+      toothMesh.rotation.y = -angle;
+      assemblyGroup.add(toothMesh);
+      explodedParts.push({ mesh: toothMesh, origY: -1, explodeY: 2 });
+    }
+
+    // Part 3: Spindle Shaft & Heat Sink Fins
+    const shaftGeo = new THREE.CylinderGeometry(2, 2, 10, 32);
+    const shaftMesh = new THREE.Mesh(shaftGeo, brassMat);
+    shaftMesh.position.y = 2;
+    assemblyGroup.add(shaftMesh);
+    explodedParts.push({ mesh: shaftMesh, origY: 2, explodeY: 6 });
+
+    for (let j = 0; j < 5; j++) {
+      const finGeo = new THREE.CylinderGeometry(4.5, 4.5, 0.4, 24);
+      const finMesh = new THREE.Mesh(finGeo, anodizedCyanMat);
+      const finY = 1 + j * 1.2;
+      finMesh.position.y = finY;
+      assemblyGroup.add(finMesh);
+      explodedParts.push({ mesh: finMesh, origY: finY, explodeY: finY + 4 + j * 0.8 });
+    }
+
+    // Grid Floor
+    const gridHelper = new THREE.GridHelper(40, 20, 0x38bdf8, 0x1e293b);
+    gridHelper.position.y = -4;
+    scene.add(gridHelper);
+
+    // State Flags
+    let isWireframe = false;
+    let isExploded = false;
+    let autoRotate = true;
+
+    // Control Buttons
+    const btnWireframe = document.getElementById('cad-btn-wireframe');
+    const btnExplode = document.getElementById('cad-btn-explode');
+    const btnReset = document.getElementById('cad-btn-reset');
+
+    if (btnWireframe) {
+      btnWireframe.addEventListener('click', () => {
+        isWireframe = !isWireframe;
+        btnWireframe.classList.toggle('active', isWireframe);
+        titaniumMat.wireframe = isWireframe;
+        anodizedCyanMat.wireframe = isWireframe;
+        brassMat.wireframe = isWireframe;
+        darkSteelMat.wireframe = isWireframe;
       });
-    });
+    }
 
-    document.querySelectorAll('.btn-admin-delete').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const id = btn.getAttribute('data-id');
-        const proj = projectsMap[id];
-        if (proj && confirm(`Are you sure you want to delete project "${proj.title}"?`)) {
-          const savedCustom = localStorage.getItem('custom_portfolio_projects');
-          let customArr = savedCustom ? JSON.parse(savedCustom) : [];
-          customArr = customArr.filter(p => p.id !== id);
-          localStorage.setItem('custom_portfolio_projects', JSON.stringify(customArr));
-
-          const deletedIdsRaw = localStorage.getItem('deleted_portfolio_project_ids');
-          let deletedIds = deletedIdsRaw ? JSON.parse(deletedIdsRaw) : [];
-          if (!deletedIds.includes(id)) {
-            deletedIds.push(id);
-          }
-          localStorage.setItem('deleted_portfolio_project_ids', JSON.stringify(deletedIds));
-
-          delete projectsMap[id];
-          showToast(`Project "${proj.title}" removed permanently.`);
-          renderProjectCards();
-          applyCurrentCategoryFilter();
-        }
+    if (btnExplode) {
+      btnExplode.addEventListener('click', () => {
+        isExploded = !isExploded;
+        btnExplode.classList.toggle('active', isExploded);
       });
+    }
+
+    if (btnReset) {
+      btnReset.addEventListener('click', () => {
+        camera.position.set(22, 18, 26);
+        if (controls) controls.reset();
+      });
+    }
+
+    // Animation Loop
+    function animate() {
+      requestAnimationFrame(animate);
+
+      if (autoRotate && !controls?.state == -1) {
+        assemblyGroup.rotation.y += 0.006;
+      }
+
+      // Explode transition interpolation
+      explodedParts.forEach(item => {
+        const targetY = isExploded ? item.explodeY : item.origY;
+        item.mesh.position.y += (targetY - item.mesh.position.y) * 0.08;
+      });
+
+      if (controls) controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Window Resize Handling
+    window.addEventListener('resize', () => {
+      if (!container) return;
+      const newW = container.clientWidth;
+      const newH = container.clientHeight || 420;
+      camera.aspect = newW / newH;
+      camera.updateProjectionMatrix();
+      renderer.setSize(newW, newH);
     });
   }
+  initHero3DViewer();
+
+  /* ------------------------------------------------------------------------
+   * 12. Scroll Reveal Animations (IntersectionObserver)
+   * ------------------------------------------------------------------------ */
+  function initScrollAnimations() {
+    const elementsToAnimate = document.querySelectorAll('.section-header, .stat-item, .card, .core-pillar-card');
+    
+    elementsToAnimate.forEach(el => {
+      el.classList.add('reveal-on-scroll');
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    }, {
+      threshold: 0.15,
+      rootMargin: '0px 0px -40px 0px'
+    });
+
+    elementsToAnimate.forEach(el => observer.observe(el));
+  }
+  initScrollAnimations();
 
 });
