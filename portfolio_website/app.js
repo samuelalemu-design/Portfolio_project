@@ -1322,4 +1322,112 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   initScrollAnimations();
 
+  /* ------------------------------------------------------------------------
+   * 13. Admin Portal Route & Authentication Manager
+   * ------------------------------------------------------------------------ */
+  function initAdminPortal() {
+    const adminModal = document.getElementById('admin-modal');
+    const adminLoginView = document.getElementById('admin-login-view');
+    const adminDashboardView = document.getElementById('admin-dashboard-view');
+    const adminLoginForm = document.getElementById('admin-login-form');
+    const adminPassInput = document.getElementById('admin-pass');
+    const adminErrorMsg = document.getElementById('admin-error-msg');
+    const adminModalClose = document.getElementById('admin-modal-close');
+    const adminHeaderControls = document.getElementById('header-admin-controls');
+    const adminLogoutBtn = document.getElementById('admin-logout-btn');
+    const adminModalLogoutBtn = document.getElementById('admin-modal-logout-btn');
+    const addProjectModal = document.getElementById('add-project-modal');
+
+    function checkAdminSession() {
+      const isLogged = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+      if (isLogged) {
+        if (adminHeaderControls) adminHeaderControls.style.display = 'inline-flex';
+        if (adminLoginView) adminLoginView.style.display = 'none';
+        if (adminDashboardView) adminDashboardView.style.display = 'block';
+      } else {
+        if (adminHeaderControls) adminHeaderControls.style.display = 'none';
+        if (adminLoginView) adminLoginView.style.display = 'block';
+        if (adminDashboardView) adminDashboardView.style.display = 'none';
+      }
+      return isLogged;
+    }
+
+    function openAdminModal() {
+      checkAdminSession();
+      if (adminModal) {
+        if (typeof adminModal.showModal === 'function') {
+          adminModal.showModal();
+        } else {
+          adminModal.setAttribute('open', '');
+        }
+      }
+    }
+
+    function closeAdminModal() {
+      if (adminModal) {
+        if (typeof adminModal.close === 'function') {
+          adminModal.close();
+        } else {
+          adminModal.removeAttribute('open');
+        }
+      }
+    }
+
+    // Check URL route for #admin or /admin
+    if (window.location.hash === '#admin' || window.location.pathname.endsWith('/admin') || window.location.pathname.endsWith('/admin.html')) {
+      setTimeout(openAdminModal, 200);
+    }
+
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash === '#admin') {
+        openAdminModal();
+      }
+    });
+
+    if (adminModalClose) adminModalClose.addEventListener('click', closeAdminModal);
+
+    if (adminLoginForm) {
+      adminLoginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const pass = adminPassInput ? adminPassInput.value.trim() : '';
+        if (pass === 'admin' || pass === 'admin123' || pass === 'yengus2026' || pass === 'samuel2026') {
+          sessionStorage.setItem('samuel_alemu_admin', 'true');
+          if (adminErrorMsg) adminErrorMsg.style.display = 'none';
+          checkAdminSession();
+          showToast('Admin session authenticated successfully!');
+        } else {
+          if (adminErrorMsg) adminErrorMsg.style.display = 'block';
+        }
+      });
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem('samuel_alemu_admin');
+      checkAdminSession();
+      closeAdminModal();
+      showToast('Logged out of Admin Portal');
+    }
+
+    if (adminLogoutBtn) adminLogoutBtn.addEventListener('click', handleLogout);
+    if (adminModalLogoutBtn) adminModalLogoutBtn.addEventListener('click', handleLogout);
+
+    const adminAddBtn = document.getElementById('admin-add-project-btn');
+    const adminOpenAddBtn = document.getElementById('admin-open-add-dialog-btn');
+
+    function openAddProjectModal() {
+      closeAdminModal();
+      if (addProjectModal) {
+        if (typeof addProjectModal.showModal === 'function') {
+          addProjectModal.showModal();
+        } else {
+          addProjectModal.setAttribute('open', '');
+        }
+      }
+    }
+
+    if (adminAddBtn) adminAddBtn.addEventListener('click', openAddProjectModal);
+    if (adminOpenAddBtn) adminOpenAddBtn.addEventListener('click', openAddProjectModal);
+  }
+  initAdminPortal();
+
 });
