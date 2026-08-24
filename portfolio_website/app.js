@@ -1103,17 +1103,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const submitBtn = document.getElementById('submit-btn');
 
   if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
+    contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       let isValid = true;
 
       const nameInput = document.getElementById('name');
       const emailInput = document.getElementById('email');
+      const serviceSelect = document.getElementById('service');
       const messageInput = document.getElementById('message');
 
       const validateInput = (input, condition) => {
-        const group = input.closest('.form-group');
+        const group = input ? input.closest('.form-group') : null;
         if (!condition) {
           if (group) group.classList.add('has-error');
           isValid = false;
@@ -1131,18 +1132,52 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (isValid && submitBtn) {
         const originalText = submitBtn.innerHTML;
+        const nameVal = nameInput ? nameInput.value.trim() : '';
+        const emailVal = emailInput ? emailInput.value.trim() : '';
+        const serviceVal = serviceSelect ? serviceSelect.value : 'Real Projects';
+        const messageVal = messageInput ? messageInput.value.trim() : '';
+
         submitBtn.disabled = true;
         submitBtn.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
-          <span>Sending Engineering Specs...</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 0.8s linear infinite"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/></svg>
+          <span>Transmitting Inquiry to Samuel Alemu...</span>
         `;
 
-        setTimeout(() => {
-          showToast('Message sent successfully! Samuel Alemu will review your mechanical design requirements shortly.');
-          contactForm.reset();
+        try {
+          const response = await fetch('https://formsubmit.co/ajax/samuelalemu2127@gmail.com', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              'Full Name': nameVal,
+              'Work Email': emailVal,
+              'Project Category': serviceVal,
+              'Project Requirements': messageVal,
+              '_subject': `⚡ Portfolio Contact Inquiry: ${nameVal} [${serviceVal}]`,
+              '_template': 'table'
+            })
+          });
+
+          const resData = await response.json();
+
+          if (response.ok || resData.success === 'true' || resData.success === true) {
+            showToast('Thank you! Your inquiry has been sent directly to Samuel Alemu.');
+            contactForm.reset();
+          } else {
+            throw new Error(resData.message || 'Server response failed');
+          }
+        } catch (err) {
+          console.error('Contact submission error:', err);
+          showToast('Failed to send message via web API. Opening direct email client to samuelalemu2127@gmail.com...');
+          const mailtoSubject = encodeURIComponent(`Portfolio Inquiry: ${nameVal} (${serviceVal})`);
+          const mailtoBody = encodeURIComponent(`Full Name: ${nameVal}\nWork Email: ${emailVal}\nProject Category: ${serviceVal}\n\nProject Requirements / Scope:\n${messageVal}`);
+          window.location.href = `mailto:samuelalemu2127@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
+        } finally {
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalText;
-        }, 1200);
+        }
       }
     });
   }
