@@ -1217,33 +1217,138 @@
 
       <!-- Dashboard View -->
       <div id="admin-dashboard-view" style="display: none;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+        <!-- Admin Dashboard Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 0.75rem;">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <img id="admin-user-avatar" src="assets/projects/p1/hero.jpg" alt="Admin" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-primary); display: none;">
+            <img id="admin-user-avatar" src="assets/projects/p1/hero.jpg" alt="Admin" style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-primary); display: none;">
             <div>
-              <h3 id="admin-user-name" style="font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 0;">Admin Portal Active</h3>
+              <h3 id="admin-user-name" style="font-size: 1.15rem; font-weight: 800; color: var(--text-main); margin: 0;">Admin Portal Active</h3>
               <span id="admin-user-email" style="font-size: 0.8rem; color: var(--accent-teal); font-family: var(--font-mono);">Logged in as Administrator</span>
             </div>
           </div>
-          <button id="admin-modal-logout-btn" class="btn btn-outline btn-sm" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">Logout</button>
+          <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <button id="admin-modal-logout-btn" class="btn btn-outline btn-sm" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">Logout</button>
+          </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 1rem;">
-          <div style="background: var(--bg-alt); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
-            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">Website Content & Project Manager</h4>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.85rem;">Inline text editing mode is active. You can edit any text on the website directly or manage projects below.</p>
-            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
-              <button id="admin-toggle-edit-mode-btn" class="btn btn-secondary btn-sm" style="flex: 1; font-weight: 700; gap: 0.4rem;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                <span id="edit-mode-label">Toggle Inline Edit Mode</span>
-              </button>
-              <button id="admin-open-add-dialog-btn" class="btn btn-primary btn-sm" style="flex: 1; font-weight: 700;">+ Add Project</button>
-            </div>
+        <!-- Dashboard Navigation Tabs -->
+        <div class="admin-tab-nav" style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
+          <button type="button" id="tab-btn-list" class="admin-tab-btn active" style="padding: 0.5rem 1rem; font-weight: 700; font-size: 0.875rem; border-radius: 8px; border: none; background: var(--accent-primary); color: #ffffff; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            <span>Manage Projects</span>
+          </button>
+          <button type="button" id="tab-btn-form" class="admin-tab-btn" style="padding: 0.5rem 1rem; font-weight: 600; font-size: 0.875rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-alt); color: var(--text-main); cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span id="form-tab-title">+ Add / Edit Project</span>
+          </button>
+        </div>
+
+        <!-- TAB 1: Projects Management List View -->
+        <div id="admin-tab-view-list" style="display: block;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+            <input type="text" id="admin-proj-search" placeholder="Search projects by title or category..." style="padding: 0.5rem 0.85rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-alt); color: var(--text-main); font-size: 0.85rem; flex: 1; min-width: 200px;">
+            <button id="admin-add-new-btn-tab" class="btn btn-primary btn-sm" style="font-weight: 700;">+ Create New Machine Entry</button>
           </div>
 
-          <button id="admin-save-all-changes-btn" class="btn btn-primary btn-full" style="background: #16a34a; border: none; font-weight: 700; padding: 0.75rem;">
-            Save All Webpage Edits
-          </button>
+          <div id="admin-projects-table-container" style="max-height: 440px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 10px; background: var(--bg-alt);">
+            <!-- Populated via app.js -->
+          </div>
+        </div>
+
+        <!-- TAB 2: Add / Edit Project Form View -->
+        <div id="admin-tab-view-form" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h4 id="form-heading-text" style="font-size: 1.1rem; font-weight: 800; color: var(--accent-primary); margin: 0;">Add New Machine Project Entry</h4>
+            <button type="button" id="btn-back-to-list" class="btn btn-outline btn-sm" style="font-size: 0.8rem;">← Back to Project List</button>
+          </div>
+
+          <form id="admin-project-editor-form" style="display: flex; flex-direction: column; gap: 1.25rem; max-height: 520px; overflow-y: auto; padding-right: 0.5rem;">
+            <input type="hidden" id="edit-proj-id" value="">
+
+            <!-- 1. General Project Details -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+              <div>
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.35rem;">Project Title *</label>
+                <input type="text" id="edit-proj-title" placeholder="e.g. Wood Engraving CNC" required style="width: 100%; padding: 0.65rem 0.85rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);">
+              </div>
+              <div>
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.35rem;">Category *</label>
+                <select id="edit-proj-category" required style="width: 100%; padding: 0.65rem 0.85rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);">
+                  <option value="Real Projects">Real Projects</option>
+                  <option value="Experimental Projects">Experimental Projects</option>
+                  <option value="Educational Projects">Educational Projects</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.35rem;">Machine Overview Description *</label>
+              <textarea id="edit-proj-overview" rows="3" placeholder="Detailed engineering overview, mechanical design specs, and production features..." required style="width: 100%; padding: 0.65rem 0.85rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); resize: vertical;"></textarea>
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.35rem;">Key Technical Specs (One item per line)</label>
+              <textarea id="edit-proj-specs" rows="3" placeholder="SolidWorks 2024 Parametric 3D CAD&#10;Sheet Metal Design & DFM Optimization&#10;Shop-Floor Manufacturing Blueprints" style="width: 100%; padding: 0.65rem 0.85rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); resize: vertical;"></textarea>
+            </div>
+
+            <!-- 2. Hero Cover Image Upload -->
+            <div style="background: var(--bg-alt); border: 2px dashed var(--accent-primary); padding: 1.25rem; border-radius: 12px; text-align: center;">
+              <label style="display: block; font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">📸 Hero Cover Photo *</label>
+              <input type="file" id="edit-hero-file-input" accept="image/*" style="display: none;">
+              <input type="hidden" id="edit-hero-image-val" required>
+
+              <button type="button" id="btn-trigger-hero-upload" class="btn btn-primary btn-sm" style="font-weight: 700; padding: 0.6rem 1.25rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>Click to Upload Hero Image</span>
+              </button>
+
+              <div id="edit-hero-preview-container" style="margin-top: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.75rem;">
+                <!-- Live preview image -->
+              </div>
+            </div>
+
+            <!-- 3. Other Renderings / Gallery Photos Upload (MULTIPLE) -->
+            <div style="background: var(--bg-alt); border: 2px dashed #16a34a; padding: 1.25rem; border-radius: 12px; text-align: center;">
+              <label style="display: block; font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">🖼️ Gallery Photos & Renderings (Multiple Upload)</label>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">Select multiple image files at once to add to gallery renders</p>
+              <input type="file" id="edit-renderings-file-input" accept="image/*" multiple style="display: none;">
+              
+              <button type="button" id="btn-trigger-renderings-upload" class="btn" style="background: #16a34a; color: #ffffff; font-weight: 700; padding: 0.6rem 1.25rem; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; border: none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                <span>Click to Upload Multiple Gallery Photos</span>
+              </button>
+
+              <div id="edit-renderings-grid-preview" style="margin-top: 0.85rem; display: flex; gap: 0.65rem; flex-wrap: wrap; justify-content: center; max-height: 180px; overflow-y: auto;">
+                <!-- Live thumbnail grid -->
+              </div>
+            </div>
+
+            <!-- 4. PDF Drawings & Spec Attachments Upload (MULTIPLE) -->
+            <div style="background: var(--bg-alt); border: 2px dashed #9333ea; padding: 1.25rem; border-radius: 12px; text-align: center;">
+              <label style="display: block; font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.35rem;">📄 PDF Drawings & Specification Attachments (Multiple Upload)</label>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">Select multiple PDF drawings or CAD documentation files</p>
+              <input type="file" id="edit-drawings-file-input" accept=".pdf,image/*" multiple style="display: none;">
+
+              <button type="button" id="btn-trigger-drawings-upload" class="btn" style="background: #9333ea; color: #ffffff; font-weight: 700; padding: 0.6rem 1.25rem; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; border: none;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span>Click to Upload Multiple PDF / Drawing Files</span>
+              </button>
+
+              <div id="edit-drawings-list-preview" style="margin-top: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;">
+                <!-- Live drawing file list -->
+              </div>
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.35rem;">DFM / Category Tags (Comma separated)</label>
+              <input type="text" id="edit-proj-tags" placeholder="Real Projects, SolidWorks CAD, DFM Optimization, Sheet Metal" style="width: 100%; padding: 0.65rem 0.85rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main);">
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 0.75rem;">
+              <button type="button" id="btn-cancel-edit-form" class="btn btn-secondary">Cancel</button>
+              <button type="submit" class="btn btn-primary" style="padding: 0.75rem 1.5rem; font-weight: 700;">Save Project Changes</button>
+            </div>
+          </form>
         </div>
       </div>
 

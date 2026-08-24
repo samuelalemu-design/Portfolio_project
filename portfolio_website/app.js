@@ -1512,6 +1512,356 @@ document.addEventListener('DOMContentLoaded', () => {
     if (adminAddBtn) adminAddBtn.addEventListener('click', openAddProjectModal);
     if (adminOpenAddBtn) adminOpenAddBtn.addEventListener('click', openAddProjectModal);
 
+    // Admin Dashboard State & Managers
+    let currentEditHeroImage = '';
+    let currentEditRenderings = [];
+    let currentEditDrawings = [];
+
+    // Tab Navigation Elements
+    const tabBtnList = document.getElementById('tab-btn-list');
+    const tabBtnForm = document.getElementById('tab-btn-form');
+    const tabViewList = document.getElementById('admin-tab-view-list');
+    const tabViewForm = document.getElementById('admin-tab-view-form');
+    const formHeadingText = document.getElementById('form-heading-text');
+    const formTabTitle = document.getElementById('form-tab-title');
+    const btnBackToList = document.getElementById('btn-back-to-list');
+    const btnCancelForm = document.getElementById('btn-cancel-edit-form');
+    const adminAddBtnTab = document.getElementById('admin-add-new-btn-tab');
+
+    function switchAdminTab(targetTab) {
+      if (targetTab === 'list') {
+        if (tabBtnList) { tabBtnList.classList.add('active'); tabBtnList.style.background = 'var(--accent-primary)'; tabBtnList.style.color = '#ffffff'; }
+        if (tabBtnForm) { tabBtnForm.classList.remove('active'); tabBtnForm.style.background = 'var(--bg-alt)'; tabBtnForm.style.color = 'var(--text-main)'; }
+        if (tabViewList) tabViewList.style.display = 'block';
+        if (tabViewForm) tabViewForm.style.display = 'none';
+        renderAdminProjectsList();
+      } else {
+        if (tabBtnForm) { tabBtnForm.classList.add('active'); tabBtnForm.style.background = 'var(--accent-primary)'; tabBtnForm.style.color = '#ffffff'; }
+        if (tabBtnList) { tabBtnList.classList.remove('active'); tabBtnList.style.background = 'var(--bg-alt)'; tabBtnList.style.color = 'var(--text-main)'; }
+        if (tabViewForm) tabViewForm.style.display = 'block';
+        if (tabViewList) tabViewList.style.display = 'none';
+      }
+    }
+
+    if (tabBtnList) tabBtnList.addEventListener('click', () => switchAdminTab('list'));
+    if (tabBtnForm) tabBtnForm.addEventListener('click', () => switchAdminTab('form'));
+    if (btnBackToList) btnBackToList.addEventListener('click', () => switchAdminTab('list'));
+    if (btnCancelForm) btnCancelForm.addEventListener('click', () => switchAdminTab('list'));
+    if (adminAddBtnTab) adminAddBtnTab.addEventListener('click', () => openAddProjectForm());
+
+    // Render Projects Table List inside Admin Dashboard
+    const adminTableContainer = document.getElementById('admin-projects-table-container');
+    const adminSearchInput = document.getElementById('admin-proj-search');
+
+    function renderAdminProjectsList(query = '') {
+      if (!adminTableContainer) return;
+      const filtered = projectsData.filter(p => {
+        const q = query.toLowerCase();
+        return p.title.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
+      });
+
+      if (filtered.length === 0) {
+        adminTableContainer.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--text-muted);">No projects found matching query.</div>';
+        return;
+      }
+
+      adminTableContainer.innerHTML = filtered.map(p => `
+        <div class="admin-proj-row" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); gap: 1rem; background: var(--bg-card);">
+          <div style="display: flex; align-items: center; gap: 0.85rem; flex: 1; min-width: 0;">
+            <img src="${p.image}" alt="${p.title}" style="width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border-color); flex-shrink: 0;">
+            <div style="min-width: 0; flex: 1;">
+              <h5 style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.title}</h5>
+              <div style="font-size: 0.78rem; color: var(--text-muted); display: flex; gap: 0.5rem; align-items: center; margin-top: 0.15rem;">
+                <span class="badge" style="font-size: 0.7rem; padding: 0.1rem 0.4rem;">${p.category}</span>
+                <span>• ${(p.allGalleryImages || [p.image]).length} Renders</span>
+                <span>• ${(p.drawings || []).length} PDFs</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.4rem; flex-shrink: 0;">
+            <button type="button" class="btn btn-primary btn-sm btn-admin-edit-item" data-id="${p.id}" style="padding: 0.35rem 0.75rem; font-size: 0.78rem; font-weight: 700;">Edit</button>
+            <button type="button" class="btn btn-sm btn-admin-del-item" data-id="${p.id}" style="background: #ef4444; color: #ffffff; border: none; padding: 0.35rem 0.65rem; font-size: 0.78rem; font-weight: 700; border-radius: 6px; cursor: pointer;">Delete</button>
+          </div>
+        </div>
+      `).join('');
+
+      // Attach row event listeners
+      document.querySelectorAll('.btn-admin-edit-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          openEditProjectForm(id);
+        });
+      });
+
+      document.querySelectorAll('.btn-admin-del-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          deleteProjectById(id);
+        });
+      });
+    }
+
+    if (adminSearchInput) {
+      adminSearchInput.addEventListener('input', (e) => renderAdminProjectsList(e.target.value));
+    }
+
+    function deleteProjectById(projId) {
+      const proj = projectsMap[projId];
+      if (!proj) return;
+      if (confirm(`Are you sure you want to delete "${proj.title}"?`)) {
+        const idx = projectsData.findIndex(p => p.id === projId);
+        if (idx !== -1) {
+          projectsData.splice(idx, 1);
+          delete projectsMap[projId];
+          localStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+          renderProjectCards();
+          renderAdminProjectsList();
+          showToast(`Deleted "${proj.title}".`);
+        }
+      }
+    }
+
+    // Populate Form for Editing an Existing Project
+    function openEditProjectForm(projectId) {
+      const proj = projectsMap[projectId];
+      if (!proj) return;
+
+      document.getElementById('edit-proj-id').value = proj.id;
+      document.getElementById('edit-proj-title').value = proj.title || '';
+      document.getElementById('edit-proj-category').value = proj.category || 'Real Projects';
+      document.getElementById('edit-proj-overview').value = proj.overview || proj.description || '';
+      document.getElementById('edit-proj-specs').value = Array.isArray(proj.specs) ? proj.specs.join('\n') : (proj.specs || '');
+      document.getElementById('edit-proj-tags').value = Array.isArray(proj.dfmTags) ? proj.dfmTags.join(', ') : '';
+
+      currentEditHeroImage = proj.image || '';
+      currentEditRenderings = Array.isArray(proj.allGalleryImages) ? [...proj.allGalleryImages] : [proj.image];
+      currentEditDrawings = Array.isArray(proj.drawings) ? [...proj.drawings] : [];
+
+      if (formHeadingText) formHeadingText.textContent = `Editing Project: ${proj.title}`;
+      if (formTabTitle) formTabTitle.textContent = `Edit: ${proj.title.substring(0, 15)}...`;
+
+      updateHeroPreviewUI();
+      updateRenderingsPreviewUI();
+      updateDrawingsPreviewUI();
+
+      switchAdminTab('form');
+    }
+
+    // Reset Form for Adding a New Project
+    function openAddProjectForm() {
+      document.getElementById('edit-proj-id').value = '';
+      document.getElementById('edit-proj-title').value = '';
+      document.getElementById('edit-proj-category').value = 'Real Projects';
+      document.getElementById('edit-proj-overview').value = '';
+      document.getElementById('edit-proj-specs').value = '';
+      document.getElementById('edit-proj-tags').value = '';
+
+      currentEditHeroImage = '';
+      currentEditRenderings = [];
+      currentEditDrawings = [];
+
+      if (formHeadingText) formHeadingText.textContent = 'Add New Machine Entry';
+      if (formTabTitle) formTabTitle.textContent = '+ Add New Project';
+
+      updateHeroPreviewUI();
+      updateRenderingsPreviewUI();
+      updateDrawingsPreviewUI();
+
+      switchAdminTab('form');
+    }
+
+    // File Upload Handlers (Hero Photo, Renderings Grid, PDF Attachments)
+    const btnHeroUpload = document.getElementById('btn-trigger-hero-upload');
+    const inputHeroFile = document.getElementById('edit-hero-file-input');
+    const heroPreviewContainer = document.getElementById('edit-hero-preview-container');
+
+    if (btnHeroUpload && inputHeroFile) {
+      btnHeroUpload.addEventListener('click', () => inputHeroFile.click());
+      inputHeroFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            currentEditHeroImage = evt.target.result;
+            if (!currentEditRenderings.includes(currentEditHeroImage)) {
+              currentEditRenderings.unshift(currentEditHeroImage);
+            }
+            updateHeroPreviewUI();
+            updateRenderingsPreviewUI();
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    function updateHeroPreviewUI() {
+      if (!heroPreviewContainer) return;
+      if (currentEditHeroImage) {
+        heroPreviewContainer.innerHTML = `
+          <div style="position: relative; width: 120px; height: 80px; border-radius: 8px; overflow: hidden; border: 2px solid var(--accent-primary);">
+            <img src="${currentEditHeroImage}" alt="Hero Cover" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+          <span style="font-size: 0.8rem; color: #16a34a; font-weight: 700;">✓ Hero Image Ready</span>
+        `;
+      } else {
+        heroPreviewContainer.innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">No hero image uploaded yet</span>';
+      }
+    }
+
+    const btnRenderingsUpload = document.getElementById('btn-trigger-renderings-upload');
+    const inputRenderingsFile = document.getElementById('edit-renderings-file-input');
+    const renderingsGridPreview = document.getElementById('edit-renderings-grid-preview');
+
+    if (btnRenderingsUpload && inputRenderingsFile) {
+      btnRenderingsUpload.addEventListener('click', () => inputRenderingsFile.click());
+      inputRenderingsFile.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        let loadedCount = 0;
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            currentEditRenderings.push(evt.target.result);
+            if (!currentEditHeroImage) currentEditHeroImage = evt.target.result;
+            loadedCount++;
+            if (loadedCount === files.length) {
+              updateHeroPreviewUI();
+              updateRenderingsPreviewUI();
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+    }
+
+    function updateRenderingsPreviewUI() {
+      if (!renderingsGridPreview) return;
+      if (currentEditRenderings.length > 0) {
+        renderingsGridPreview.innerHTML = currentEditRenderings.map((imgSrc, idx) => `
+          <div class="preview-thumb-card" style="position: relative; width: 68px; height: 68px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); background: #ffffff;">
+            <img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover;">
+            <button type="button" class="remove-rendering-btn" data-idx="${idx}" style="position: absolute; top: 2px; right: 2px; background: rgba(239,68,68,0.9); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.remove-rendering-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.getAttribute('data-idx'));
+            currentEditRenderings.splice(idx, 1);
+            if (currentEditRenderings.length > 0 && idx === 0) {
+              currentEditHeroImage = currentEditRenderings[0];
+            }
+            updateHeroPreviewUI();
+            updateRenderingsPreviewUI();
+          });
+        });
+      } else {
+        renderingsGridPreview.innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">No renderings uploaded yet</span>';
+      }
+    }
+
+    const btnDrawingsUpload = document.getElementById('btn-trigger-drawings-upload');
+    const inputDrawingsFile = document.getElementById('edit-drawings-file-input');
+    const drawingsListPreview = document.getElementById('edit-drawings-list-preview');
+
+    if (btnDrawingsUpload && inputDrawingsFile) {
+      btnDrawingsUpload.addEventListener('click', () => inputDrawingsFile.click());
+      inputDrawingsFile.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files);
+        files.forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            currentEditDrawings.push({
+              title: file.name,
+              type: file.name.endsWith('.pdf') ? 'pdf' : 'drawing',
+              link: evt.target.result
+            });
+            updateDrawingsPreviewUI();
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+    }
+
+    function updateDrawingsPreviewUI() {
+      if (!drawingsListPreview) return;
+      if (currentEditDrawings.length > 0) {
+        drawingsListPreview.innerHTML = currentEditDrawings.map((dw, idx) => `
+          <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 0.4rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem;">
+            <span style="font-weight: 600; color: var(--text-main);">📄 ${dw.title || 'Drawing File'}</span>
+            <button type="button" class="remove-drawing-btn" data-idx="${idx}" style="background: transparent; color: #ef4444; border: none; cursor: pointer; font-weight: 700;">Remove</button>
+          </div>
+        `).join('');
+
+        document.querySelectorAll('.remove-drawing-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.getAttribute('data-idx'));
+            currentEditDrawings.splice(idx, 1);
+            updateDrawingsPreviewUI();
+          });
+        });
+      } else {
+        drawingsListPreview.innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">No drawing PDF attachments uploaded yet</span>';
+      }
+    }
+
+    // Form Submit Event (Add or Update Project)
+    const projectEditorForm = document.getElementById('admin-project-editor-form');
+    if (projectEditorForm) {
+      projectEditorForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('edit-proj-id').value;
+        const title = document.getElementById('edit-proj-title').value.trim();
+        const category = document.getElementById('edit-proj-category').value;
+        const overview = document.getElementById('edit-proj-overview').value.trim();
+        const rawSpecs = document.getElementById('edit-proj-specs').value.trim();
+        const rawTags = document.getElementById('edit-proj-tags').value.trim();
+
+        const specs = rawSpecs ? rawSpecs.split('\n').map(s => s.trim()).filter(Boolean) : [];
+        const dfmTags = rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : [category];
+
+        const heroImage = currentEditHeroImage || (currentEditRenderings.length > 0 ? currentEditRenderings[0] : 'assets/projects/p1/hero.jpg');
+        const renderings = currentEditRenderings.length > 0 ? currentEditRenderings : [heroImage];
+
+        if (editId && projectsMap[editId]) {
+          // Editing existing project
+          const proj = projectsMap[editId];
+          proj.title = title;
+          proj.category = category;
+          proj.overview = overview;
+          proj.description = overview;
+          proj.specs = specs;
+          proj.dfmTags = dfmTags;
+          proj.image = heroImage;
+          proj.allGalleryImages = renderings;
+          proj.drawings = currentEditDrawings;
+          showToast(`Project "${title}" updated successfully!`);
+        } else {
+          // Adding new project
+          const newId = `proj_${Date.now()}`;
+          const newProj = {
+            id: newId,
+            title: title,
+            category: category,
+            image: heroImage,
+            overview: overview,
+            description: overview,
+            specs: specs,
+            dfmTags: dfmTags,
+            allGalleryImages: renderings,
+            drawings: currentEditDrawings
+          };
+          projectsData.unshift(newProj);
+          projectsMap[newId] = newProj;
+          showToast(`New machine entry "${title}" created successfully!`);
+        }
+
+        localStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+        renderProjectCards();
+        switchAdminTab('list');
+      });
+    }
+
     // Inline Text Editing Manager
     let isEditModeActive = false;
     function toggleInlineEditMode(enable) {
@@ -1590,6 +1940,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (saveHeaderBtn) saveHeaderBtn.addEventListener('click', saveAllWebpageEdits);
     if (saveDashBtn) saveDashBtn.addEventListener('click', saveAllWebpageEdits);
 
+    renderAdminProjectsList();
     checkAdminSession();
   }
   initAdminPortal();

@@ -2113,3 +2113,72 @@ button,
   position: relative;
   overflow: hidden;
 }
+
+/* --- Admin Dashboard Modal & Form Format Styling --- */
+#admin-modal {
+  max-width: 880px !important;
+  width: 95vw !important;
+}
+
+.admin-tab-btn {
+  transition: all 0.2s ease;
+}
+
+.admin-tab-btn.active {
+  background: var(--accent-primary) !important;
+  color: #ffffff !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+
+.admin-proj-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  gap: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.admin-proj-row:last-child {
+  border-bottom: none;
+}
+
+.admin-proj-row:hover {
+  background-color: var(--bg-card-hover);
+}
+
+.preview-thumb-card {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.preview-thumb-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preview-thumb-card .remove-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(239, 68, 68, 0.9);
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
