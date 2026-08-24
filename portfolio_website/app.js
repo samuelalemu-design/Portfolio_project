@@ -723,6 +723,158 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+  /* ------------------------------------------------------------------------
+   * Project Details Modal Renderer with 3 Structured Headers & Admin Editing
+   * ------------------------------------------------------------------------ */
+  function renderProjectDetailsModal(project) {
+    if (!itemModalBody || !project) return;
+
+    const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+
+    const specsList = Array.isArray(project.specs) && project.specs.length > 0 ? project.specs : [
+      'SolidWorks 2024 Parametric 3D CAD Assembly & Part Modeling',
+      'Precision Sheet Metal DXF Flat Patterns & K-Factor Bend Tables',
+      'Structural Tubing Weldment Cut Lists & DFM/DFA Optimizations',
+      'Shop-Floor Manufacturing Blueprints & Assembly Documentation'
+    ];
+
+    const toolsList = Array.isArray(project.softwareTools) && project.softwareTools.length > 0 ? project.softwareTools : [
+      'SolidWorks 2024 CAD',
+      'KeyShot Studio 3D',
+      'SolidWorks Composer',
+      'Microsoft Excel',
+      'DriveWorks & VBA'
+    ];
+
+    const tagsList = Array.isArray(project.dfmTags) && project.dfmTags.length > 0 ? project.dfmTags : [
+      project.category || 'Real Projects',
+      'Sheet Metal Design',
+      'DFM Optimized',
+      'SolidWorks CAD'
+    ];
+
+    if (isAdmin) {
+      itemModalBody.innerHTML = `
+        <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+          <div style="background: rgba(2, 132, 199, 0.1); border: 1px solid #0284c7; padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+            <span style="font-size: 0.85rem; font-weight: 700; color: #0284c7;">⚡ In-Modal Admin Live Editor</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Edit fields below and click "Save Modal Updates"</span>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #0284c7; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">Machine Engineering Overview</label>
+            <textarea id="modal-edit-overview" rows="3" style="width: 100%; padding: 0.75rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; resize: vertical;">${project.overview || ''}</textarea>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #2563eb; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">1. Technical &amp; DFM Deliverables (One item per line)</label>
+            <textarea id="modal-edit-specs" rows="4" style="width: 100%; padding: 0.75rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; resize: vertical;">${specsList.join('\n')}</textarea>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #16a34a; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">2. Software &amp; Tools Used (Comma separated)</label>
+            <input type="text" id="modal-edit-tools" value="${toolsList.join(', ')}" style="width: 100%; padding: 0.75rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem;">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #9333ea; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">3. DFM &amp; Manufacturing Tags (Comma separated)</label>
+            <input type="text" id="modal-edit-tags" value="${tagsList.join(', ')}" style="width: 100%; padding: 0.75rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem;">
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color);">
+            <button type="button" id="modal-btn-save-updates" class="btn btn-primary" style="background: #16a34a; color: #ffffff; font-weight: 800; padding: 0.65rem 1.5rem; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <span>💾 Save Modal Updates</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      const saveBtn = document.getElementById('modal-btn-save-updates');
+      if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+          const newOverview = document.getElementById('modal-edit-overview').value.trim();
+          const rawSpecs = document.getElementById('modal-edit-specs').value.trim();
+          const rawTools = document.getElementById('modal-edit-tools').value.trim();
+          const rawTags = document.getElementById('modal-edit-tags').value.trim();
+
+          project.overview = newOverview;
+          project.description = newOverview;
+          project.specs = rawSpecs ? rawSpecs.split('\n').map(s => s.trim()).filter(Boolean) : [];
+          project.softwareTools = rawTools ? rawTools.split(',').map(t => t.trim()).filter(Boolean) : [];
+          project.dfmTags = rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+          saveProjectsToStorage();
+          renderProjectCards();
+          showToast(`Saved modal updates for "${project.title}"!`);
+          renderProjectDetailsModal(project);
+        });
+      }
+    } else {
+      const specsHTML = specsList.map(spec => `
+        <li style="padding: 0.35rem 0; font-size: 0.95rem; color: var(--text-main); display: flex; align-items: flex-start; gap: 0.6rem;">
+          <span style="color: #2563eb; font-weight: 800; font-size: 1.1rem; line-height: 1.2;">&bull;</span>
+          <span>${spec}</span>
+        </li>
+      `).join('');
+
+      const toolsHTML = toolsList.map(tool => `
+        <span class="badge" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-size: 0.8rem; font-weight: 700; padding: 0.35rem 0.75rem; border-radius: 20px;">
+          ⚙️ ${tool}
+        </span>
+      `).join('');
+
+      const tagsHTML = tagsList.map(tag => `
+        <span class="badge" style="background: rgba(13, 148, 136, 0.12); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.3); font-size: 0.8rem; font-weight: 600; padding: 0.3rem 0.75rem; border-radius: 20px;">
+          # ${tag}
+        </span>
+      `).join('');
+
+      itemModalBody.innerHTML = `
+        <div style="background: var(--bg-card); color: var(--text-main); display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem;">
+          
+          <!-- Machine Overview -->
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: #0284c7; margin-bottom: 0.65rem;">Machine Engineering Overview</h3>
+            <p style="font-size: 1rem; line-height: 1.7; color: var(--text-muted); margin: 0;">${project.overview}</p>
+          </div>
+
+          <!-- 1. Technical & DFM Deliverables -->
+          <div style="background: var(--bg-alt); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Technical &amp; DFM Deliverables
+            </h4>
+            <ul style="list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem;">
+              ${specsHTML}
+            </ul>
+          </div>
+
+          <!-- 2. Software & Tools Used -->
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.45rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              Software &amp; Tools Used
+            </h4>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              ${toolsHTML}
+            </div>
+          </div>
+
+          <!-- 3. DFM & Manufacturing Tags -->
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: #0d9488; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.45rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              DFM &amp; Manufacturing Tags
+            </h4>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              ${tagsHTML}
+            </div>
+          </div>
+
+        </div>
+      `;
+    }
   }
 
   function attachModalWindowListeners() {
@@ -742,43 +894,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (itemModalTitle) itemModalTitle.textContent = project.title;
         if (itemModalCounter) itemModalCounter.textContent = '';
 
-        if (modalType === 'description') {
-          itemModalBody.innerHTML = `
-            <div style="background: #ffffff; padding: 0.5rem; color: #0f172a;">
-              <h3 style="font-size: 1.15rem; font-weight: 700; color: #0284c7; margin-bottom: 0.75rem;">Machine Engineering Overview</h3>
-              <p style="font-size: 1.05rem; line-height: 1.7; color: #1e293b; margin: 0;">${project.overview}</p>
-            </div>
-          `;
-        } else if (modalType === 'specs') {
-          const specsListHTML = project.specs.map(spec => `<li style="padding: 0.4rem 0; font-size: 0.95rem; color: #1e293b;">â€¢ ${spec}</li>`).join('');
-          const tagsHTML = project.dfmTags.map(tag => `<span class="tag" style="font-size: 0.8rem; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">${tag}</span>`).join('');
-
-          itemModalBody.innerHTML = `
-            <div style="background: #ffffff; color: #0f172a; display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem;">
-              <div>
-                <h4 style="font-size: 1rem; font-weight: 700; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Software & Modeling Tools</h4>
-                <ul style="list-style: none; padding-left: 0; margin: 0; color: #1e293b;">
-                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">â€¢ <strong>SolidWorks 2024 Parametric 3D CAD</strong> â€” Full part & assembly modeling</li>
-                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">â€¢ <strong>Sheet Metal Module</strong> â€” K-Factor bend tables & automated DXF flat patterns</li>
-                  <li style="font-size: 0.95rem; padding: 0.3rem 0;">â€¢ <strong>Weldments & Structural Tubing</strong> â€” Frame weldment cut lists & DFM/DFA</li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 style="font-size: 1rem; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Key Technical Specifications</h4>
-                <ul style="list-style: none; padding-left: 0; margin: 0;">
-                  ${specsListHTML}
-                </ul>
-              </div>
-
-              <div>
-                <h4 style="font-size: 0.95rem; font-weight: 700; color: #0f172a; margin-bottom: 0.75rem;">DFM Optimization Badges</h4>
-                <div class="dfm-tags" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                  ${tagsHTML}
-                </div>
-              </div>
-            </div>
-          `;
+        if (modalType === 'description' || modalType === 'specs') {
+          renderProjectDetailsModal(project);
         } else if (modalType === 'renderings') {
           // Build gallery with HERO IMAGE ALWAYS AS FIRST IMAGE (#1)
           let allImages = project.image ? [project.image] : [];
