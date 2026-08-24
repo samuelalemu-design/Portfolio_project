@@ -622,6 +622,14 @@ document.addEventListener('DOMContentLoaded', () => {
             <span class="project-category-badge ${categoryClass}">${project.category}</span>
           </div>
 
+          <!-- Action Button Directly Underneath Hero Cover Image -->
+          <div style="padding: 0.5rem 1.25rem 0.25rem;">
+            <button type="button" class="btn btn-outline btn-sm live-edit-spec-btn" data-project="${project.id}" style="width: 100%; font-size: 0.78rem; font-weight: 700; color: #2563eb; border-color: rgba(37, 99, 235, 0.35); background: rgba(37, 99, 235, 0.06); padding: 0.4rem 0.75rem; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer; transition: all 0.2s ease;" title="${isAdmin ? 'Click to edit project details' : 'Click to view technical specifications'}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              <span>${isAdmin ? '✏️ Edit Project / Technical Spec' : '⚙️ View Technical Spec & DFM'}</span>
+            </button>
+          </div>
+
           <!-- Front-Level Card Body -->
           <div class="project-body" style="padding: 1.25rem;">
             <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">${project.title}</h3>
@@ -774,7 +782,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <!-- 1. Technical and DFM deliverables -->
               <div>
                 <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                   Technical and DFM deliverables
                 </h4>
                 <ul style="list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 0.2rem;">
@@ -784,22 +792,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
               <!-- 2. Software and tools used -->
               <div>
-                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0284c7; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
                   Software and tools used
                 </h4>
                 <ul style="list-style: none; padding-left: 0; margin: 0; color: var(--text-main); display: flex; flex-direction: column; gap: 0.35rem;">
-                  <li style="font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #0284c7; font-weight: 800;">&bull;</span> <span><strong>SolidWorks 2024 Parametric 3D CAD</strong> &mdash; Full part &amp; assembly modeling</span></li>
-                  <li style="font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #0284c7; font-weight: 800;">&bull;</span> <span><strong>Sheet Metal Module</strong> &mdash; K-Factor bend tables &amp; automated DXF flat patterns</span></li>
-                  <li style="font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #0284c7; font-weight: 800;">&bull;</span> <span><strong>Weldments &amp; Structural Tubing</strong> &mdash; Frame weldment cut lists &amp; DFM/DFA</span></li>
+                  <li style="font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #2563eb; font-weight: 800;">&bull;</span> <span><strong>SolidWorks 2024 Parametric 3D CAD</strong> &mdash; Full part &amp; assembly modeling</span></li>
+                  <li style="font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #2563eb; font-weight: 800;">&bull;</span> <span><strong>Sheet Metal Module</strong> &mdash; K-Factor bend tables &amp; automated DXF flat patterns</span></li>
+                  <li style="font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #2563eb; font-weight: 800;">&bull;</span> <span><strong>Weldments &amp; Structural Tubing</strong> &mdash; Frame weldment cut lists &amp; DFM/DFA</span></li>
                 </ul>
               </div>
 
-              <!-- 3. DFM and manufacturing tags -->
+              <!-- 3. TAGS -->
               <div>
-                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0d9488; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                  DFM and manufacturing tags
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                  TAGS
                 </h4>
                 <div class="dfm-tags" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                   ${tagsHTML}
@@ -864,6 +872,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         openModalWindow();
+      });
+    });
+
+    document.querySelectorAll('.live-edit-spec-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const projId = btn.getAttribute('data-project');
+        const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+        if (isAdmin && typeof window.openAdminEditModal === 'function') {
+          window.openAdminEditModal(projId);
+        } else {
+          const specsBtn = document.querySelector(`.card-tab-btn[data-modal-type="specs"][data-project="${projId}"]`);
+          if (specsBtn) {
+            specsBtn.click();
+          }
+        }
       });
     });
 
