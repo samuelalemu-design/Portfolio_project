@@ -1,9 +1,9 @@
-portfolio_website.zip
-node/
-gh/
-MinGit/
-MinGit.zip
-gh.zip
-node.zip
+.git/
+*.zip
+*.pdf
+*.bas
+GLB/
+GLB S/
+website/
 .system_generated/
 scratch/

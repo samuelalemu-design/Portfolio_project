@@ -1714,6 +1714,264 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // =========================================================================
+    // EXPERIENCE SECTION DATA & ADMIN EDITING MANAGEMENT
+    // =========================================================================
+    const defaultExperienceList = [
+      {
+        id: 'exp_1',
+        roleTitle: 'Mechanical Designer',
+        companyName: 'Andinet ICT Solutions',
+        location: 'Addis Ababa, Ethiopia',
+        dateRange: '09/2024 - Present',
+        description: 'Delivering mechanical hardware design solutions and custom hardware component manufacturing/installation for business clients.',
+        bulletPoints: [
+          'Designing custom mechanical hardware parts and enclosures tailored to client requirements.',
+          'Assembling, testing, and installing physical hardware components on site.',
+          'Providing technical support and engineering troubleshooting for corporate customers.'
+        ],
+        tags: ['Mechanical Design', 'Hardware Assembly', 'SolidWorks', 'Technical Support', 'Addis Ababa, Ethiopia']
+      },
+      {
+        id: 'exp_2',
+        roleTitle: 'Mechanical Designer',
+        companyName: 'Nicodimos Industrial Machinery',
+        location: 'Addis Ababa, Ethiopia',
+        dateRange: '10/2023 - 09/2024',
+        description: 'Designed and manufactured specialized industrial machinery tailored to client specifications.',
+        bulletPoints: [
+          'Engineered custom industrial machinery models based on customer functional requirements.',
+          'Supervised shop-floor manufacturing processes, part machining, and quality standards.',
+          'Assembled, calibrated, and installed completed industrial machines for production use.'
+        ],
+        tags: ['Machinery Design', 'Manufacturing Supervision', 'Machine Assembly', 'SolidWorks']
+      },
+      {
+        id: 'exp_3',
+        roleTitle: 'Machine Operator & Maintenance Technician',
+        companyName: 'Moya Food Complex',
+        location: 'Addis Ababa, Ethiopia',
+        dateRange: '10/2023 - 09/2024',
+        description: 'Managed machine operation, preventive maintenance, and equipment engineering modifications for cookie food manufacturing lines.',
+        bulletPoints: [
+          'Installed, diagnosed, repaired, and maintained food processing and packaging machinery.',
+          'Operated production line machinery to ensure consistent output and minimal downtime.',
+          'Engineered design modifications to improve machine reliability and operational safety.'
+        ],
+        tags: ['Machine Maintenance', 'Equipment Operation', 'Repair & Diagnostics', 'Design Modification']
+      },
+      {
+        id: 'exp_4',
+        roleTitle: 'Internship Mechanical Engineer',
+        companyName: 'Metals Industry Development Institute (MIDI)',
+        location: 'Addis Ababa, Ethiopia',
+        dateRange: '06/2021 - 08/2021',
+        description: 'Worked on machine spare parts manufacturing, agricultural equipment design, and injection mold/die tooling.',
+        bulletPoints: [
+          'Designed 3D parts on CAD software and generated CNC machine code (G-code) for plastic injection molding dies.',
+          'Designed agricultural machinery and drafted detailed production blueprints for local fabrication.'
+        ],
+        tags: ['CAD Modeling', 'CNC Programming', 'Injection Molding Dies', 'Agricultural Machines']
+      }
+    ];
+
+    let experienceList = [...defaultExperienceList];
+
+    function loadSavedExperienceData() {
+      const saved = localStorage.getItem('samuel_experience_override');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            experienceList = parsed;
+          }
+        } catch(e) {}
+      }
+    }
+
+    function saveExperienceData() {
+      localStorage.setItem('samuel_experience_override', JSON.stringify(experienceList));
+    }
+
+    function renderExperienceSection() {
+      const timelineContainer = document.getElementById('experience-timeline');
+      const adminActions = document.getElementById('experience-admin-actions');
+      const isLogged = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+
+      if (adminActions) {
+        adminActions.style.display = isLogged ? 'flex' : 'none';
+      }
+
+      if (!timelineContainer) return;
+
+      timelineContainer.innerHTML = experienceList.map((item) => {
+        const bulletsHtml = (item.bulletPoints || []).map(b => `<li>${b}</li>`).join('');
+        const tagsHtml = (item.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+        
+        const companyLocText = item.companyName && item.location 
+          ? `${item.companyName} - ${item.location}`
+          : (item.companyName || item.location || '');
+
+        const adminEditBtn = isLogged ? `
+          <button type="button" class="btn btn-primary btn-sm exp-card-edit-btn" data-exp-id="${item.id}" style="background: #0284c7; color: #ffffff; border: none; font-weight: 700; font-size: 0.8rem; padding: 0.3rem 0.75rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; margin-top: 0.75rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            <span>Edit Experience</span>
+          </button>
+        ` : '';
+
+        return `
+          <div class="timeline-item" id="exp-item-${item.id}">
+            <div class="timeline-marker"></div>
+            <div class="timeline-content card">
+              <div class="timeline-header">
+                <div>
+                  <h3 class="role-title">${item.roleTitle}</h3>
+                  <span class="company-name">${companyLocText}</span>
+                </div>
+                <span class="timeline-date">${item.dateRange}</span>
+              </div>
+              ${item.description ? `<p class="timeline-text">${item.description}</p>` : ''}
+              ${bulletsHtml ? `<ul class="timeline-list">${bulletsHtml}</ul>` : ''}
+              ${tagsHtml ? `<div class="timeline-tags">${tagsHtml}</div>` : ''}
+              ${adminEditBtn}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Attach click listeners to all Edit Experience buttons
+      timelineContainer.querySelectorAll('.exp-card-edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const id = btn.getAttribute('data-exp-id');
+          openExperienceEditorModal(id);
+        });
+      });
+    }
+
+    // Experience Editor Modal Controllers
+    const expModal = document.getElementById('admin-experience-editor-modal');
+    const expForm = document.getElementById('exp-editor-form');
+    const expCloseBtn = document.getElementById('exp-editor-close-btn');
+    const expCancelBtn = document.getElementById('exp-edit-cancel-btn');
+    const expDeleteBtn = document.getElementById('exp-edit-delete-btn');
+    const expAddBtn = document.getElementById('admin-add-experience-btn');
+
+    function openExperienceEditorModal(expId = null) {
+      if (!expModal) return;
+
+      if (expId) {
+        const item = experienceList.find(e => e.id === expId);
+        if (item) {
+          document.getElementById('exp-edit-id').value = item.id;
+          document.getElementById('exp-edit-title').value = item.roleTitle || '';
+          document.getElementById('exp-edit-company').value = item.companyName || '';
+          document.getElementById('exp-edit-location').value = item.location || '';
+          document.getElementById('exp-edit-daterange').value = item.dateRange || '';
+          document.getElementById('exp-edit-description').value = item.description || '';
+          document.getElementById('exp-edit-bullets').value = Array.isArray(item.bulletPoints) ? item.bulletPoints.join('\n') : '';
+          document.getElementById('exp-edit-tags').value = Array.isArray(item.tags) ? item.tags.join(', ') : '';
+
+          document.getElementById('exp-modal-heading').textContent = `Editing: ${item.roleTitle}`;
+          if (expDeleteBtn) expDeleteBtn.style.display = 'inline-block';
+        }
+      } else {
+        document.getElementById('exp-edit-id').value = '';
+        document.getElementById('exp-edit-title').value = '';
+        document.getElementById('exp-edit-company').value = '';
+        document.getElementById('exp-edit-location').value = 'Addis Ababa, Ethiopia';
+        document.getElementById('exp-edit-daterange').value = '';
+        document.getElementById('exp-edit-description').value = '';
+        document.getElementById('exp-edit-bullets').value = '';
+        document.getElementById('exp-edit-tags').value = '';
+
+        document.getElementById('exp-modal-heading').textContent = 'Add New Experience Entry';
+        if (expDeleteBtn) expDeleteBtn.style.display = 'none';
+      }
+
+      expModal.setAttribute('open', '');
+      if (typeof expModal.showModal === 'function') {
+        try { expModal.showModal(); } catch (e) {}
+      }
+    }
+
+    function closeExperienceEditorModal() {
+      if (expModal) {
+        expModal.removeAttribute('open');
+        if (typeof expModal.close === 'function') {
+          try { expModal.close(); } catch (e) {}
+        }
+      }
+    }
+
+    if (expCloseBtn) expCloseBtn.addEventListener('click', closeExperienceEditorModal);
+    if (expCancelBtn) expCancelBtn.addEventListener('click', closeExperienceEditorModal);
+    if (expAddBtn) expAddBtn.addEventListener('click', () => openExperienceEditorModal(null));
+
+    if (expDeleteBtn) {
+      expDeleteBtn.addEventListener('click', () => {
+        const id = document.getElementById('exp-edit-id').value;
+        if (id) {
+          experienceList = experienceList.filter(e => e.id !== id);
+          saveExperienceData();
+          renderExperienceSection();
+          closeExperienceEditorModal();
+          showToast('Experience entry deleted!');
+        }
+      });
+    }
+
+    if (expForm) {
+      expForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('exp-edit-id').value;
+        const title = document.getElementById('exp-edit-title').value.trim();
+        const company = document.getElementById('exp-edit-company').value.trim();
+        const location = document.getElementById('exp-edit-location').value.trim();
+        const daterange = document.getElementById('exp-edit-daterange').value.trim();
+        const description = document.getElementById('exp-edit-description').value.trim();
+        const rawBullets = document.getElementById('exp-edit-bullets').value.trim();
+        const rawTags = document.getElementById('exp-edit-tags').value.trim();
+
+        const bulletPoints = rawBullets ? rawBullets.split('\n').map(b => b.trim()).filter(Boolean) : [];
+        const tags = rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+        if (editId) {
+          const item = experienceList.find(e => e.id === editId);
+          if (item) {
+            item.roleTitle = title;
+            item.companyName = company;
+            item.location = location;
+            item.dateRange = daterange;
+            item.description = description;
+            item.bulletPoints = bulletPoints;
+            item.tags = tags;
+            showToast(`Experience role "${title}" updated successfully!`);
+          }
+        } else {
+          const newId = `exp_${Date.now()}`;
+          experienceList.unshift({
+            id: newId,
+            roleTitle: title,
+            companyName: company,
+            location: location,
+            dateRange: daterange,
+            description: description,
+            bulletPoints: bulletPoints,
+            tags: tags
+          });
+          showToast(`New experience entry "${title}" added successfully!`);
+        }
+
+        saveExperienceData();
+        renderExperienceSection();
+        closeExperienceEditorModal();
+      });
+    }
+
+    loadSavedExperienceData();
+    renderExperienceSection();
+
     function checkAdminSession() {
       const isLogged = sessionStorage.getItem('samuel_alemu_admin') === 'true';
       
@@ -1725,6 +1983,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       renderProjectCards();
+      renderExperienceSection();
       return isLogged;
     }
 
