@@ -1890,6 +1890,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       expModal.setAttribute('open', '');
+      document.body.classList.add('modal-open');
+      document.body.style.overflow = 'hidden';
       if (typeof expModal.showModal === 'function') {
         try { expModal.showModal(); } catch (e) {}
       }
@@ -1898,6 +1900,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeExperienceEditorModal() {
       if (expModal) {
         expModal.removeAttribute('open');
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
         if (typeof expModal.close === 'function') {
           try { expModal.close(); } catch (e) {}
         }

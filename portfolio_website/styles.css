@@ -1725,17 +1725,13 @@ dialog::backdrop {
 }
 
 
-/* Disable text/image selection blue highlighting on double click */
+/* Disable text selection on UI controls only */
 button,
 .btn,
 .card-tab-btn,
 .project-card,
 .project-img-wrapper,
-.modal-wrapper,
-.modal-body,
-.project-modal,
-.project-modal img,
-.project-modal button {
+.project-modal img {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -1743,20 +1739,53 @@ button,
   -webkit-touch-callout: none;
 }
 
-/* Ensure no blue highlight box appears on active selection inside modals */
-.modal-wrapper ::selection,
-.modal-wrapper *::selection,
-#item-modal ::selection,
-#item-modal *::selection {
-  background: transparent !important;
-  color: inherit !important;
+/* Explicitly enable native text selection, copy & paste for inputs, textareas, and modal form content */
+input,
+textarea,
+select,
+form,
+[contenteditable="true"],
+.modal-wrapper form,
+.modal-wrapper input,
+.modal-wrapper textarea,
+.modal-wrapper select,
+.modal-wrapper label,
+.modal-wrapper p,
+.modal-wrapper span,
+.modal-wrapper h1,
+.modal-wrapper h2,
+.modal-wrapper h3,
+.modal-wrapper h4,
+.modal-wrapper div {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
 }
 
-/* --- Media Gallery Fixed Bottom Dock & Shimmer Loading UI --- */
+/* Native blue text selection highlighting */
+input::selection,
+textarea::selection,
+form ::selection,
+.modal-wrapper input::selection,
+.modal-wrapper textarea::selection,
+.modal-wrapper form ::selection {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+/* Prevent background page scroll when modal is active */
+body.modal-open {
+  overflow: hidden !important;
+  overscroll-behavior: contain !important;
+}
+
+/* --- Modal Layout & Scroll Container --- */
 .modal-wrapper {
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
+  max-height: 85vh;
+  overscroll-behavior: contain;
 }
 
 .modal-body {
