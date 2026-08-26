@@ -1459,6 +1459,43 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function resetContactFormState() {
+    isEmailVerified = false;
+    activeVerificationMethod = '';
+    activeOtpCode = '';
+
+    if (contactForm) contactForm.reset();
+
+    const nameInput = document.getElementById('name');
+    const emailInput = document.getElementById('email');
+    const serviceSelect = document.getElementById('service');
+
+    if (nameInput) nameInput.value = '';
+    if (emailInput) {
+      emailInput.value = '';
+      emailInput.readOnly = false;
+      emailInput.style.background = '';
+      emailInput.style.borderColor = '';
+      emailInput.style.color = '';
+      emailInput.style.cursor = '';
+      const group = emailInput.closest('.form-group');
+      if (group) group.classList.remove('has-error');
+    }
+    if (serviceSelect) serviceSelect.selectedIndex = 0;
+    if (messageInput) messageInput.value = '';
+    if (otpCodeInput) otpCodeInput.value = '';
+
+    if (charCounter) {
+      charCounter.textContent = '0 / 1500';
+      charCounter.style.color = 'var(--text-muted)';
+    }
+
+    if (contactVerifiedBadge) contactVerifiedBadge.style.display = 'none';
+    if (verifyBtnGroup) verifyBtnGroup.style.display = 'flex';
+    if (otpInputContainer) otpInputContainer.style.display = 'none';
+    if (otpStatusMsg) otpStatusMsg.textContent = '';
+  }
+
   if (contactForm) {
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1528,7 +1565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const messageVal = sanitizeInput(messageInput ? messageInput.value : '');
 
         submitBtn.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 0.8s linear infinite"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 0.8s linear infinite"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 1 1 10 10" stroke-opacity="1"/></svg>
           <span>Transmitting Inquiry to Samuel Alemu...</span>
         `;
 
@@ -1552,11 +1589,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const resData = await response.json();
 
           if (response.ok || resData.success === 'true' || resData.success === true) {
-            // Record rate limit timestamp
+            // Record rate limit timestamp and perform instant automatic field reset
             sessionStorage.setItem('samuel_contact_last_submit', Date.now().toString());
-            showToast('Thank you! Your inquiry has been sent directly to Samuel Alemu.');
-            contactForm.reset();
-            if (charCounter) charCounter.textContent = '0 / 1500';
+            resetContactFormState();
+            showToast('Message sent successfully! Samuel will get back to you soon.', 4500);
           } else {
             throw new Error(resData.message || 'Server response failed');
           }
@@ -1566,6 +1602,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const mailtoSubject = encodeURIComponent(`Portfolio Inquiry: ${nameVal} (${serviceVal})`);
           const mailtoBody = encodeURIComponent(`Full Name: ${nameVal}\nWork Email: ${emailVal}\nProject Category: ${serviceVal}\n\nProject Requirements / Scope:\n${messageVal}`);
           window.location.href = `mailto:samuelalemu2127@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
+          resetContactFormState();
         } finally {
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalText;
@@ -1577,7 +1614,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ------------------------------------------------------------------------
    * 9. Toast Notification Helper
    * ------------------------------------------------------------------------ */
-  function showToast(message) {
+  function showToast(message, duration = 4000) {
     const toastContainer = document.getElementById('toast-container');
     if (!toastContainer) return;
 
@@ -1595,7 +1632,7 @@ document.addEventListener('DOMContentLoaded', () => {
       toast.style.transform = 'translateY(10px)';
       toast.style.transition = 'all 0.3s ease';
       setTimeout(() => toast.remove(), 300);
-    }, 4000);
+    }, duration);
   }
 
   /* ------------------------------------------------------------------------
