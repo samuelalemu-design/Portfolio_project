@@ -988,42 +988,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showNav = total > 1;
     const prevNavHTML = showNav ? `
-      <div class="modal-nav-col">
-        <button type="button" class="modal-nav-btn" aria-label="Previous Image" onclick="window.navRender(-1)">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-      </div>
-    ` : '<div style="width: 10px;"></div>';
+      <button type="button" class="modal-nav-btn" aria-label="Previous Image" onclick="window.navRender(-1)" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); z-index: 20;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+    ` : '';
 
     const nextNavHTML = showNav ? `
-      <div class="modal-nav-col">
-        <button type="button" class="modal-nav-btn" aria-label="Next Image" onclick="window.navRender(1)">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
-    ` : '<div style="width: 10px;"></div>';
+      <button type="button" class="modal-nav-btn" aria-label="Next Image" onclick="window.navRender(1)" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); z-index: 20;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    ` : '';
 
     const thumbsHTML = gallery.map((imgSrc, idx) => `
       <img src="${imgSrc}" alt="Thumb ${idx + 1}" class="modal-thumb-item ${idx === currentRenderIndex ? 'active' : ''}" onclick="window.selectRenderIndex(${idx})">
     `).join('');
 
     itemModalBody.innerHTML = `
-      <div style="display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 0; gap: 0.5rem; overflow: hidden;">
+      <div style="position: relative; width: 100%; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: transparent; border: none; padding: 0; margin: 0;">
         
-        <!-- Maximized Main Canvas & Navigation Stage (flex: 1; min-height: 0;) -->
-        <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 0.5rem; overflow: hidden;">
-          ${prevNavHTML}
+        <!-- Floating Absolute Navigation Arrows -->
+        ${prevNavHTML}
+        ${nextNavHTML}
 
-          <!-- Main Image Canvas Wrapper -->
-          <div class="modal-stage-wrapper" style="flex: 1; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0; overflow: hidden; position: relative;">
-            <img src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 82vh; height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
-          </div>
+        <!-- Edge-to-Edge Main Image Canvas (No inner container or gray border) -->
+        <img src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 75vh; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
 
-          ${nextNavHTML}
-        </div>
-
-        <!-- Docked Thumbnail Bar (flex-shrink: 0; padding: 12px 0 4px 0;) -->
-        <div style="flex-shrink: 0; padding: 12px 0 4px 0; display: flex; gap: 8px; justify-content: center; align-items: center; overflow-x: auto; width: 100%;">
+        <!-- Floating Translucent Docked Thumbnail Overlay Pill -->
+        <div class="modal-thumb-dock" style="position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; gap: 8px; justify-content: center; align-items: center; max-width: 90%; overflow-x: auto; padding: 6px 12px; border-radius: 12px;">
           ${thumbsHTML}
         </div>
       </div>
