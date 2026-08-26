@@ -1238,10 +1238,12 @@ document.addEventListener('DOMContentLoaded', () => {
     editingOverlayId = null;
   }
 
-  function saveTextAnnotationFromModal() {
+  function saveTextAnnotationFromModal(e) {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+
     const annInput = document.getElementById('ann-text-input');
     const textVal = annInput ? annInput.value.trim() : '';
-    if (!textVal) return;
+    const finalText = textVal || 'CAD Annotation';
 
     const annFontSize = document.getElementById('ann-font-size');
     const fontSizeVal = annFontSize ? parseInt(annFontSize.value) || 24 : 24;
@@ -1264,7 +1266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (editingOverlayId) {
       const existing = currentProject.imageTextOverlays[activeSrc].find(o => o.id === editingOverlayId);
       if (existing) {
-        existing.text = textVal;
+        existing.text = finalText;
         existing.fontSize = fontSizeVal;
         existing.color = colorVal;
         existing.fontWeight = isBold ? 'bold' : 'normal';
@@ -1273,9 +1275,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       const newOverlay = {
         id: 'txt_' + Date.now(),
-        text: textVal,
-        left: 45,
-        top: 45,
+        text: finalText,
+        left: 50,
+        top: 50,
         fontSize: fontSizeVal,
         color: colorVal,
         fontWeight: isBold ? 'bold' : 'normal',
@@ -1306,15 +1308,15 @@ document.addEventListener('DOMContentLoaded', () => {
   function attachOverlayDragHandlers(el, item) {
     let isDragging = false;
     let startX = 0, startY = 0;
-    let startLeftPct = item.left || 45;
-    let startTopPct = item.top || 45;
+    let startLeftPct = item.left || 50;
+    let startTopPct = item.top || 50;
 
     function onPointerDown(e) {
       isDragging = false;
       startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
       startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-      startLeftPct = item.left || 45;
-      startTopPct = item.top || 45;
+      startLeftPct = item.left || 50;
+      startTopPct = item.top || 50;
 
       function onPointerMove(ev) {
         const clientX = ev.clientX || (ev.touches && ev.touches[0].clientX) || 0;
@@ -1328,8 +1330,8 @@ document.addEventListener('DOMContentLoaded', () => {
           const stageWrapper = document.getElementById('item-modal-stage-wrapper');
           if (stageWrapper) {
             const rect = stageWrapper.getBoundingClientRect();
-            const newLeftPct = Math.max(0, Math.min(85, startLeftPct + (deltaX / rect.width) * 100));
-            const newTopPct = Math.max(0, Math.min(85, startTopPct + (deltaY / rect.height) * 100));
+            const newLeftPct = Math.max(5, Math.min(95, startLeftPct + (deltaX / rect.width) * 100));
+            const newTopPct = Math.max(5, Math.min(95, startTopPct + (deltaY / rect.height) * 100));
 
             item.left = newLeftPct;
             item.top = newTopPct;
@@ -1341,7 +1343,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       function onPointerUp() {
         if (isDragging) {
-          el.style.zIndex = '35';
+          el.style.zIndex = '20';
           markDraftChanged();
         }
         window.removeEventListener('mousemove', onPointerMove);
@@ -1411,8 +1413,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const box = document.createElement('div');
         box.className = 'admin-text-overlay-box';
         box.setAttribute('data-id', item.id);
-        box.style.left = `${item.left || 45}%`;
-        box.style.top = `${item.top || 45}%`;
+        box.style.position = 'absolute';
+        box.style.left = `${item.left || 50}%`;
+        box.style.top = `${item.top || 50}%`;
+        box.style.transform = 'translate(-50%, -50%)';
+        box.style.zIndex = '20';
         box.style.backgroundColor = item.bgFill || 'transparent';
         box.style.fontSize = `${item.fontSize || 24}px`;
         box.style.fontWeight = item.fontWeight || 'normal';
@@ -1420,6 +1425,8 @@ document.addEventListener('DOMContentLoaded', () => {
         box.style.padding = '6px 12px';
         box.style.borderRadius = '6px';
         box.style.cursor = 'move';
+        box.style.userSelect = 'none';
+        box.style.whiteSpace = 'pre-wrap';
         box.innerText = item.text;
 
         // Click to Edit
@@ -1434,14 +1441,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Visitor Mode: Static Read-Only Layer
         const box = document.createElement('div');
         box.className = 'visitor-text-overlay-box';
-        box.style.left = `${item.left || 45}%`;
-        box.style.top = `${item.top || 45}%`;
+        box.style.position = 'absolute';
+        box.style.left = `${item.left || 50}%`;
+        box.style.top = `${item.top || 50}%`;
+        box.style.transform = 'translate(-50%, -50%)';
+        box.style.zIndex = '20';
         box.style.backgroundColor = item.bgFill || 'transparent';
         box.style.fontSize = `${item.fontSize || 24}px`;
         box.style.fontWeight = item.fontWeight || 'normal';
         box.style.color = item.color || '#ffffff';
         box.style.padding = '6px 12px';
         box.style.borderRadius = '6px';
+        box.style.pointerEvents = 'none';
+        box.style.userSelect = 'none';
+        box.style.whiteSpace = 'pre-wrap';
         box.innerText = item.text;
 
         stageWrapper.appendChild(box);
