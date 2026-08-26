@@ -1015,8 +1015,8 @@ document.addEventListener('DOMContentLoaded', () => {
           ${prevNavHTML}
 
           <!-- Main Image Canvas Wrapper -->
-          <div class="modal-stage-wrapper" style="flex: 1; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0.5rem; overflow: hidden; position: relative;">
-            <img src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 75vh; height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
+          <div class="modal-stage-wrapper" style="flex: 1; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0; overflow: hidden; position: relative;">
+            <img src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 82vh; height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
           </div>
 
           ${nextNavHTML}

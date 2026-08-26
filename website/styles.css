@@ -1467,8 +1467,8 @@ dialog.project-modal::backdrop {
   border: none;
   border-radius: var(--radius-lg);
   padding: 0;
-  max-width: 750px;
-  width: 90%;
+  max-width: 1240px;
+  width: 96%;
   background-color: var(--bg-card);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
   margin: auto;
@@ -1482,10 +1482,10 @@ dialog.project-modal::backdrop {
 
 /* Refined Lightbox Photo Viewer Modal - Dark Mode Defaults */
 #item-modal .modal-wrapper {
-  max-width: 960px;
-  width: 94%;
-  max-height: 90vh;
-  height: 85vh;
+  max-width: 1240px;
+  width: 96%;
+  max-height: 94vh;
+  height: 90vh;
   margin: auto;
   background: #1e293b;
   color: #f8fafc;
