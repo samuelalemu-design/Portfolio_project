@@ -1215,6 +1215,72 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCharCounter();
   }
 
+  function validateStrictEmail(emailStr) {
+    if (!emailStr) return false;
+    const email = emailStr.trim().toLowerCase();
+
+    // 1. Strict RFC 5322-compliant format regex (user@domain.tld)
+    const strictEmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!strictEmailRegex.test(email)) return false;
+
+    const parts = email.split('@');
+    if (parts.length !== 2) return false;
+
+    const username = parts[0];
+    const domain = parts[1];
+
+    if (!username || !domain) return false;
+
+    // 2. Reject domain without proper TLD extension (e.g. test@test, abc@abc)
+    if (!domain.includes('.')) return false;
+
+    const domainParts = domain.split('.');
+    const tld = domainParts[domainParts.length - 1];
+
+    if (!tld || tld.length < 2 || !/^[a-zA-Z]+$/.test(tld)) return false;
+
+    // 3. Block known fake/placeholder/disposable email domains
+    const blockedDomains = [
+      'test.com', 'test.org', 'test.net', 'example.com', 'example.org', 'example.net',
+      'domain.com', 'sample.com', 'fake.com', 'temp.com', 'xyz.com', 'abc.com',
+      'mailinator.com', 'dispostable.com', 'tempmail.com', '10minutemail.com',
+      'trashmail.com', 'guerrillamail.com', 'yopmail.com', 'sharklasers.com',
+      'getnada.com', 'throwawaymail.com', 'disposable.com', 'fakeinbox.com', 'temp-mail.org'
+    ];
+
+    if (blockedDomains.includes(domain)) return false;
+
+    // 4. Block obvious placeholder usernames with generic domains
+    const blockedUsernames = ['test', 'testing', 'fake', 'admin', 'noreply', 'no-reply', 'abc', '123', 'asdf'];
+    if (blockedUsernames.includes(username) && blockedDomains.some(d => domain.endsWith(d))) return false;
+
+    return true;
+  }
+
+  const emailField = document.getElementById('email');
+  if (emailField) {
+    emailField.addEventListener('blur', () => {
+      const val = emailField.value.trim();
+      const group = emailField.closest('.form-group');
+      if (val.length > 0) {
+        if (!validateStrictEmail(val)) {
+          if (group) group.classList.add('has-error');
+        } else {
+          if (group) group.classList.remove('has-error');
+        }
+      }
+    });
+
+    emailField.addEventListener('input', () => {
+      const group = emailField.closest('.form-group');
+      if (group && group.classList.contains('has-error')) {
+        if (validateStrictEmail(emailField.value.trim())) {
+          group.classList.remove('has-error');
+        }
+      }
+    });
+  }
+
   if (contactForm) {
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1250,9 +1316,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Validation Rules
       if (nameInput) validateInput(nameInput, nameInput.value.trim().length >= 2);
       
-      // Strict Email Format Regex (user@domain.com)
-      const strictEmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if (emailInput) validateInput(emailInput, strictEmailRegex.test(emailInput.value.trim()));
+      // Strict Email Format & Domain Deliverability Validation
+      if (emailInput) validateInput(emailInput, validateStrictEmail(emailInput.value.trim()));
       
       // Message Character Limits (Min 15, Max 1500)
       const msgLen = messageInput ? messageInput.value.trim().length : 0;
