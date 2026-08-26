@@ -685,6 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeItemModal() {
     if (itemModal) {
       document.body.style.overflow = ''; // Unlock background page scroll!
+      itemModal.classList.remove('profile-lightbox-mode');
       const modalNavPrev = document.getElementById('modal-nav-prev');
       const modalNavNext = document.getElementById('modal-nav-next');
       if (modalNavPrev) modalNavPrev.style.display = 'none';
@@ -959,9 +960,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 4. Refined Lightbox Renderer (3-Column Integrated Navigation & Compact Thumbnails)
+   * 4. Refined Lightbox Renderer (Profile Mode & Docked Project Gallery Layout)
    * ------------------------------------------------------------------------ */
   function renderLightboxView() {
+    const isProfileMode = currentProject && currentProject.isProfileMode;
+
+    if (isProfileMode) {
+      if (itemModal) itemModal.classList.add('profile-lightbox-mode');
+      
+      const activeSrc = (currentProject && currentProject.image) ? currentProject.image : 'assets/projects/samuel_hero_avatar.png';
+
+      itemModalBody.innerHTML = `
+        <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+          <button type="button" aria-label="Close Profile Lightbox" onclick="closeItemModal()" style="position: absolute; top: -45px; right: -10px; background: rgba(15, 23, 42, 0.85); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.2); width: 38px; height: 38px; border-radius: 50%; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; z-index: 100;">&times;</button>
+          
+          <div style="display: flex; align-items: center; justify-content: center; background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; padding: 0.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); max-height: 80vh; max-width: 100%; overflow: hidden;">
+            <img src="${activeSrc}" alt="Samuel Alemu Profile Photo" style="max-height: 75vh; max-width: 100%; width: auto; height: auto; object-fit: contain; border-radius: 10px; user-select: none; -webkit-user-select: none;">
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // Normal Project Gallery Lightbox Mode
+    if (itemModal) itemModal.classList.remove('profile-lightbox-mode');
+
     const gallery = (currentProject && currentProject.allGalleryImages) ? currentProject.allGalleryImages : [(currentProject ? currentProject.image : '')];
     const total = gallery.length;
 
@@ -977,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', () => {
       itemModalTitle.textContent = currentProject && currentProject.title ? currentProject.title : 'Ratchet';
     }
 
-    const descLabel = total === 1 ? '(Hero Brand Logo)' : (currentRenderIndex === 0 ? '(Hero Image)' : `(Render View ${currentRenderIndex + 1})`);
+    const descLabel = (currentRenderIndex === 0 ? '(Hero Image)' : `(Render View ${currentRenderIndex + 1})`);
 
     if (itemModalCounter) {
       itemModalCounter.textContent = `Image ${currentRenderIndex + 1} of ${total} ${descLabel}`;
@@ -1005,22 +1028,22 @@ document.addEventListener('DOMContentLoaded', () => {
     `).join('');
 
     itemModalBody.innerHTML = `
-      <div style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 0.85rem;">
+      <div style="display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 0; gap: 0.5rem; overflow: hidden;">
         
-        <!-- 3-Column Integrated Navigation Stage (No overlay on image!) -->
-        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 0.5rem;">
+        <!-- Main Canvas & Navigation Stage (flex: 1; min-height: 0;) -->
+        <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 0.5rem; overflow: hidden;">
           ${prevNavHTML}
 
-          <!-- Main Image Stage Container -->
-          <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0.75rem; min-height: 400px; max-height: 480px; overflow: hidden; position: relative;">
-            <img src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="max-height: 450px; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
+          <!-- Main Image Canvas Wrapper -->
+          <div style="flex: 1; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0.75rem; overflow: hidden; position: relative;">
+            <img src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
           </div>
 
           ${nextNavHTML}
         </div>
 
-        <!-- Always-Visible Compact Row of Square Thumbnails -->
-        <div style="display: flex; gap: 0.6rem; overflow-x: auto; max-width: 100%; padding: 0.4rem 0; width: 100%; justify-content: center; align-items: center;">
+        <!-- Docked Thumbnail Bar (flex-shrink: 0; padding: 12px 0 4px 0;) -->
+        <div style="flex-shrink: 0; padding: 12px 0 4px 0; display: flex; gap: 8px; justify-content: center; align-items: center; overflow-x: auto; width: 100%;">
           ${thumbsHTML}
         </div>
       </div>

@@ -1484,6 +1484,8 @@ dialog.project-modal::backdrop {
 #item-modal .modal-wrapper {
   max-width: 960px;
   width: 94%;
+  max-height: 90vh;
+  height: 85vh;
   margin: auto;
   background: #0f172a;
   color: #f8fafc;
@@ -1539,13 +1541,39 @@ dialog.project-modal::backdrop {
 }
 
 #item-modal .modal-body {
-  padding: 1.25rem;
+  padding: 1rem;
   background: #0f172a;
   color: #f8fafc;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
   align-items: center;
+}
+
+/* Minimalist Standalone Profile Photo Lightbox Mode */
+#item-modal.profile-lightbox-mode .modal-header,
+#item-modal.profile-lightbox-mode .modal-footer {
+  display: none !important;
+}
+
+#item-modal.profile-lightbox-mode .modal-wrapper {
+  max-width: 680px;
+  width: 90%;
+  height: auto;
+  max-height: 85vh;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+  position: relative;
+}
+
+#item-modal.profile-lightbox-mode .modal-body {
+  padding: 0;
+  background: transparent;
+  overflow: visible;
 }
 
 #item-modal .modal-footer {
