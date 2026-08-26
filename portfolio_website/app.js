@@ -1165,12 +1165,22 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ------------------------------------------------------------------------
    * 4. Inline Direct-on-Canvas Text Tool
    * ------------------------------------------------------------------------ */
+  let lastTextCreationTime = 0;
+
   function getActiveImageSrc() {
     const gallery = (currentProject && currentProject.allGalleryImages) ? currentProject.allGalleryImages : [(currentProject ? currentProject.image : '')];
     return gallery[currentRenderIndex] || '';
   }
 
-  function addTextOverlayToActiveImage() {
+  function addTextOverlayToActiveImage(e) {
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
+    const now = Date.now();
+    if (now - lastTextCreationTime < 300) return;
+    lastTextCreationTime = now;
+
     if (!currentProject) return;
     currentProject.imageTextOverlays = currentProject.imageTextOverlays || {};
     const activeSrc = getActiveImageSrc();
@@ -1180,13 +1190,17 @@ document.addEventListener('DOMContentLoaded', () => {
       currentProject.imageTextOverlays[activeSrc] = [];
     }
 
+    currentProject.imageTextOverlays[activeSrc].forEach(o => o.isEditing = false);
+
     const newAnnotation = {
-      id: 'txt_' + Date.now(),
+      id: 'txt_' + now + '_' + Math.random().toString(36).substring(2, 6),
       text: 'Click to edit text',
       left: 50,
       top: 50,
       fontSize: 20,
       color: '#ffffff',
+      fontFamily: 'Inter, sans-serif',
+      isBold: false,
       bgFill: 'transparent',
       isEditing: true
     };
@@ -1199,18 +1213,20 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addTextOverlayToActiveImage = addTextOverlayToActiveImage;
 
   function attachOverlayDragHandlers(el, item) {
-    let isDragging = false;
-    let startX = 0, startY = 0;
-    let startLeftPct = item.left || 50;
-    let startTopPct = item.top || 50;
+    el.style.cursor = 'grab';
 
     function onPointerDown(e) {
       if (e.target.closest('.admin-text-formatting-bar')) return;
-      isDragging = false;
-      startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-      startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-      startLeftPct = item.left || 50;
-      startTopPct = item.top || 50;
+
+      let isDragging = false;
+      const startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      const startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      const startLeftPct = item.left || 50;
+      const startTopPct = item.top || 50;
+
+      el.style.cursor = 'grabbing';
+      document.body.style.cursor = 'grabbing';
+      el.style.zIndex = '50';
 
       function onPointerMove(ev) {
         const clientX = ev.clientX || (ev.touches && ev.touches[0].clientX) || 0;
@@ -1218,28 +1234,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const deltaX = clientX - startX;
         const deltaY = clientY - startY;
 
-        if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+        if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
           isDragging = true;
-          el.style.zIndex = '50';
           const stageWrapper = document.getElementById('item-modal-stage-wrapper');
           if (stageWrapper) {
             const rect = stageWrapper.getBoundingClientRect();
-            const newLeftPct = Math.max(5, Math.min(95, startLeftPct + (deltaX / rect.width) * 100));
-            const newTopPct = Math.max(5, Math.min(95, startTopPct + (deltaY / rect.height) * 100));
+            if (rect.width > 0 && rect.height > 0) {
+              const newLeftPct = Math.max(5, Math.min(95, startLeftPct + (deltaX / rect.width) * 100));
+              const newTopPct = Math.max(5, Math.min(95, startTopPct + (deltaY / rect.height) * 100));
 
-            item.left = newLeftPct;
-            item.top = newTopPct;
-            el.style.left = `${newLeftPct}%`;
-            el.style.top = `${newTopPct}%`;
+              item.left = newLeftPct;
+              item.top = newTopPct;
+              el.style.left = `${newLeftPct}%`;
+              el.style.top = `${newTopPct}%`;
+            }
           }
         }
       }
 
       function onPointerUp() {
+        el.style.cursor = 'grab';
+        document.body.style.cursor = '';
+        el.style.zIndex = item.isEditing ? '35' : '20';
+
         if (isDragging) {
-          el.style.zIndex = item.isEditing ? '35' : '20';
           markDraftChanged();
         }
+
         window.removeEventListener('mousemove', onPointerMove);
         window.removeEventListener('mouseup', onPointerUp);
         window.removeEventListener('touchmove', onPointerMove);
@@ -1312,7 +1333,8 @@ document.addEventListener('DOMContentLoaded', () => {
         contentDiv.style.padding = '6px 12px';
         contentDiv.style.borderRadius = '6px';
         contentDiv.style.outline = item.isEditing ? '2px dashed #38bdf8' : 'none';
-        contentDiv.style.cursor = item.isEditing ? 'text' : 'move';
+        contentDiv.style.boxShadow = item.isEditing ? '0 0 0 4px rgba(56, 189, 248, 0.25)' : 'none';
+        contentDiv.style.cursor = item.isEditing ? 'text' : 'grab';
         contentDiv.style.userSelect = item.isEditing ? 'text' : 'none';
         contentDiv.style.whiteSpace = 'pre-wrap';
         contentDiv.innerText = item.text || 'Click to edit text';
