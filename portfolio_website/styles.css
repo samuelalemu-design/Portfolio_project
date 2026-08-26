@@ -1398,16 +1398,53 @@ dialog.project-modal::backdrop {
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-  background-color: #ffffff;
-  color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
   outline: none;
   transition: all var(--transition-fast);
 }
 
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: #94a3b8;
+  opacity: 1;
+}
+
 .form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+}
+
+.form-select option {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
+/* Light Mode Input Adaptation */
+:root[data-theme="light"] .form-input,
+:root[data-theme="light"] .form-select,
+:root[data-theme="light"] .form-textarea {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #0f172a;
+}
+
+:root[data-theme="light"] .form-input::placeholder,
+:root[data-theme="light"] .form-textarea::placeholder {
+  color: #64748b;
+}
+
+:root[data-theme="light"] .form-input:focus,
+:root[data-theme="light"] .form-select:focus,
+:root[data-theme="light"] .form-textarea:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+:root[data-theme="light"] .form-select option {
+  background-color: #ffffff;
+  color: #0f172a;
 }
 
 .form-error {
