@@ -959,10 +959,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 4. Lightbox Renderer with Window-Fixed Navigation Buttons
+   * 4. Refined Lightbox Renderer (3-Column Integrated Navigation & Compact Thumbnails)
    * ------------------------------------------------------------------------ */
   function renderLightboxView() {
-    const gallery = (currentProject && currentProject.allGalleryImages) ? currentProject.allGalleryImages : [currentProject.image];
+    const gallery = (currentProject && currentProject.allGalleryImages) ? currentProject.allGalleryImages : [(currentProject ? currentProject.image : '')];
     const total = gallery.length;
 
     if (currentRenderIndex < 0) currentRenderIndex = total - 1;
@@ -970,51 +970,57 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const activeSrc = gallery[currentRenderIndex];
 
-    if (itemModalCounter) {
-      itemModalCounter.textContent = `Image ${currentRenderIndex + 1} of ${total} ${currentRenderIndex === 0 ? '(Hero Image)' : ''}`;
+    if (itemModalCategory) {
+      itemModalCategory.textContent = (currentProject && currentProject.category ? currentProject.category : 'EXPERIMENTAL PROJECTS').toUpperCase();
+    }
+    if (itemModalTitle) {
+      itemModalTitle.textContent = currentProject && currentProject.title ? currentProject.title : 'Ratchet';
     }
 
-    const modalNavPrev = document.getElementById('modal-nav-prev');
-    const modalNavNext = document.getElementById('modal-nav-next');
+    const descLabel = total === 1 ? '(Hero Brand Logo)' : (currentRenderIndex === 0 ? '(Hero Image)' : `(Render View ${currentRenderIndex + 1})`);
+
+    if (itemModalCounter) {
+      itemModalCounter.textContent = `Image ${currentRenderIndex + 1} of ${total} ${descLabel}`;
+    }
 
     const showNav = total > 1;
-    if (showNav) {
-      if (modalNavPrev) modalNavPrev.style.display = 'flex';
-      if (modalNavNext) modalNavNext.style.display = 'flex';
-    } else {
-      if (modalNavPrev) modalNavPrev.style.display = 'none';
-      if (modalNavNext) modalNavNext.style.display = 'none';
-    }
+    const prevNavHTML = showNav ? `
+      <div class="modal-nav-col">
+        <button type="button" class="modal-nav-btn" aria-label="Previous Image" onclick="window.navRender(-1)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
+    ` : '<div style="width: 10px;"></div>';
 
-    if (modalNavPrev) {
-      modalNavPrev.onclick = function(e) {
-        e.stopPropagation();
-        window.navRender(-1);
-      };
-    }
-    if (modalNavNext) {
-      modalNavNext.onclick = function(e) {
-        e.stopPropagation();
-        window.navRender(1);
-      };
-    }
+    const nextNavHTML = showNav ? `
+      <div class="modal-nav-col">
+        <button type="button" class="modal-nav-btn" aria-label="Next Image" onclick="window.navRender(1)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    ` : '<div style="width: 10px;"></div>';
 
     const thumbsHTML = gallery.map((imgSrc, idx) => `
-      <img src="${imgSrc}" alt="Thumb ${idx + 1}" style="width: 64px; height: 64px; object-fit: contain; background: var(--bg-alt); border-radius: 6px; cursor: pointer; border: 2px solid ${idx === currentRenderIndex ? 'var(--accent-primary)' : 'var(--border-color)'}; opacity: ${idx === currentRenderIndex ? '1' : '0.65'}; transition: all 0.2s ease;" onclick="window.selectRenderIndex(${idx})">
+      <img src="${imgSrc}" alt="Thumb ${idx + 1}" class="modal-thumb-item ${idx === currentRenderIndex ? 'active' : ''}" onclick="window.selectRenderIndex(${idx})">
     `).join('');
 
     itemModalBody.innerHTML = `
-      <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 1rem; width: 100%; background: var(--bg-card); color: var(--text-main);">
+      <div style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 0.85rem;">
         
-        <!-- Lightbox Stage Container -->
-        <div class="lightbox-stage" style="position: relative; width: 100%; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem; display: flex; align-items: center; justify-content: center; min-height: 440px; max-height: 520px; overflow: hidden; flex-shrink: 0;">
-          
-          <!-- Large Main Image -->
-          <img src="${activeSrc}" alt="${currentProject.title} Image ${currentRenderIndex + 1}" style="max-height: 480px; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.25s ease;">
+        <!-- 3-Column Integrated Navigation Stage (No overlay on image!) -->
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 0.5rem;">
+          ${prevNavHTML}
+
+          <!-- Main Image Stage Container -->
+          <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0.75rem; min-height: 400px; max-height: 480px; overflow: hidden; position: relative;">
+            <img src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="max-height: 450px; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
+          </div>
+
+          ${nextNavHTML}
         </div>
 
-        <!-- Thumbnail Strip at Bottom -->
-        <div style="display: flex; gap: 0.6rem; overflow-x: auto; max-width: 100%; padding: 0.35rem 0; width: 100%; justify-content: center;">
+        <!-- Always-Visible Compact Row of Square Thumbnails -->
+        <div style="display: flex; gap: 0.6rem; overflow-x: auto; max-width: 100%; padding: 0.4rem 0; width: 100%; justify-content: center; align-items: center;">
           ${thumbsHTML}
         </div>
       </div>
@@ -2621,6 +2627,26 @@ document.addEventListener('DOMContentLoaded', () => {
           e.preventDefault();
           e.stopPropagation();
           openBrandLogoCropperModal();
+        } else {
+          // Universal Photo Viewer Modal Trigger for Homepage Profile Logo
+          e.preventDefault();
+          e.stopPropagation();
+
+          const imgElem = brandLogoElem.querySelector('img');
+          const savedLogo = localStorage.getItem('samuel_brand_logo');
+          const logoSrc = (imgElem && imgElem.src) ? imgElem.src : (savedLogo || 'assets/projects/samuel_hero_avatar.png');
+
+          currentProject = {
+            category: 'EXPERIMENTAL PROJECTS',
+            title: 'Ratchet',
+            overview: 'Mechanical Design Engineer & CAD Specialist Brand Identity',
+            image: logoSrc,
+            allGalleryImages: [logoSrc]
+          };
+          currentRenderIndex = 0;
+
+          openModalWindow();
+          renderLightboxView();
         }
       });
     }

@@ -1145,38 +1145,28 @@
     </section>
   </main>
 
-  <!-- Dedicated Project Modal (Window-Fixed Navigation Arrows) -->
+  <!-- Dedicated Refined Photo Viewer Modal -->
   <dialog id="item-modal" class="project-modal" style="border: none; padding: 0; background: transparent;">
-    <div class="modal-wrapper" style="position: relative; max-width: 920px; width: 94%; margin: auto; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 14px; overflow: visible; box-shadow: var(--shadow-lg);">
+    <div class="modal-wrapper">
       
-      <!-- Pop-Up Window Fixed Prev Arrow Button (Attached to Modal Box, NEVER moves when scrolling!) -->
-      <button id="modal-nav-prev" type="button" aria-label="Previous Image" style="display: none; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); background: #2563eb; color: #ffffff; border: 2px solid #ffffff; width: 52px; height: 52px; border-radius: 50%; cursor: pointer; user-select: none; -webkit-user-select: none; align-items: center; justify-content: center; transition: transform 0.2s ease, background 0.2s ease; z-index: 1000; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-
-      <!-- Pop-Up Window Fixed Next Arrow Button (Attached to Modal Box, NEVER moves when scrolling!) -->
-      <button id="modal-nav-next" type="button" aria-label="Next Image" style="display: none; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: #2563eb; color: #ffffff; border: 2px solid #ffffff; width: 52px; height: 52px; border-radius: 50%; cursor: pointer; user-select: none; -webkit-user-select: none; align-items: center; justify-content: center; transition: transform 0.2s ease, background 0.2s ease; z-index: 1000; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
-
       <!-- Modal Header -->
-      <div class="modal-header" style="padding: 1.25rem 1.5rem; background: var(--bg-alt); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+      <div class="modal-header">
         <div>
-          <span class="modal-category" id="item-modal-category" style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-primary);">Machine Details</span>
-          <h2 class="modal-title" id="item-modal-title" style="font-size: 1.35rem; font-weight: 700; margin-top: 0.25rem; color: var(--text-main);">Machine Name</h2>
+          <span class="modal-category" id="item-modal-category">EXPERIMENTAL PROJECTS</span>
+          <h2 class="modal-title" id="item-modal-title">Ratchet</h2>
         </div>
-        <button class="modal-close" id="item-modal-close" aria-label="Close window" style="font-size: 1.75rem; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 0.25rem 0.5rem; line-height: 1;">&times;</button>
+        <button class="modal-close" id="item-modal-close" aria-label="Close window">&times;</button>
       </div>
 
-      <!-- Modal Body -->
-      <div class="modal-body" id="item-modal-body" style="padding: 1.5rem; background: var(--bg-card); color: var(--text-main); max-height: 75vh; overflow-y: auto;">
-        <!-- Dynamic content for Lightbox Renderings / Description / Specs / Attachments -->
+      <!-- Modal Body (Integrated Image Stage & Compact Thumbnails) -->
+      <div class="modal-body" id="item-modal-body">
+        <!-- Dynamic content rendered by JS -->
       </div>
 
       <!-- Modal Footer -->
-      <div class="modal-footer" style="padding: 1rem 1.5rem; background: var(--bg-alt); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-        <span id="item-modal-counter" style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;"></span>
-        <button class="btn btn-secondary" id="item-modal-close-btn" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color);">Close Window</button>
+      <div class="modal-footer">
+        <span id="item-modal-counter">Image 1 of 1</span>
+        <button class="btn btn-secondary" id="item-modal-close-btn">Close Window</button>
       </div>
     </div>
   </dialog>
