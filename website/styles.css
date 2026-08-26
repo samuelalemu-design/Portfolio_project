@@ -1669,6 +1669,26 @@ dialog.project-modal::backdrop {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
 }
 
+/* Floating Zoom Controls */
+.modal-zoom-controls {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="light"] .modal-zoom-controls {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12) !important;
+}
+
+:root[data-theme="light"] .modal-zoom-btn {
+  background: rgba(0, 0, 0, 0.06) !important;
+  color: #0f172a !important;
+}
+
 #hero-profile-raw-overlay::backdrop {
   background-color: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);

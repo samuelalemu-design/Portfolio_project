@@ -691,6 +691,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (modalNavPrev) modalNavPrev.style.display = 'none';
       if (modalNavNext) modalNavNext.style.display = 'none';
 
+      if (typeof window.resetLightboxZoom === 'function') {
+        window.resetLightboxZoom();
+      }
+
       if (typeof itemModal.close === 'function') {
         itemModal.close();
       } else {
@@ -960,9 +964,94 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 4. Maximized Project Gallery Lightbox Renderer
+   * 4. Maximized Project Gallery Lightbox Renderer & Interactive Zoom/Pan
    * ------------------------------------------------------------------------ */
+  let lightboxZoomScale = 1.0;
+  let lightboxPanX = 0;
+  let lightboxPanY = 0;
+  let isPanningLightbox = false;
+  let startPanX = 0;
+  let startPanY = 0;
+
+  window.resetLightboxZoom = function() {
+    lightboxZoomScale = 1.0;
+    lightboxPanX = 0;
+    lightboxPanY = 0;
+    isPanningLightbox = false;
+    updateLightboxTransform();
+  };
+
+  function updateLightboxTransform() {
+    const mainImg = document.getElementById('item-modal-main-img');
+    if (!mainImg) return;
+
+    if (lightboxZoomScale <= 1.0) {
+      lightboxZoomScale = 1.0;
+      lightboxPanX = 0;
+      lightboxPanY = 0;
+      mainImg.style.cursor = 'zoom-in';
+    } else {
+      mainImg.style.cursor = isPanningLightbox ? 'grabbing' : 'grab';
+    }
+
+    mainImg.style.transform = `scale(${lightboxZoomScale}) translate(${lightboxPanX}px, ${lightboxPanY}px)`;
+    mainImg.style.transition = isPanningLightbox ? 'none' : 'transform 0.2s ease-out';
+  }
+
+  window.changeLightboxZoom = function(delta) {
+    lightboxZoomScale = Math.min(Math.max(1.0, lightboxZoomScale + delta), 2.5);
+    if (lightboxZoomScale === 1.0) {
+      lightboxPanX = 0;
+      lightboxPanY = 0;
+    }
+    updateLightboxTransform();
+  };
+
+  function setupLightboxZoomEvents(imgElem) {
+    if (!imgElem) return;
+
+    imgElem.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      if (lightboxZoomScale > 1.0) {
+        window.resetLightboxZoom();
+      } else {
+        lightboxZoomScale = 2.0;
+        updateLightboxTransform();
+      }
+    });
+
+    imgElem.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const delta = e.deltaY < 0 ? 0.25 : -0.25;
+      window.changeLightboxZoom(delta);
+    }, { passive: false });
+
+    imgElem.addEventListener('mousedown', (e) => {
+      if (lightboxZoomScale <= 1.0) return;
+      isPanningLightbox = true;
+      startPanX = e.clientX - lightboxPanX;
+      startPanY = e.clientY - lightboxPanY;
+      imgElem.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+  }
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isPanningLightbox) return;
+    lightboxPanX = e.clientX - startPanX;
+    lightboxPanY = e.clientY - startPanY;
+    updateLightboxTransform();
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isPanningLightbox) {
+      isPanningLightbox = false;
+      updateLightboxTransform();
+    }
+  });
+
   function renderLightboxView() {
+    window.resetLightboxZoom();
     if (itemModal) itemModal.classList.remove('profile-lightbox-mode');
 
     const gallery = (currentProject && currentProject.allGalleryImages) ? currentProject.allGalleryImages : [(currentProject ? currentProject.image : '')];
@@ -1010,8 +1099,14 @@ document.addEventListener('DOMContentLoaded', () => {
         ${prevNavHTML}
         ${nextNavHTML}
 
-        <!-- Edge-to-Edge Main Image Canvas (No inner container or gray border) -->
-        <img src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 75vh; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
+        <!-- Floating Zoom Controls (+ and -) -->
+        <div class="modal-zoom-controls" style="position: absolute; top: 16px; right: 16px; z-index: 25; display: flex; gap: 6px; padding: 4px 6px; border-radius: 8px;">
+          <button type="button" class="modal-zoom-btn" aria-label="Zoom In" onclick="window.changeLightboxZoom(0.35)" style="width: 32px; height: 32px; border-radius: 6px; background: rgba(255, 255, 255, 0.15); color: #ffffff; border: none; font-size: 1.25rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
+          <button type="button" class="modal-zoom-btn" aria-label="Zoom Out" onclick="window.changeLightboxZoom(-0.35)" style="width: 32px; height: 32px; border-radius: 6px; background: rgba(255, 255, 255, 0.15); color: #ffffff; border: none; font-size: 1.25rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center;">&minus;</button>
+        </div>
+
+        <!-- Edge-to-Edge Main Image Canvas with Interactive Zoom & Pan -->
+        <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 75vh; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: transform 0.2s ease-out; cursor: zoom-in;">
 
         <!-- Floating Translucent Docked Thumbnail Overlay Pill -->
         <div class="modal-thumb-dock" style="position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 20; display: flex; gap: 8px; justify-content: center; align-items: center; max-width: 90%; overflow-x: auto; padding: 6px 12px; border-radius: 12px;">
@@ -1019,14 +1114,18 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
     `;
+
+    setupLightboxZoomEvents(document.getElementById('item-modal-main-img'));
   }
 
   window.navRender = function(direction) {
+    window.resetLightboxZoom();
     currentRenderIndex += direction;
     renderLightboxView();
   };
 
   window.selectRenderIndex = function(idx) {
+    window.resetLightboxZoom();
     currentRenderIndex = idx;
     renderLightboxView();
   };
