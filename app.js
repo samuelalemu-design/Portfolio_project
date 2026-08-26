@@ -1159,7 +1159,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 4. Admin Text Overlay & Rich Formatting System
+   * 4. Admin Text Overlay & Rich Formatting System (interact.js Powered)
    * ------------------------------------------------------------------------ */
   let selectedOverlayId = null;
 
@@ -1180,10 +1180,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const newOverlay = {
       id: 'txt_' + Date.now(),
-      text: 'CAD Specification Annotation...',
-      left: 30,
-      top: 30,
-      width: 38,
+      text: 'CAD Annotation...',
+      left: 35,
+      top: 35,
+      width: 30,
       height: 12,
       fontSize: 18,
       fontWeight: 'bold',
@@ -1216,6 +1216,88 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.addTextOverlayToActiveImage = addTextOverlayToActiveImage;
 
+  function initInteractJsForOverlays() {
+    if (typeof interact === 'undefined') return;
+
+    interact('.admin-text-overlay-box')
+      .draggable({
+        inertia: false,
+        modifiers: [
+          interact.modifiers.restrictRect({
+            restriction: '#item-modal-stage-wrapper',
+            endOnly: false
+          })
+        ],
+        autoScroll: false,
+        listeners: {
+          move(event) {
+            const target = event.target;
+            const id = target.getAttribute('data-id');
+            const stageWrapper = document.getElementById('item-modal-stage-wrapper');
+            if (!stageWrapper || !currentProject) return;
+
+            const activeSrc = getActiveImageSrc();
+            const overlays = (currentProject.imageTextOverlays && currentProject.imageTextOverlays[activeSrc]) || [];
+            const item = overlays.find(o => o.id === id);
+            if (!item) return;
+
+            const rect = stageWrapper.getBoundingClientRect();
+            const currentLeftPx = (item.left / 100) * rect.width;
+            const currentTopPx = (item.top / 100) * rect.height;
+
+            const newLeftPx = currentLeftPx + event.dx;
+            const newTopPx = currentTopPx + event.dy;
+
+            item.left = Math.max(0, Math.min(85, (newLeftPx / rect.width) * 100));
+            item.top = Math.max(0, Math.min(85, (newTopPx / rect.height) * 100));
+
+            target.style.left = `${item.left}%`;
+            target.style.top = `${item.top}%`;
+          },
+          end() {
+            markDraftChanged();
+          }
+        }
+      })
+      .resizable({
+        edges: { left: true, right: true, bottom: true, top: true },
+        modifiers: [
+          interact.modifiers.restrictEdges({
+            outer: '#item-modal-stage-wrapper'
+          }),
+          interact.modifiers.restrictSize({
+            min: { width: 80, height: 35 }
+          })
+        ],
+        listeners: {
+          move(event) {
+            const target = event.target;
+            const id = target.getAttribute('data-id');
+            const stageWrapper = document.getElementById('item-modal-stage-wrapper');
+            if (!stageWrapper || !currentProject) return;
+
+            const activeSrc = getActiveImageSrc();
+            const overlays = (currentProject.imageTextOverlays && currentProject.imageTextOverlays[activeSrc]) || [];
+            const item = overlays.find(o => o.id === id);
+            if (!item) return;
+
+            const rect = stageWrapper.getBoundingClientRect();
+            const newWidthPercent = (event.rect.width / rect.width) * 100;
+            const newHeightPercent = (event.rect.height / rect.height) * 100;
+
+            item.width = Math.max(10, newWidthPercent);
+            item.height = Math.max(5, newHeightPercent);
+
+            target.style.width = `${item.width}%`;
+            target.style.minHeight = `${item.height}%`;
+          },
+          end() {
+            markDraftChanged();
+          }
+        }
+      });
+  }
+
   function renderTextOverlays() {
     const stageWrapper = document.getElementById('item-modal-stage-wrapper');
     if (!stageWrapper || !currentProject) return;
@@ -1230,7 +1312,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     overlays.forEach(item => {
       if (isAdmin) {
-        // Admin Mode: Interactive Draggable & Resizable Box with Formatting Bar
+        // Admin Mode: Interactive Draggable & Resizable Box with Floating Formatting Bar
         const box = document.createElement('div');
         box.className = `admin-text-overlay-box ${item.id === selectedOverlayId ? 'selected' : ''}`;
         box.setAttribute('data-id', item.id);
@@ -1246,10 +1328,10 @@ document.addEventListener('DOMContentLoaded', () => {
           ${isSelected ? `
             <!-- Floating Rich Text Formatting Bar -->
             <div class="admin-text-formatting-bar">
-              <input type="number" min="10" max="72" value="${item.fontSize}" class="fmt-input-size" title="Font Size (px)">
+              <input type="number" min="12" max="64" value="${item.fontSize || 18}" class="fmt-input-size" title="Font Size (12px - 64px)">
               <button type="button" class="fmt-tool-btn fmt-btn-bold ${item.fontWeight === 'bold' ? 'active' : ''}">B</button>
               <button type="button" class="fmt-tool-btn fmt-btn-italic ${item.fontStyle === 'italic' ? 'active' : ''}">I</button>
-              <input type="color" value="${item.color}" class="fmt-color-picker" title="Text Color">
+              <input type="color" value="${item.color || '#38bdf8'}" class="fmt-color-picker" title="Text Color">
               <select class="fmt-select-bg" title="Background Fill">
                 <option value="transparent" ${item.bgFill === 'transparent' ? 'selected' : ''}>Clear</option>
                 <option value="rgba(15, 23, 42, 0.8)" ${item.bgFill === 'rgba(15, 23, 42, 0.8)' ? 'selected' : ''}>Dark Slate</option>
@@ -1269,7 +1351,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="resize-handle bottom-right" data-handle="br"></div>
           ` : ''}
 
-          <div contenteditable="true" class="admin-text-content" style="font-size: ${item.fontSize}px; font-weight: ${item.fontWeight}; font-style: ${item.fontStyle}; color: ${item.color}; text-align: ${item.textAlign};">${item.text}</div>
+          <div contenteditable="true" class="admin-text-content" style="font-size: ${item.fontSize || 18}px; font-weight: ${item.fontWeight || 'normal'}; font-style: ${item.fontStyle || 'normal'}; color: ${item.color || '#ffffff'}; text-align: ${item.textAlign || 'left'};">${item.text}</div>
         `;
 
         // Select box on click
@@ -1295,7 +1377,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const fontSizeInput = box.querySelector('.fmt-input-size');
           if (fontSizeInput) {
             fontSizeInput.addEventListener('change', () => {
-              item.fontSize = parseInt(fontSizeInput.value) || 16;
+              item.fontSize = parseInt(fontSizeInput.value) || 18;
               markDraftChanged();
               renderTextOverlays();
             });
@@ -1361,75 +1443,6 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             });
           }
-
-          // Dragging Mechanic
-          box.addEventListener('mousedown', (e) => {
-            if (e.target.classList.contains('resize-handle') || e.target.closest('.admin-text-formatting-bar') || e.target.classList.contains('admin-text-content')) return;
-
-            const rect = stageWrapper.getBoundingClientRect();
-            const startX = e.clientX;
-            const startY = e.clientY;
-            const initialLeft = item.left;
-            const initialTop = item.top;
-
-            function onMouseMove(ev) {
-              const deltaX = ev.clientX - startX;
-              const deltaY = ev.clientY - startY;
-
-              const percentX = (deltaX / rect.width) * 100;
-              const percentY = (deltaY / rect.height) * 100;
-
-              item.left = Math.max(0, Math.min(85, initialLeft + percentX));
-              item.top = Math.max(0, Math.min(85, initialTop + percentY));
-
-              box.style.left = `${item.left}%`;
-              box.style.top = `${item.top}%`;
-              markDraftChanged();
-            }
-
-            function onMouseUp() {
-              window.removeEventListener('mousemove', onMouseMove);
-              window.removeEventListener('mouseup', onMouseUp);
-            }
-
-            window.addEventListener('mousemove', onMouseMove);
-            window.addEventListener('mouseup', onMouseUp);
-          });
-
-          // Resizing Mechanic
-          box.querySelectorAll('.resize-handle').forEach(handle => {
-            handle.addEventListener('mousedown', (e) => {
-              e.stopPropagation();
-              const rect = stageWrapper.getBoundingClientRect();
-              const startX = e.clientX;
-              const startY = e.clientY;
-              const initialWidth = item.width;
-              const initialHeight = item.height;
-
-              function onResizeMove(ev) {
-                const deltaX = ev.clientX - startX;
-                const deltaY = ev.clientY - startY;
-
-                const percentW = (deltaX / rect.width) * 100;
-                const percentH = (deltaY / rect.height) * 100;
-
-                item.width = Math.max(10, initialWidth + percentW);
-                item.height = Math.max(5, initialHeight + percentH);
-
-                box.style.width = `${item.width}%`;
-                box.style.minHeight = `${item.height}%`;
-                markDraftChanged();
-              }
-
-              function onResizeUp() {
-                window.removeEventListener('mousemove', onResizeMove);
-                window.removeEventListener('mouseup', onResizeUp);
-              }
-
-              window.addEventListener('mousemove', onResizeMove);
-              window.addEventListener('mouseup', onResizeUp);
-            });
-          });
         }
 
         stageWrapper.appendChild(box);
@@ -1442,16 +1455,20 @@ document.addEventListener('DOMContentLoaded', () => {
         box.style.width = `${item.width}%`;
         box.style.minHeight = `${item.height}%`;
         box.style.backgroundColor = item.bgFill || 'transparent';
-        box.style.fontSize = `${item.fontSize}px`;
-        box.style.fontWeight = item.fontWeight;
-        box.style.fontStyle = item.fontStyle;
-        box.style.color = item.color;
-        box.style.textAlign = item.textAlign;
+        box.style.fontSize = `${item.fontSize || 18}px`;
+        box.style.fontWeight = item.fontWeight || 'normal';
+        box.style.fontStyle = item.fontStyle || 'normal';
+        box.style.color = item.color || '#ffffff';
+        box.style.textAlign = item.textAlign || 'left';
         box.innerText = item.text;
 
         stageWrapper.appendChild(box);
       }
     });
+
+    if (isAdmin) {
+      initInteractJsForOverlays();
+    }
   }
 
   function renderLightboxView() {
