@@ -1989,78 +1989,302 @@ document.addEventListener('DOMContentLoaded', () => {
 
       renderProjectCards();
       renderExperienceSection();
+      renderSoftwareSection();
       return isLogged;
     }
 
     // =========================================================================
-    // EDITABLE SOFTWARE PROFICIENCY ICONS (ADMIN MODE)
+    // SOFTWARE PROFICIENCY MULTI-LOGO & FULL TEXT EDITING (ADMIN MODE)
     // =========================================================================
-    const softwareIconFileInput = document.getElementById('software-icon-file-input');
-    let currentEditingSoftwareId = null;
+    const defaultSoftwareList = [
+      {
+        id: 'sw-1',
+        badgeText: '3D CAD & PARAMETRIC DESIGN',
+        title: 'SolidWorks',
+        description: '3D Mechanical Design, Sheet Metal Development, Structural Weldments, Complex Assemblies, and Motion Analysis.',
+        icons: []
+      },
+      {
+        id: 'sw-2',
+        badgeText: 'PHOTOREALISTIC VISUALS',
+        title: 'KeyShot Studio',
+        description: 'High-Resolution Product Rendering, Studio Lighting Environments, Material Textures, and Marketing Visuals.',
+        icons: []
+      },
+      {
+        id: 'sw-3',
+        badgeText: 'TECHNICAL DOCUMENTATION',
+        title: 'SolidWorks Composer & Adobe InDesign',
+        description: 'Exploded Assembly Views, Step-by-Step Instruction Manuals, Graphical Layouts, and Manufacturing Documentation.',
+        icons: []
+      },
+      {
+        id: 'sw-4',
+        badgeText: 'CALCULATIONS & CAD AUTOMATION',
+        title: 'Microsoft Excel',
+        description: 'Dynamic Engineering Calculations, Design Tables, Formula-Driven Parametric Models, and Expense Estimation.',
+        icons: []
+      },
+      {
+        id: 'sw-5',
+        badgeText: 'RULE AUTOMATION & DIGITAL DELIVERY',
+        title: 'DriveWorks, SolidWorks VBA & WebGL',
+        description: 'Parametric Rule Automation, Custom Macro Scripts, Interactive 3D Model Viewers, and Shop-Floor QR Code Workflows.',
+        icons: []
+      }
+    ];
 
-    function loadSavedSoftwareIcons() {
+    let softwareList = [];
+    const defaultSvgMap = {};
+
+    // Preserve initial SVG HTML strings for fallback
+    document.querySelectorAll('.software-card').forEach(card => {
+      const swId = card.getAttribute('data-software-id');
+      const logoContainer = card.querySelector('.software-card-logo');
+      if (swId && logoContainer) {
+        const svg = logoContainer.querySelector('svg');
+        if (svg) {
+          defaultSvgMap[swId] = svg.outerHTML;
+        }
+      }
+    });
+
+    function loadSavedSoftwareData() {
       try {
-        const savedIcons = JSON.parse(localStorage.getItem('samuel_software_icons') || '{}');
-        Object.keys(savedIcons).forEach(swId => {
-          const card = document.querySelector(`.software-card[data-software-id="${swId}"]`);
-          if (card) {
-            const logoContainer = card.querySelector('.software-card-logo');
-            if (logoContainer && savedIcons[swId]) {
-              const editBtn = logoContainer.querySelector('.software-icon-edit-btn');
-              logoContainer.innerHTML = '';
-              if (editBtn) logoContainer.appendChild(editBtn);
-              
+        const saved = localStorage.getItem('samuel_software_cards_data');
+        if (saved) {
+          softwareList = JSON.parse(saved);
+        } else {
+          // Backward compatibility check with single icon map
+          const oldIcons = JSON.parse(localStorage.getItem('samuel_software_icons') || '{}');
+          softwareList = defaultSoftwareList.map(item => {
+            const newItem = { ...item };
+            if (oldIcons[item.id]) {
+              newItem.icons = [oldIcons[item.id]];
+            }
+            return newItem;
+          });
+        }
+      } catch(e) {
+        softwareList = JSON.parse(JSON.stringify(defaultSoftwareList));
+      }
+    }
+
+    function saveSoftwareData() {
+      try {
+        localStorage.setItem('samuel_software_cards_data', JSON.stringify(softwareList));
+      } catch(e) {
+        console.error('Error saving software cards data:', e);
+      }
+    }
+
+    function renderSoftwareSection() {
+      const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+
+      softwareList.forEach(item => {
+        const card = document.querySelector(`.software-card[data-software-id="${item.id}"]`);
+        if (!card) return;
+
+        // Update Badge Text
+        const badge = card.querySelector('.software-badge');
+        if (badge) badge.textContent = item.badgeText;
+
+        // Update Header & Edit Button
+        const header = card.querySelector('.software-card-header');
+        if (header) {
+          let editBtn = header.querySelector('.admin-edit-sw-card-btn');
+          if (!editBtn) {
+            editBtn = document.createElement('button');
+            editBtn.className = 'admin-edit-sw-card-btn';
+            editBtn.setAttribute('data-software-id', item.id);
+            editBtn.innerHTML = '✎ Edit Card';
+            header.appendChild(editBtn);
+          }
+          editBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openSoftwareCardEditorModal(item.id);
+          };
+        }
+
+        // Update Title
+        const titleElem = card.querySelector('h3');
+        if (titleElem) titleElem.textContent = item.title;
+
+        // Update Description
+        const descElem = card.querySelector('p');
+        if (descElem) descElem.textContent = item.description;
+
+        // Render Multi-Logos Side-by-Side
+        const logoContainer = card.querySelector('.software-card-logo');
+        if (logoContainer) {
+          logoContainer.innerHTML = '';
+          if (item.icons && item.icons.length > 0) {
+            item.icons.forEach((iconData, idx) => {
               const img = document.createElement('img');
-              img.src = savedIcons[swId];
-              img.alt = 'Software Icon';
+              img.src = iconData;
+              img.alt = `${item.title} Icon ${idx + 1}`;
               img.style.height = '36px';
               img.style.width = 'auto';
               img.style.maxHeight = '36px';
               img.style.objectFit = 'contain';
               logoContainer.appendChild(img);
-            }
+            });
+          } else if (defaultSvgMap[item.id]) {
+            logoContainer.innerHTML = defaultSvgMap[item.id];
           }
-        });
-      } catch(e) {
-        console.error('Error loading software icons from localStorage:', e);
+        }
+      });
+    }
+
+    // Modal & File Upload Logic for Software Card Editor
+    const swEditorModal = document.getElementById('admin-software-editor-modal');
+    const swEditorCloseBtn = document.getElementById('sw-editor-modal-close');
+    const swEditorCancelBtn = document.getElementById('sw-edit-btn-cancel');
+    const swEditorSaveBtn = document.getElementById('sw-edit-btn-save');
+    const swEditorAddIconBtn = document.getElementById('sw-edit-add-icon-btn');
+    const swLogosContainer = document.getElementById('sw-edit-logos-container');
+    const softwareIconFileInput = document.getElementById('software-icon-file-input');
+
+    let currentEditingCardId = null;
+    let tempEditIcons = [];
+    let uploadMode = 'add'; // 'add' or 'replace'
+    let uploadTargetIndex = null;
+
+    function openSoftwareCardEditorModal(cardId) {
+      const card = softwareList.find(c => c.id === cardId);
+      if (!card || !swEditorModal) return;
+
+      currentEditingCardId = cardId;
+      tempEditIcons = [...(card.icons || [])];
+
+      document.getElementById('sw-edit-card-id').value = card.id;
+      document.getElementById('sw-edit-badge').value = card.badgeText || '';
+      document.getElementById('sw-edit-title').value = card.title || '';
+      document.getElementById('sw-edit-description').value = card.description || '';
+
+      renderModalLogos();
+
+      if (typeof swEditorModal.showModal === 'function') {
+        swEditorModal.showModal();
+      } else {
+        swEditorModal.setAttribute('open', '');
       }
     }
 
-    document.querySelectorAll('.software-icon-edit-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        currentEditingSoftwareId = btn.getAttribute('data-software-id');
+    function closeSoftwareCardEditorModal() {
+      if (!swEditorModal) return;
+      if (typeof swEditorModal.close === 'function') {
+        swEditorModal.close();
+      } else {
+        swEditorModal.removeAttribute('open');
+      }
+    }
+
+    function renderModalLogos() {
+      if (!swLogosContainer) return;
+      swLogosContainer.innerHTML = '';
+
+      if (tempEditIcons.length === 0) {
+        swLogosContainer.innerHTML = `<span style="font-size: 0.8rem; color: var(--text-muted);">No custom icon uploaded yet. (Displaying default SVG)</span>`;
+        return;
+      }
+
+      tempEditIcons.forEach((iconData, idx) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'sw-logo-thumb-item';
+
+        const img = document.createElement('img');
+        img.src = iconData;
+        img.alt = `Icon ${idx + 1}`;
+        thumb.appendChild(img);
+
+        // Replace Button
+        const replaceBtn = document.createElement('button');
+        replaceBtn.type = 'button';
+        replaceBtn.className = 'sw-logo-thumb-replace-btn';
+        replaceBtn.title = 'Replace Icon';
+        replaceBtn.innerHTML = '✎';
+        replaceBtn.onclick = () => {
+          uploadMode = 'replace';
+          uploadTargetIndex = idx;
+          if (softwareIconFileInput) {
+            softwareIconFileInput.value = '';
+            softwareIconFileInput.click();
+          }
+        };
+        thumb.appendChild(replaceBtn);
+
+        // Remove Button
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'sw-logo-thumb-remove-btn';
+        removeBtn.title = 'Remove Icon';
+        removeBtn.innerHTML = '&times;';
+        removeBtn.onclick = () => {
+          tempEditIcons.splice(idx, 1);
+          renderModalLogos();
+        };
+        thumb.appendChild(removeBtn);
+
+        swLogosContainer.appendChild(thumb);
+      });
+    }
+
+    if (swEditorAddIconBtn) {
+      swEditorAddIconBtn.addEventListener('click', () => {
+        uploadMode = 'add';
+        uploadTargetIndex = null;
         if (softwareIconFileInput) {
           softwareIconFileInput.value = '';
           softwareIconFileInput.click();
         }
       });
-    });
+    }
 
     if (softwareIconFileInput) {
       softwareIconFileInput.addEventListener('change', (e) => {
         const file = e.target.files && e.target.files[0];
-        if (!file || !currentEditingSoftwareId) return;
+        if (!file) return;
 
         const reader = new FileReader();
         reader.onload = (evt) => {
           const dataUrl = evt.target.result;
-          try {
-            const savedIcons = JSON.parse(localStorage.getItem('samuel_software_icons') || '{}');
-            savedIcons[currentEditingSoftwareId] = dataUrl;
-            localStorage.setItem('samuel_software_icons', JSON.stringify(savedIcons));
-            loadSavedSoftwareIcons();
-            showToast('Custom software icon uploaded and saved successfully!');
-          } catch(err) {
-            showToast('Failed to save software icon.');
+          if (uploadMode === 'replace' && uploadTargetIndex !== null) {
+            tempEditIcons[uploadTargetIndex] = dataUrl;
+          } else {
+            tempEditIcons.push(dataUrl);
           }
+          renderModalLogos();
         };
         reader.readAsDataURL(file);
       });
     }
 
-    loadSavedSoftwareIcons();
+    if (swEditorCloseBtn) swEditorCloseBtn.addEventListener('click', closeSoftwareCardEditorModal);
+    if (swEditorCancelBtn) swEditorCancelBtn.addEventListener('click', closeSoftwareCardEditorModal);
+
+    if (swEditorSaveBtn) {
+      swEditorSaveBtn.addEventListener('click', () => {
+        if (!currentEditingCardId) return;
+
+        const card = softwareList.find(c => c.id === currentEditingCardId);
+        if (card) {
+          card.badgeText = document.getElementById('sw-edit-badge').value.trim();
+          card.title = document.getElementById('sw-edit-title').value.trim();
+          card.description = document.getElementById('sw-edit-description').value.trim();
+          card.icons = [...tempEditIcons];
+
+          saveSoftwareData();
+          renderSoftwareSection();
+          closeSoftwareCardEditorModal();
+          showToast(`Software card "${card.title}" updated successfully!`);
+        }
+      });
+    }
+
+    loadSavedSoftwareData();
+    renderSoftwareSection();
 
     // =========================================================================
     // HERO BRAND LOGO EDIT & LIVE CROPPER (ADMIN MODE)
