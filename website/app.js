@@ -1174,16 +1174,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeSrc = getActiveImageSrc();
     if (!activeSrc) return;
 
-    if (!currentProject.imageTextOverlays[activeSrc]) {
+    if (!Array.isArray(currentProject.imageTextOverlays[activeSrc])) {
       currentProject.imageTextOverlays[activeSrc] = [];
     }
 
     const newOverlay = {
       id: 'txt_' + Date.now(),
       text: 'CAD Specification Annotation...',
-      left: 25,
-      top: 25,
-      width: 35,
+      left: 30,
+      top: 30,
+      width: 38,
       height: 12,
       fontSize: 18,
       fontWeight: 'bold',
@@ -1197,7 +1197,24 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedOverlayId = newOverlay.id;
     markDraftChanged();
     renderTextOverlays();
+
+    // Auto-focus contenteditable element on creation
+    setTimeout(() => {
+      const createdBox = document.querySelector(`.admin-text-overlay-box[data-id="${newOverlay.id}"] .admin-text-content`);
+      if (createdBox) {
+        createdBox.focus();
+        try {
+          const range = document.createRange();
+          range.selectNodeContents(createdBox);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        } catch(e) {}
+      }
+    }, 50);
   }
+
+  window.addTextOverlayToActiveImage = addTextOverlayToActiveImage;
 
   function renderTextOverlays() {
     const stageWrapper = document.getElementById('item-modal-stage-wrapper');
@@ -1468,15 +1485,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (adminActionsContainer) {
       if (isAdmin) {
         adminActionsContainer.innerHTML = `
-          <button id="btn-add-overlay-text" class="btn btn-sm btn-primary" style="background: #0284c7; color: #ffffff; font-weight: 700; border-radius: 6px; padding: 0.35rem 0.75rem; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;">
+          <button type="button" id="btn-add-overlay-text" class="btn btn-sm btn-primary" onclick="window.addTextOverlayToActiveImage()" style="background: #0284c7; color: #ffffff; font-weight: 700; border-radius: 6px; padding: 0.35rem 0.85rem; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; pointer-events: auto !important; opacity: 1 !important; z-index: 100;">
             <span>+ Text Box</span>
           </button>
         `;
         const addBtn = document.getElementById('btn-add-overlay-text');
         if (addBtn) {
-          addBtn.onclick = function() {
+          addBtn.disabled = false;
+          addBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
             addTextOverlayToActiveImage();
-          };
+          });
         }
       } else {
         adminActionsContainer.innerHTML = '';
