@@ -964,8 +964,87 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 4. Lightbox Renderer with Auto-Cropping & Bottom Footer Thumbnails
+   * 4. Lightbox Renderer with Dynamic Color Sampling & Auto-Cropping
    * ------------------------------------------------------------------------ */
+  const sampledColorCache = new Map();
+
+  function sampleEdgeColor(src, callback) {
+    if (!src) {
+      callback({ color: 'transparent', isDarkBg: true });
+      return;
+    }
+    if (sampledColorCache.has(src)) {
+      callback(sampledColorCache.get(src));
+      return;
+    }
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+        if (!w || !h) {
+          const fallback = { color: 'transparent', isDarkBg: true };
+          sampledColorCache.set(src, fallback);
+          callback(fallback);
+          return;
+        }
+
+        canvas.width = w;
+        canvas.height = h;
+        ctx.drawImage(img, 0, 0);
+
+        const corners = [
+          ctx.getImageData(Math.min(2, w - 1), Math.min(2, h - 1), 1, 1).data,
+          ctx.getImageData(Math.max(0, w - 3), Math.min(2, h - 1), 1, 1).data,
+          ctx.getImageData(Math.min(2, w - 1), Math.max(0, h - 3), 1, 1).data,
+          ctx.getImageData(Math.max(0, w - 3), Math.max(0, h - 3), 1, 1).data
+        ];
+
+        let rSum = 0, gSum = 0, bSum = 0, aSum = 0;
+        corners.forEach(c => {
+          rSum += c[0];
+          gSum += c[1];
+          bSum += c[2];
+          aSum += c[3];
+        });
+
+        const r = Math.round(rSum / 4);
+        const g = Math.round(gSum / 4);
+        const b = Math.round(bSum / 4);
+        const a = aSum / 4;
+
+        if (a < 15) {
+          const fallback = { color: 'transparent', isDarkBg: true };
+          sampledColorCache.set(src, fallback);
+          callback(fallback);
+          return;
+        }
+
+        const sampledColor = `rgb(${r}, ${g}, ${b})`;
+        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+        const isDarkBg = luminance < 140;
+
+        const res = { color: sampledColor, isDarkBg: isDarkBg };
+        sampledColorCache.set(src, res);
+        callback(res);
+      } catch (err) {
+        const fallback = { color: 'transparent', isDarkBg: true };
+        sampledColorCache.set(src, fallback);
+        callback(fallback);
+      }
+    };
+    img.onerror = function() {
+      const fallback = { color: 'transparent', isDarkBg: true };
+      sampledColorCache.set(src, fallback);
+      callback(fallback);
+    };
+    img.src = src;
+  }
+
   const croppedImageCache = new Map();
 
   function autoCropImage(src, callback) {
@@ -1130,7 +1209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ` : '';
 
     itemModalBody.innerHTML = `
-      <div style="position: relative; width: 100%; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: transparent; border: none; padding: 0; margin: 0;">
+      <div id="item-modal-stage-wrapper" style="position: relative; width: 100%; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: transparent; transition: background-color 0.3s ease; border: none; padding: 0; margin: 0;">
         ${prevNavHTML}
         ${nextNavHTML}
 
@@ -1138,6 +1217,29 @@ document.addEventListener('DOMContentLoaded', () => {
         <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 80vh; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
       </div>
     `;
+
+    // Trigger Dynamic Corner Pixel Color Sampling for Seamless Canvas Blending
+    const stageWrapper = document.getElementById('item-modal-stage-wrapper');
+    sampleEdgeColor(activeSrc, (info) => {
+      if (stageWrapper && info && info.color !== 'transparent') {
+        stageWrapper.style.backgroundColor = info.color;
+
+        // Adapt UI contrast on navigation arrows based on background luminance
+        const navBtns = stageWrapper.querySelectorAll('.modal-nav-btn');
+        navBtns.forEach(btn => {
+          const svg = btn.querySelector('svg');
+          if (info.isDarkBg) {
+            btn.style.background = 'rgba(15, 23, 42, 0.75)';
+            if (svg) svg.setAttribute('stroke', '#ffffff');
+          } else {
+            btn.style.background = 'rgba(255, 255, 255, 0.85)';
+            if (svg) svg.setAttribute('stroke', '#0f172a');
+          }
+        });
+      } else if (stageWrapper) {
+        stageWrapper.style.backgroundColor = 'transparent';
+      }
+    });
 
     // Trigger Client-Side Auto-Cropping of CAD Render Whitespace
     const mainImgElem = document.getElementById('item-modal-main-img');

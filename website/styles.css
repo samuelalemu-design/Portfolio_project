@@ -1554,6 +1554,10 @@ dialog.project-modal::backdrop {
   justify-content: center;
 }
 
+#item-modal-stage-wrapper {
+  transition: background-color 0.3s ease;
+}
+
 #item-modal .modal-footer {
   padding: 0.6rem 1.25rem;
   background: #0f172a;
