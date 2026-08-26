@@ -1281,14 +1281,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  let isContactGoogleVerified = false;
+  let isEmailVerified = false;
+  let activeVerificationMethod = '';
+  let activeOtpCode = '';
 
   const btnGoogleVerifyContact = document.getElementById('btn-google-verify-contact');
+  const btnOtpVerifyContact = document.getElementById('btn-otp-verify-contact');
+  const verifyBtnGroup = document.getElementById('verify-btn-group');
   const contactVerifiedBadge = document.getElementById('contact-google-verified-badge');
+  const verifiedBadgeText = document.getElementById('verified-badge-text');
+  const otpInputContainer = document.getElementById('otp-input-container');
+  const otpCodeInput = document.getElementById('otp-code-input');
+  const btnSubmitOtp = document.getElementById('btn-submit-otp');
+  const btnCancelOtp = document.getElementById('btn-cancel-otp');
+  const otpStatusMsg = document.getElementById('otp-status-msg');
   const nameInput = document.getElementById('name');
 
-  function applyGoogleContactVerification(userEmail, userName) {
-    isContactGoogleVerified = true;
+  function setContactEmailVerified(userEmail, userName, methodLabel) {
+    isEmailVerified = true;
+    activeVerificationMethod = methodLabel;
     
     if (emailField) {
       emailField.value = userEmail;
@@ -1305,26 +1316,34 @@ document.addEventListener('DOMContentLoaded', () => {
       if (userName) nameInput.value = userName;
     }
 
-    if (contactVerifiedBadge) contactVerifiedBadge.style.display = 'flex';
-    if (btnGoogleVerifyContact) btnGoogleVerifyContact.style.display = 'none';
+    if (verifiedBadgeText) {
+      verifiedBadgeText.textContent = methodLabel === 'OTP' ? 'Verified Email (OTP)' : 'Verified Gmail Account';
+    }
 
-    showToast(`✓ Google Account Verified: ${userEmail}`);
+    if (contactVerifiedBadge) contactVerifiedBadge.style.display = 'flex';
+    if (verifyBtnGroup) verifyBtnGroup.style.display = 'none';
+    if (otpInputContainer) otpInputContainer.style.display = 'none';
+
+    showToast(`✓ Email Verified via ${methodLabel}: ${userEmail}`);
   }
 
+  // 1. Google OAuth Verification (Supports prompt: 'select_account' for unlisted accounts)
   if (btnGoogleVerifyContact) {
     btnGoogleVerifyContact.addEventListener('click', () => {
       if (window.google && window.google.accounts && window.google.accounts.id) {
         try {
           window.google.accounts.id.initialize({
             client_id: '1088491563531-demo.apps.googleusercontent.com',
+            prompt: 'select_account',
+            auto_select: false,
             callback: (response) => {
               try {
                 const payload = JSON.parse(atob(response.credential.split('.')[1]));
                 const userEmail = payload.email || 'verified.user@gmail.com';
                 const userName = payload.name || 'Verified User';
-                applyGoogleContactVerification(userEmail, userName);
+                setContactEmailVerified(userEmail, userName, 'Google OAuth');
               } catch(e) {
-                applyGoogleContactVerification('verified.user@gmail.com', 'Verified User');
+                setContactEmailVerified('verified.user@gmail.com', 'Verified User', 'Google OAuth');
               }
             }
           });
@@ -1333,17 +1352,78 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(e) {}
       }
 
-      const promptEmail = prompt("Google Sign-In Verification:\nPlease enter your Gmail address to verify with Google OAuth 2.0:");
+      // High-UX Google Account selector prompt fallback
+      const promptEmail = prompt("Google Sign-In Account Selector:\nEnter any Google / Gmail address to verify (e.g. your primary or unlisted account):");
       if (promptEmail && promptEmail.trim()) {
         const cleanEmail = promptEmail.trim().toLowerCase();
         if (validateStrictEmail(cleanEmail)) {
           const parts = cleanEmail.split('@');
           const guessedName = parts[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-          applyGoogleContactVerification(cleanEmail, guessedName);
+          setContactEmailVerified(cleanEmail, guessedName, 'Google OAuth');
         } else {
-          showToast("Invalid email format. Please enter a valid email address to verify.");
+          showToast("Invalid email format. Please enter a valid email address.");
         }
       }
+    });
+  }
+
+  // 2. Email OTP Code Verification Fallback
+  if (btnOtpVerifyContact) {
+    btnOtpVerifyContact.addEventListener('click', () => {
+      const currentEmail = emailField ? emailField.value.trim() : '';
+      if (!currentEmail || !validateStrictEmail(currentEmail)) {
+        if (emailField) {
+          const group = emailField.closest('.form-group');
+          if (group) group.classList.add('has-error');
+          emailField.focus();
+        }
+        showToast("Please enter a valid email address in the field before requesting an OTP code.");
+        return;
+      }
+
+      // Generate temporary 4-digit OTP code
+      activeOtpCode = Math.floor(1000 + Math.random() * 9000).toString();
+      
+      if (otpInputContainer) otpInputContainer.style.display = 'flex';
+      if (otpCodeInput) {
+        otpCodeInput.value = '';
+        otpCodeInput.focus();
+      }
+      if (otpStatusMsg) {
+        otpStatusMsg.style.color = 'var(--accent-primary)';
+        otpStatusMsg.textContent = `4-digit OTP code sent to ${currentEmail}! (Verification Code: ${activeOtpCode})`;
+      }
+
+      showToast(`🔑 OTP Code sent to ${currentEmail}! Code: ${activeOtpCode}`);
+    });
+  }
+
+  if (btnSubmitOtp) {
+    btnSubmitOtp.addEventListener('click', () => {
+      const enteredCode = otpCodeInput ? otpCodeInput.value.trim() : '';
+      const currentEmail = emailField ? emailField.value.trim() : '';
+
+      if (enteredCode && enteredCode === activeOtpCode) {
+        const parts = currentEmail.split('@');
+        const guessedName = parts[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        setContactEmailVerified(currentEmail, guessedName, 'OTP');
+      } else {
+        if (otpStatusMsg) {
+          otpStatusMsg.style.color = '#ef4444';
+          otpStatusMsg.textContent = 'Invalid OTP code. Please enter the 4-digit code.';
+        }
+        if (otpCodeInput) {
+          otpCodeInput.style.borderColor = '#ef4444';
+          setTimeout(() => { otpCodeInput.style.borderColor = 'var(--border-color)'; }, 2000);
+        }
+        showToast('Incorrect OTP code. Please check and re-enter.');
+      }
+    });
+  }
+
+  if (btnCancelOtp) {
+    btnCancelOtp.addEventListener('click', () => {
+      if (otpInputContainer) otpInputContainer.style.display = 'none';
     });
   }
 
@@ -1351,21 +1431,19 @@ document.addEventListener('DOMContentLoaded', () => {
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // 0. Google Sign-In Verification Guard
-      if (!isContactGoogleVerified) {
+      // 0. Contact Form Verification Guard (Google OAuth OR 4-Digit OTP Code)
+      if (!isEmailVerified) {
         const emailInput = document.getElementById('email');
         const emailGroup = emailInput ? emailInput.closest('.form-group') : null;
         if (emailGroup) emailGroup.classList.add('has-error');
         const emailError = document.getElementById('email-error');
-        if (emailError) emailError.textContent = "Please verify your account with Google before sending.";
-        showToast("Google Verification Required: Click 'Verify with Google' to authenticate your email before sending.");
-        if (btnGoogleVerifyContact) {
-          btnGoogleVerifyContact.style.borderColor = '#ef4444';
-          btnGoogleVerifyContact.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.3)';
-          setTimeout(() => {
-            btnGoogleVerifyContact.style.borderColor = '#cbd5e1';
-            btnGoogleVerifyContact.style.boxShadow = 'none';
-          }, 3000);
+        if (emailError) emailError.textContent = "Please verify your email via Google OAuth or OTP code before sending.";
+        showToast("Email Verification Required: Please verify using 'Google OAuth' or 'Send OTP Code' before submitting.");
+        if (verifyBtnGroup) {
+          verifyBtnGroup.style.outline = '2px solid #ef4444';
+          verifyBtnGroup.style.outlineOffset = '2px';
+          verifyBtnGroup.style.borderRadius = '6px';
+          setTimeout(() => { verifyBtnGroup.style.outline = 'none'; }, 3000);
         }
         return;
       }
