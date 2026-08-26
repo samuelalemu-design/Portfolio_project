@@ -571,7 +571,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Map for fast lookup by project ID
   const projectsMap = {};
-  projectsData.forEach(p => { projectsMap[p.id] = p; });
+  projectsData.forEach(p => {
+    p.annotations = p.annotations || [];
+    p.imageTextOverlays = p.imageTextOverlays || {};
+    projectsMap[p.id] = p;
+  });
 
   /* ------------------------------------------------------------------------
    * 1. Top Logo / Name Click Handler (Scroll to Top Home Page)
@@ -1252,9 +1256,29 @@ document.addEventListener('DOMContentLoaded', () => {
     el.addEventListener('touchstart', onPointerDown, { passive: true });
   }
 
+  function updateAnnotationProperty(item, key, value, contentDiv) {
+    item[key] = value;
+    if (contentDiv) {
+      if (key === 'color') {
+        contentDiv.style.setProperty('color', value, 'important');
+      } else if (key === 'fontSize') {
+        contentDiv.style.setProperty('font-size', `${value}px`, 'important');
+      } else if (key === 'isBold') {
+        contentDiv.style.setProperty('font-weight', value ? '700' : '400', 'important');
+      } else if (key === 'fontFamily') {
+        contentDiv.style.setProperty('font-family', value, 'important');
+      }
+    }
+    markDraftChanged();
+  }
+
   function renderTextOverlays() {
     const stageWrapper = document.getElementById('item-modal-stage-wrapper');
     if (!stageWrapper || !currentProject) return;
+
+    if (currentProject) {
+      stageWrapper.setAttribute('data-render-key', `${currentProject.id}-${currentRenderIndex}`);
+    }
 
     stageWrapper.querySelectorAll('.admin-text-overlay-box, .visitor-text-overlay-box').forEach(el => el.remove());
 
@@ -1277,50 +1301,86 @@ document.addEventListener('DOMContentLoaded', () => {
         box.style.flexDirection = 'column';
         box.style.alignItems = 'center';
 
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'admin-text-content';
+        contentDiv.contentEditable = item.isEditing ? 'true' : 'false';
+        contentDiv.style.setProperty('color', item.color || '#ffffff', 'important');
+        contentDiv.style.setProperty('font-size', `${item.fontSize || 20}px`, 'important');
+        contentDiv.style.setProperty('font-weight', item.isBold ? '700' : '400', 'important');
+        contentDiv.style.setProperty('font-family', item.fontFamily || 'Inter, sans-serif', 'important');
+        contentDiv.style.setProperty('background-color', item.bgFill || 'transparent', 'important');
+        contentDiv.style.padding = '6px 12px';
+        contentDiv.style.borderRadius = '6px';
+        contentDiv.style.outline = item.isEditing ? '2px dashed #38bdf8' : 'none';
+        contentDiv.style.cursor = item.isEditing ? 'text' : 'move';
+        contentDiv.style.userSelect = item.isEditing ? 'text' : 'none';
+        contentDiv.style.whiteSpace = 'pre-wrap';
+        contentDiv.innerText = item.text || 'Click to edit text';
+
         if (item.isEditing) {
           const toolbar = document.createElement('div');
           toolbar.className = 'admin-text-formatting-bar';
           toolbar.style.position = 'absolute';
-          toolbar.style.top = '-42px';
+          toolbar.style.top = '-46px';
           toolbar.style.left = '50%';
           toolbar.style.transform = 'translateX(-50%)';
           toolbar.style.display = 'flex';
           toolbar.style.alignItems = 'center';
           toolbar.style.gap = '6px';
           toolbar.style.background = '#0f172a';
-          toolbar.style.padding = '4px 8px';
-          toolbar.style.borderRadius = '6px';
+          toolbar.style.padding = '5px 10px';
+          toolbar.style.borderRadius = '8px';
           toolbar.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-          toolbar.style.boxShadow = '0 6px 16px rgba(0,0,0,0.5)';
+          toolbar.style.boxShadow = '0 8px 24px rgba(0,0,0,0.6)';
           toolbar.style.whiteSpace = 'nowrap';
           toolbar.style.zIndex = '40';
 
           toolbar.innerHTML = `
-            <input type="color" value="${item.color || '#ffffff'}" class="fmt-color-picker" title="Text Color" style="width: 24px; height: 24px; border: none; background: transparent; cursor: pointer;">
-            <input type="range" min="14" max="48" value="${item.fontSize || 20}" class="fmt-size-range" title="Text Size" style="width: 70px; accent-color: #38bdf8; cursor: pointer;">
+            <input type="color" value="${item.color || '#ffffff'}" class="fmt-color-picker" title="Text Color" style="width: 26px; height: 26px; border: none; background: transparent; cursor: pointer;">
+            <input type="range" min="14" max="72" value="${item.fontSize || 20}" class="fmt-size-range" title="Font Size (14px - 72px)" style="width: 70px; accent-color: #38bdf8; cursor: pointer;">
             <span class="fmt-size-label" style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600; min-width: 32px; text-align: center;">${item.fontSize || 20}px</span>
-            <button type="button" class="fmt-btn-delete" title="Delete Text" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.9rem; padding: 0 4px;">🗑️</button>
+            <select class="fmt-font-family" title="Font Family" style="background: #1e293b; color: #ffffff; border: 1px solid #334155; border-radius: 4px; padding: 2px 4px; font-size: 0.75rem; cursor: pointer;">
+              <option value="Inter, sans-serif" ${(!item.fontFamily || item.fontFamily.includes('sans-serif')) ? 'selected' : ''}>Sans-Serif</option>
+              <option value="Playfair Display, serif" ${(item.fontFamily && item.fontFamily.includes('serif')) ? 'selected' : ''}>Serif</option>
+              <option value="JetBrains Mono, monospace" ${(item.fontFamily && item.fontFamily.includes('monospace')) ? 'selected' : ''}>Monospace</option>
+            </select>
+            <button type="button" class="fmt-btn-bold" title="Bold" style="background: ${item.isBold ? '#0284c7' : '#1e293b'}; color: #ffffff; border: 1px solid #334155; border-radius: 4px; padding: 2px 8px; font-weight: 800; font-size: 0.8rem; cursor: pointer;">B</button>
+            <button type="button" class="fmt-btn-delete" title="Delete Text" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.95rem; padding: 0 4px;">🗑️</button>
           `;
 
           const colorInput = toolbar.querySelector('.fmt-color-picker');
           const sizeInput = toolbar.querySelector('.fmt-size-range');
           const sizeLabel = toolbar.querySelector('.fmt-size-label');
+          const familySelect = toolbar.querySelector('.fmt-font-family');
+          const boldBtn = toolbar.querySelector('.fmt-btn-bold');
           const deleteBtn = toolbar.querySelector('.fmt-btn-delete');
 
           if (colorInput) {
             colorInput.addEventListener('input', (e) => {
-              item.color = e.target.value;
-              contentDiv.style.color = item.color;
-              markDraftChanged();
+              updateAnnotationProperty(item, 'color', e.target.value, contentDiv);
             });
           }
 
           if (sizeInput && sizeLabel) {
             sizeInput.addEventListener('input', (e) => {
-              item.fontSize = parseInt(e.target.value) || 20;
-              sizeLabel.textContent = `${item.fontSize}px`;
-              contentDiv.style.fontSize = `${item.fontSize}px`;
-              markDraftChanged();
+              const val = parseInt(e.target.value) || 20;
+              sizeLabel.textContent = `${val}px`;
+              updateAnnotationProperty(item, 'fontSize', val, contentDiv);
+            });
+          }
+
+          if (familySelect) {
+            familySelect.addEventListener('change', (e) => {
+              updateAnnotationProperty(item, 'fontFamily', e.target.value, contentDiv);
+            });
+          }
+
+          if (boldBtn) {
+            boldBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              item.isBold = !item.isBold;
+              boldBtn.style.background = item.isBold ? '#0284c7' : '#1e293b';
+              updateAnnotationProperty(item, 'isBold', item.isBold, contentDiv);
             });
           }
 
@@ -1339,26 +1399,13 @@ document.addEventListener('DOMContentLoaded', () => {
           box.appendChild(toolbar);
         }
 
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'admin-text-content';
-        contentDiv.contentEditable = item.isEditing ? 'true' : 'false';
-        contentDiv.style.fontSize = `${item.fontSize || 20}px`;
-        contentDiv.style.color = item.color || '#ffffff';
-        contentDiv.style.backgroundColor = item.bgFill || 'transparent';
-        contentDiv.style.padding = '6px 12px';
-        contentDiv.style.borderRadius = '6px';
-        contentDiv.style.outline = item.isEditing ? '2px dashed #38bdf8' : 'none';
-        contentDiv.style.cursor = item.isEditing ? 'text' : 'move';
-        contentDiv.style.userSelect = item.isEditing ? 'text' : 'none';
-        contentDiv.style.whiteSpace = 'pre-wrap';
-        contentDiv.innerText = item.text || 'Click to edit text';
-
         contentDiv.addEventListener('input', () => {
           item.text = contentDiv.innerText.trim() || 'Text';
           markDraftChanged();
         });
 
-        contentDiv.addEventListener('blur', () => {
+        contentDiv.addEventListener('blur', (e) => {
+          if (e.relatedTarget && e.relatedTarget.closest('.admin-text-formatting-bar')) return;
           if (item.isEditing) {
             item.isEditing = false;
             renderTextOverlays();
@@ -1406,9 +1453,11 @@ document.addEventListener('DOMContentLoaded', () => {
         box.style.top = `${item.top || 50}%`;
         box.style.transform = 'translate(-50%, -50%)';
         box.style.zIndex = '20';
-        box.style.backgroundColor = item.bgFill || 'transparent';
-        box.style.fontSize = `${item.fontSize || 20}px`;
-        box.style.color = item.color || '#ffffff';
+        box.style.setProperty('color', item.color || '#ffffff', 'important');
+        box.style.setProperty('font-size', `${item.fontSize || 20}px`, 'important');
+        box.style.setProperty('font-weight', item.isBold ? '700' : '400', 'important');
+        box.style.setProperty('font-family', item.fontFamily || 'Inter, sans-serif', 'important');
+        box.style.setProperty('background-color', item.bgFill || 'transparent', 'important');
         box.style.padding = '6px 12px';
         box.style.borderRadius = '6px';
         box.style.pointerEvents = 'none';
