@@ -1159,150 +1159,245 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 4. Admin Text Overlay & Rich Formatting System (interact.js Powered)
+   * 4. Two-Step Popup Form Text Annotation System
    * ------------------------------------------------------------------------ */
-  let selectedOverlayId = null;
+  let editingOverlayId = null;
 
   function getActiveImageSrc() {
     const gallery = (currentProject && currentProject.allGalleryImages) ? currentProject.allGalleryImages : [(currentProject ? currentProject.image : '')];
     return gallery[currentRenderIndex] || '';
   }
 
-  function addTextOverlayToActiveImage() {
-    if (!currentProject) return;
-    currentProject.imageTextOverlays = currentProject.imageTextOverlays || {};
-    const activeSrc = getActiveImageSrc();
-    if (!activeSrc) return;
+  function openTextAnnotationModal(existingOverlay = null) {
+    const modal = document.getElementById('text-annotation-modal');
+    if (!modal) return;
 
-    if (!Array.isArray(currentProject.imageTextOverlays[activeSrc])) {
-      currentProject.imageTextOverlays[activeSrc] = [];
+    const modalTitle = document.getElementById('ann-modal-title');
+    const annInput = document.getElementById('ann-text-input');
+    const annFontSize = document.getElementById('ann-font-size');
+    const annColor = document.getElementById('ann-text-color');
+    const annColorVal = document.getElementById('ann-color-val');
+    const annBoldBtn = document.getElementById('ann-bold-btn');
+    const annBgStyle = document.getElementById('ann-bg-style');
+    const annSaveBtn = document.getElementById('ann-save-btn');
+    const annDeleteBtn = document.getElementById('ann-delete-btn');
+
+    if (existingOverlay) {
+      editingOverlayId = existingOverlay.id;
+      if (modalTitle) modalTitle.textContent = 'Edit Text Annotation';
+      if (annInput) annInput.value = existingOverlay.text || '';
+      if (annFontSize) annFontSize.value = (existingOverlay.fontSize || 24).toString();
+      if (annColor) {
+        annColor.value = existingOverlay.color || '#FFFFFF';
+        if (annColorVal) annColorVal.textContent = annColor.value;
+      }
+      if (annBoldBtn) {
+        const isBold = existingOverlay.fontWeight === 'bold';
+        annBoldBtn.setAttribute('data-bold', isBold ? 'true' : 'false');
+        annBoldBtn.textContent = isBold ? 'Bold (700)' : 'Normal';
+        annBoldBtn.style.background = isBold ? '#0284c7' : '';
+      }
+      if (annBgStyle) annBgStyle.value = existingOverlay.bgFill || 'transparent';
+      if (annSaveBtn) annSaveBtn.textContent = 'Update Text';
+      if (annDeleteBtn) annDeleteBtn.style.display = 'block';
+    } else {
+      editingOverlayId = null;
+      if (modalTitle) modalTitle.textContent = 'Add Text Annotation';
+      if (annInput) annInput.value = '';
+      if (annFontSize) annFontSize.value = '24';
+      if (annColor) {
+        annColor.value = '#FFFFFF';
+        if (annColorVal) annColorVal.textContent = '#FFFFFF';
+      }
+      if (annBoldBtn) {
+        annBoldBtn.setAttribute('data-bold', 'false');
+        annBoldBtn.textContent = 'Normal';
+        annBoldBtn.style.background = '';
+      }
+      if (annBgStyle) annBgStyle.value = 'rgba(15, 23, 42, 0.85)';
+      if (annSaveBtn) annSaveBtn.textContent = 'Create Text';
+      if (annDeleteBtn) annDeleteBtn.style.display = 'none';
     }
 
-    const newOverlay = {
-      id: 'txt_' + Date.now(),
-      text: 'CAD Annotation...',
-      left: 35,
-      top: 35,
-      width: 30,
-      height: 12,
-      fontSize: 18,
-      fontWeight: 'bold',
-      fontStyle: 'normal',
-      color: '#38bdf8',
-      bgFill: 'rgba(15, 23, 42, 0.8)',
-      textAlign: 'left'
-    };
+    if (typeof modal.showModal === 'function') {
+      modal.showModal();
+    } else {
+      modal.setAttribute('open', 'true');
+    }
+  }
 
-    currentProject.imageTextOverlays[activeSrc].push(newOverlay);
-    selectedOverlayId = newOverlay.id;
-    markDraftChanged();
-    renderTextOverlays();
-
-    // Auto-focus contenteditable element on creation
-    setTimeout(() => {
-      const createdBox = document.querySelector(`.admin-text-overlay-box[data-id="${newOverlay.id}"] .admin-text-content`);
-      if (createdBox) {
-        createdBox.focus();
-        try {
-          const range = document.createRange();
-          range.selectNodeContents(createdBox);
-          const sel = window.getSelection();
-          sel.removeAllRanges();
-          sel.addRange(range);
-        } catch(e) {}
+  function closeTextAnnotationModal() {
+    const modal = document.getElementById('text-annotation-modal');
+    if (modal) {
+      if (typeof modal.close === 'function') {
+        modal.close();
+      } else {
+        modal.removeAttribute('open');
       }
-    }, 50);
+    }
+    editingOverlayId = null;
   }
 
-  window.addTextOverlayToActiveImage = addTextOverlayToActiveImage;
+  function saveTextAnnotationFromModal() {
+    const annInput = document.getElementById('ann-text-input');
+    const textVal = annInput ? annInput.value.trim() : '';
+    if (!textVal) return;
 
-  function initInteractJsForOverlays() {
-    if (typeof interact === 'undefined') return;
+    const annFontSize = document.getElementById('ann-font-size');
+    const fontSizeVal = annFontSize ? parseInt(annFontSize.value) || 24 : 24;
 
-    interact('.admin-text-overlay-box')
-      .draggable({
-        inertia: false,
-        modifiers: [
-          interact.modifiers.restrictRect({
-            restriction: '#item-modal-stage-wrapper',
-            endOnly: false
-          })
-        ],
-        autoScroll: false,
-        listeners: {
-          move(event) {
-            const target = event.target;
-            const id = target.getAttribute('data-id');
-            const stageWrapper = document.getElementById('item-modal-stage-wrapper');
-            if (!stageWrapper || !currentProject) return;
+    const annColor = document.getElementById('ann-text-color');
+    const colorVal = annColor ? annColor.value : '#FFFFFF';
 
-            const activeSrc = getActiveImageSrc();
-            const overlays = (currentProject.imageTextOverlays && currentProject.imageTextOverlays[activeSrc]) || [];
-            const item = overlays.find(o => o.id === id);
-            if (!item) return;
+    const annBoldBtn = document.getElementById('ann-bold-btn');
+    const isBold = annBoldBtn && annBoldBtn.getAttribute('data-bold') === 'true';
 
-            const rect = stageWrapper.getBoundingClientRect();
-            const currentLeftPx = (item.left / 100) * rect.width;
-            const currentTopPx = (item.top / 100) * rect.height;
+    const annBgStyle = document.getElementById('ann-bg-style');
+    const bgStyleVal = annBgStyle ? annBgStyle.value : 'transparent';
 
-            const newLeftPx = currentLeftPx + event.dx;
-            const newTopPx = currentTopPx + event.dy;
+    const activeSrc = getActiveImageSrc();
+    if (!activeSrc || !currentProject) return;
 
-            item.left = Math.max(0, Math.min(85, (newLeftPx / rect.width) * 100));
-            item.top = Math.max(0, Math.min(85, (newTopPx / rect.height) * 100));
+    currentProject.imageTextOverlays = currentProject.imageTextOverlays || {};
+    currentProject.imageTextOverlays[activeSrc] = currentProject.imageTextOverlays[activeSrc] || [];
 
-            target.style.left = `${item.left}%`;
-            target.style.top = `${item.top}%`;
-          },
-          end() {
-            markDraftChanged();
-          }
-        }
-      })
-      .resizable({
-        edges: { left: true, right: true, bottom: true, top: true },
-        modifiers: [
-          interact.modifiers.restrictEdges({
-            outer: '#item-modal-stage-wrapper'
-          }),
-          interact.modifiers.restrictSize({
-            min: { width: 80, height: 35 }
-          })
-        ],
-        listeners: {
-          move(event) {
-            const target = event.target;
-            const id = target.getAttribute('data-id');
-            const stageWrapper = document.getElementById('item-modal-stage-wrapper');
-            if (!stageWrapper || !currentProject) return;
+    if (editingOverlayId) {
+      const existing = currentProject.imageTextOverlays[activeSrc].find(o => o.id === editingOverlayId);
+      if (existing) {
+        existing.text = textVal;
+        existing.fontSize = fontSizeVal;
+        existing.color = colorVal;
+        existing.fontWeight = isBold ? 'bold' : 'normal';
+        existing.bgFill = bgStyleVal;
+      }
+    } else {
+      const newOverlay = {
+        id: 'txt_' + Date.now(),
+        text: textVal,
+        left: 45,
+        top: 45,
+        fontSize: fontSizeVal,
+        color: colorVal,
+        fontWeight: isBold ? 'bold' : 'normal',
+        bgFill: bgStyleVal
+      };
+      currentProject.imageTextOverlays[activeSrc].push(newOverlay);
+    }
 
-            const activeSrc = getActiveImageSrc();
-            const overlays = (currentProject.imageTextOverlays && currentProject.imageTextOverlays[activeSrc]) || [];
-            const item = overlays.find(o => o.id === id);
-            if (!item) return;
-
-            const rect = stageWrapper.getBoundingClientRect();
-            const newWidthPercent = (event.rect.width / rect.width) * 100;
-            const newHeightPercent = (event.rect.height / rect.height) * 100;
-
-            item.width = Math.max(10, newWidthPercent);
-            item.height = Math.max(5, newHeightPercent);
-
-            target.style.width = `${item.width}%`;
-            target.style.minHeight = `${item.height}%`;
-          },
-          end() {
-            markDraftChanged();
-          }
-        }
-      });
+    markDraftChanged();
+    closeTextAnnotationModal();
+    renderTextOverlays();
   }
+
+  function deleteTextAnnotationFromModal() {
+    if (!editingOverlayId || !currentProject) return;
+    const activeSrc = getActiveImageSrc();
+    if (!activeSrc || !currentProject.imageTextOverlays || !currentProject.imageTextOverlays[activeSrc]) return;
+
+    const idx = currentProject.imageTextOverlays[activeSrc].findIndex(o => o.id === editingOverlayId);
+    if (idx !== -1) {
+      currentProject.imageTextOverlays[activeSrc].splice(idx, 1);
+      markDraftChanged();
+    }
+    closeTextAnnotationModal();
+    renderTextOverlays();
+  }
+
+  function attachOverlayDragHandlers(el, item) {
+    let isDragging = false;
+    let startX = 0, startY = 0;
+    let startLeftPct = item.left || 45;
+    let startTopPct = item.top || 45;
+
+    function onPointerDown(e) {
+      isDragging = false;
+      startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      startLeftPct = item.left || 45;
+      startTopPct = item.top || 45;
+
+      function onPointerMove(ev) {
+        const clientX = ev.clientX || (ev.touches && ev.touches[0].clientX) || 0;
+        const clientY = ev.clientY || (ev.touches && ev.touches[0].clientY) || 0;
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+
+        if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+          isDragging = true;
+          el.style.zIndex = '50';
+          const stageWrapper = document.getElementById('item-modal-stage-wrapper');
+          if (stageWrapper) {
+            const rect = stageWrapper.getBoundingClientRect();
+            const newLeftPct = Math.max(0, Math.min(85, startLeftPct + (deltaX / rect.width) * 100));
+            const newTopPct = Math.max(0, Math.min(85, startTopPct + (deltaY / rect.height) * 100));
+
+            item.left = newLeftPct;
+            item.top = newTopPct;
+            el.style.left = `${newLeftPct}%`;
+            el.style.top = `${newTopPct}%`;
+          }
+        }
+      }
+
+      function onPointerUp() {
+        if (isDragging) {
+          el.style.zIndex = '35';
+          markDraftChanged();
+        }
+        window.removeEventListener('mousemove', onPointerMove);
+        window.removeEventListener('mouseup', onPointerUp);
+        window.removeEventListener('touchmove', onPointerMove);
+        window.removeEventListener('touchend', onPointerUp);
+      }
+
+      window.addEventListener('mousemove', onPointerMove);
+      window.addEventListener('mouseup', onPointerUp);
+      window.addEventListener('touchmove', onPointerMove);
+      window.addEventListener('touchend', onPointerUp);
+    }
+
+    el.addEventListener('mousedown', onPointerDown);
+    el.addEventListener('touchstart', onPointerDown, { passive: true });
+  }
+
+  function setupTextAnnotationModalEvents() {
+    const annModalClose = document.getElementById('ann-modal-close');
+    const annCancelBtn = document.getElementById('ann-cancel-btn');
+    const annSaveBtn = document.getElementById('ann-save-btn');
+    const annDeleteBtn = document.getElementById('ann-delete-btn');
+    const annTextColor = document.getElementById('ann-text-color');
+    const annColorVal = document.getElementById('ann-color-val');
+    const annBoldBtn = document.getElementById('ann-bold-btn');
+
+    if (annModalClose) annModalClose.onclick = closeTextAnnotationModal;
+    if (annCancelBtn) annCancelBtn.onclick = closeTextAnnotationModal;
+    if (annSaveBtn) annSaveBtn.onclick = saveTextAnnotationFromModal;
+    if (annDeleteBtn) annDeleteBtn.onclick = deleteTextAnnotationFromModal;
+
+    if (annTextColor && annColorVal) {
+      annTextColor.oninput = function() {
+        annColorVal.textContent = annTextColor.value;
+      };
+    }
+
+    if (annBoldBtn) {
+      annBoldBtn.onclick = function() {
+        const isBold = annBoldBtn.getAttribute('data-bold') === 'true';
+        annBoldBtn.setAttribute('data-bold', isBold ? 'false' : 'true');
+        annBoldBtn.textContent = isBold ? 'Normal' : 'Bold (700)';
+        annBoldBtn.style.background = isBold ? '' : '#0284c7';
+      };
+    }
+  }
+
+  window.addTextOverlayToActiveImage = function() {
+    openTextAnnotationModal(null);
+  };
 
   function renderTextOverlays() {
     const stageWrapper = document.getElementById('item-modal-stage-wrapper');
     if (!stageWrapper || !currentProject) return;
 
-    // Remove existing overlay elements
     stageWrapper.querySelectorAll('.admin-text-overlay-box, .visitor-text-overlay-box').forEach(el => el.remove());
 
     const activeSrc = getActiveImageSrc();
@@ -1312,163 +1407,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     overlays.forEach(item => {
       if (isAdmin) {
-        // Admin Mode: Interactive Draggable & Resizable Box with Floating Formatting Bar
+        // Admin Mode: Draggable Box (Click opens Edit Modal)
         const box = document.createElement('div');
-        box.className = `admin-text-overlay-box ${item.id === selectedOverlayId ? 'selected' : ''}`;
+        box.className = 'admin-text-overlay-box';
         box.setAttribute('data-id', item.id);
-        box.style.left = `${item.left}%`;
-        box.style.top = `${item.top}%`;
-        box.style.width = `${item.width}%`;
-        box.style.minHeight = `${item.height}%`;
+        box.style.left = `${item.left || 45}%`;
+        box.style.top = `${item.top || 45}%`;
         box.style.backgroundColor = item.bgFill || 'transparent';
+        box.style.fontSize = `${item.fontSize || 24}px`;
+        box.style.fontWeight = item.fontWeight || 'normal';
+        box.style.color = item.color || '#ffffff';
+        box.style.padding = '6px 12px';
+        box.style.borderRadius = '6px';
+        box.style.cursor = 'move';
+        box.innerText = item.text;
 
-        const isSelected = item.id === selectedOverlayId;
-
-        box.innerHTML = `
-          ${isSelected ? `
-            <!-- Floating Rich Text Formatting Bar -->
-            <div class="admin-text-formatting-bar">
-              <input type="number" min="12" max="64" value="${item.fontSize || 18}" class="fmt-input-size" title="Font Size (12px - 64px)">
-              <button type="button" class="fmt-tool-btn fmt-btn-bold ${item.fontWeight === 'bold' ? 'active' : ''}">B</button>
-              <button type="button" class="fmt-tool-btn fmt-btn-italic ${item.fontStyle === 'italic' ? 'active' : ''}">I</button>
-              <input type="color" value="${item.color || '#38bdf8'}" class="fmt-color-picker" title="Text Color">
-              <select class="fmt-select-bg" title="Background Fill">
-                <option value="transparent" ${item.bgFill === 'transparent' ? 'selected' : ''}>Clear</option>
-                <option value="rgba(15, 23, 42, 0.8)" ${item.bgFill === 'rgba(15, 23, 42, 0.8)' ? 'selected' : ''}>Dark Slate</option>
-                <option value="rgba(255, 255, 255, 0.88)" ${item.bgFill === 'rgba(255, 255, 255, 0.88)' ? 'selected' : ''}>Light White</option>
-                <option value="rgba(0, 0, 0, 0.85)" ${item.bgFill === 'rgba(0, 0, 0, 0.85)' ? 'selected' : ''}>Solid Black</option>
-              </select>
-              <button type="button" class="fmt-tool-btn fmt-btn-align ${item.textAlign === 'left' ? 'active' : ''}" data-align="left">Left</button>
-              <button type="button" class="fmt-tool-btn fmt-btn-align ${item.textAlign === 'center' ? 'active' : ''}" data-align="center">Center</button>
-              <button type="button" class="fmt-tool-btn fmt-btn-align ${item.textAlign === 'right' ? 'active' : ''}" data-align="right">Right</button>
-              <button type="button" class="fmt-tool-btn fmt-btn-delete" title="Delete Text Box" style="color: #ef4444;">🗑️</button>
-            </div>
-
-            <!-- Resize Corner Handles -->
-            <div class="resize-handle top-left" data-handle="tl"></div>
-            <div class="resize-handle top-right" data-handle="tr"></div>
-            <div class="resize-handle bottom-left" data-handle="bl"></div>
-            <div class="resize-handle bottom-right" data-handle="br"></div>
-          ` : ''}
-
-          <div contenteditable="true" class="admin-text-content" style="font-size: ${item.fontSize || 18}px; font-weight: ${item.fontWeight || 'normal'}; font-style: ${item.fontStyle || 'normal'}; color: ${item.color || '#ffffff'}; text-align: ${item.textAlign || 'left'};">${item.text}</div>
-        `;
-
-        // Select box on click
+        // Click to Edit
         box.addEventListener('click', (e) => {
           e.stopPropagation();
-          if (selectedOverlayId !== item.id) {
-            selectedOverlayId = item.id;
-            renderTextOverlays();
-          }
+          openTextAnnotationModal(item);
         });
 
-        // Content editable input listener
-        const contentDiv = box.querySelector('.admin-text-content');
-        if (contentDiv) {
-          contentDiv.addEventListener('input', () => {
-            item.text = contentDiv.innerText.trim();
-            markDraftChanged();
-          });
-        }
-
-        // Formatting controls listeners
-        if (isSelected) {
-          const fontSizeInput = box.querySelector('.fmt-input-size');
-          if (fontSizeInput) {
-            fontSizeInput.addEventListener('change', () => {
-              item.fontSize = parseInt(fontSizeInput.value) || 18;
-              markDraftChanged();
-              renderTextOverlays();
-            });
-          }
-
-          const boldBtn = box.querySelector('.fmt-btn-bold');
-          if (boldBtn) {
-            boldBtn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              item.fontWeight = item.fontWeight === 'bold' ? 'normal' : 'bold';
-              markDraftChanged();
-              renderTextOverlays();
-            });
-          }
-
-          const italicBtn = box.querySelector('.fmt-btn-italic');
-          if (italicBtn) {
-            italicBtn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              item.fontStyle = item.fontStyle === 'italic' ? 'normal' : 'italic';
-              markDraftChanged();
-              renderTextOverlays();
-            });
-          }
-
-          const colorPicker = box.querySelector('.fmt-color-picker');
-          if (colorPicker) {
-            colorPicker.addEventListener('change', () => {
-              item.color = colorPicker.value;
-              markDraftChanged();
-              renderTextOverlays();
-            });
-          }
-
-          const bgSelect = box.querySelector('.fmt-select-bg');
-          if (bgSelect) {
-            bgSelect.addEventListener('change', () => {
-              item.bgFill = bgSelect.value;
-              markDraftChanged();
-              renderTextOverlays();
-            });
-          }
-
-          box.querySelectorAll('.fmt-btn-align').forEach(alignBtn => {
-            alignBtn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              item.textAlign = alignBtn.getAttribute('data-align');
-              markDraftChanged();
-              renderTextOverlays();
-            });
-          });
-
-          const delBtn = box.querySelector('.fmt-btn-delete');
-          if (delBtn) {
-            delBtn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              const idx = overlays.findIndex(o => o.id === item.id);
-              if (idx !== -1) {
-                overlays.splice(idx, 1);
-                selectedOverlayId = null;
-                markDraftChanged();
-                renderTextOverlays();
-              }
-            });
-          }
-        }
-
+        attachOverlayDragHandlers(box, item);
         stageWrapper.appendChild(box);
       } else {
-        // Visitor Mode: Read-Only HTML Absolute Layer
+        // Visitor Mode: Static Read-Only Layer
         const box = document.createElement('div');
         box.className = 'visitor-text-overlay-box';
-        box.style.left = `${item.left}%`;
-        box.style.top = `${item.top}%`;
-        box.style.width = `${item.width}%`;
-        box.style.minHeight = `${item.height}%`;
+        box.style.left = `${item.left || 45}%`;
+        box.style.top = `${item.top || 45}%`;
         box.style.backgroundColor = item.bgFill || 'transparent';
-        box.style.fontSize = `${item.fontSize || 18}px`;
+        box.style.fontSize = `${item.fontSize || 24}px`;
         box.style.fontWeight = item.fontWeight || 'normal';
-        box.style.fontStyle = item.fontStyle || 'normal';
         box.style.color = item.color || '#ffffff';
-        box.style.textAlign = item.textAlign || 'left';
+        box.style.padding = '6px 12px';
+        box.style.borderRadius = '6px';
         box.innerText = item.text;
 
         stageWrapper.appendChild(box);
       }
     });
 
-    if (isAdmin) {
-      initInteractJsForOverlays();
-    }
+    setupTextAnnotationModalEvents();
   }
 
   function renderLightboxView() {
