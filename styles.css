@@ -1707,6 +1707,114 @@ dialog.project-modal::backdrop {
   box-shadow: 0 0 10px rgba(2, 132, 199, 0.3) !important;
 }
 
+/* Admin Text Overlay & Rich Formatting Toolbar System */
+.admin-text-overlay-box {
+  position: absolute;
+  box-sizing: border-box;
+  z-index: 35;
+  border: 1px dashed rgba(56, 189, 248, 0.7);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: move;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+}
+
+.admin-text-overlay-box.selected {
+  border: 2px solid #38bdf8 !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.5) !important;
+}
+
+.admin-text-content {
+  outline: none;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  width: 100%;
+  height: 100%;
+  user-select: text;
+}
+
+.visitor-text-overlay-box {
+  position: absolute;
+  box-sizing: border-box;
+  z-index: 30;
+  padding: 4px 8px;
+  pointer-events: none;
+  user-select: none;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  border-radius: 6px;
+}
+
+/* Resize Handles for Admin Text Box */
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #38bdf8;
+  border: 1px solid #ffffff;
+  border-radius: 50%;
+  z-index: 45;
+}
+
+.resize-handle.top-left { top: -5px; left: -5px; cursor: nwse-resize; }
+.resize-handle.top-right { top: -5px; right: -5px; cursor: nesw-resize; }
+.resize-handle.bottom-left { bottom: -5px; left: -5px; cursor: nesw-resize; }
+.resize-handle.bottom-right { bottom: -5px; right: -5px; cursor: nwse-resize; }
+
+/* Rich Text Formatting Toolbar */
+.admin-text-formatting-bar {
+  position: absolute;
+  top: -46px;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #0f172a;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+  white-space: nowrap;
+}
+
+.fmt-tool-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.fmt-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.fmt-tool-btn.active {
+  background: #0284c7 !important;
+  border-color: #38bdf8 !important;
+  color: #ffffff !important;
+}
+
+:root[data-theme="light"] .admin-text-formatting-bar {
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+:root[data-theme="light"] .fmt-tool-btn {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #0f172a !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
 #hero-profile-raw-overlay::backdrop {
   background-color: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);

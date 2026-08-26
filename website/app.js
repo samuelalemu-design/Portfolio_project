@@ -1158,6 +1158,285 @@ document.addEventListener('DOMContentLoaded', () => {
     img.src = src;
   }
 
+  /* ------------------------------------------------------------------------
+   * 4. Admin Text Overlay & Rich Formatting System
+   * ------------------------------------------------------------------------ */
+  let selectedOverlayId = null;
+
+  function getActiveImageSrc() {
+    const gallery = (currentProject && currentProject.allGalleryImages) ? currentProject.allGalleryImages : [(currentProject ? currentProject.image : '')];
+    return gallery[currentRenderIndex] || '';
+  }
+
+  function addTextOverlayToActiveImage() {
+    if (!currentProject) return;
+    currentProject.imageTextOverlays = currentProject.imageTextOverlays || {};
+    const activeSrc = getActiveImageSrc();
+    if (!activeSrc) return;
+
+    if (!currentProject.imageTextOverlays[activeSrc]) {
+      currentProject.imageTextOverlays[activeSrc] = [];
+    }
+
+    const newOverlay = {
+      id: 'txt_' + Date.now(),
+      text: 'CAD Specification Annotation...',
+      left: 25,
+      top: 25,
+      width: 35,
+      height: 12,
+      fontSize: 18,
+      fontWeight: 'bold',
+      fontStyle: 'normal',
+      color: '#38bdf8',
+      bgFill: 'rgba(15, 23, 42, 0.8)',
+      textAlign: 'left'
+    };
+
+    currentProject.imageTextOverlays[activeSrc].push(newOverlay);
+    selectedOverlayId = newOverlay.id;
+    markDraftChanged();
+    renderTextOverlays();
+  }
+
+  function renderTextOverlays() {
+    const stageWrapper = document.getElementById('item-modal-stage-wrapper');
+    if (!stageWrapper || !currentProject) return;
+
+    // Remove existing overlay elements
+    stageWrapper.querySelectorAll('.admin-text-overlay-box, .visitor-text-overlay-box').forEach(el => el.remove());
+
+    const activeSrc = getActiveImageSrc();
+    currentProject.imageTextOverlays = currentProject.imageTextOverlays || {};
+    const overlays = currentProject.imageTextOverlays[activeSrc] || [];
+    const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+
+    overlays.forEach(item => {
+      if (isAdmin) {
+        // Admin Mode: Interactive Draggable & Resizable Box with Formatting Bar
+        const box = document.createElement('div');
+        box.className = `admin-text-overlay-box ${item.id === selectedOverlayId ? 'selected' : ''}`;
+        box.setAttribute('data-id', item.id);
+        box.style.left = `${item.left}%`;
+        box.style.top = `${item.top}%`;
+        box.style.width = `${item.width}%`;
+        box.style.minHeight = `${item.height}%`;
+        box.style.backgroundColor = item.bgFill || 'transparent';
+
+        const isSelected = item.id === selectedOverlayId;
+
+        box.innerHTML = `
+          ${isSelected ? `
+            <!-- Floating Rich Text Formatting Bar -->
+            <div class="admin-text-formatting-bar">
+              <input type="number" min="10" max="72" value="${item.fontSize}" class="fmt-input-size" title="Font Size (px)">
+              <button type="button" class="fmt-tool-btn fmt-btn-bold ${item.fontWeight === 'bold' ? 'active' : ''}">B</button>
+              <button type="button" class="fmt-tool-btn fmt-btn-italic ${item.fontStyle === 'italic' ? 'active' : ''}">I</button>
+              <input type="color" value="${item.color}" class="fmt-color-picker" title="Text Color">
+              <select class="fmt-select-bg" title="Background Fill">
+                <option value="transparent" ${item.bgFill === 'transparent' ? 'selected' : ''}>Clear</option>
+                <option value="rgba(15, 23, 42, 0.8)" ${item.bgFill === 'rgba(15, 23, 42, 0.8)' ? 'selected' : ''}>Dark Slate</option>
+                <option value="rgba(255, 255, 255, 0.88)" ${item.bgFill === 'rgba(255, 255, 255, 0.88)' ? 'selected' : ''}>Light White</option>
+                <option value="rgba(0, 0, 0, 0.85)" ${item.bgFill === 'rgba(0, 0, 0, 0.85)' ? 'selected' : ''}>Solid Black</option>
+              </select>
+              <button type="button" class="fmt-tool-btn fmt-btn-align ${item.textAlign === 'left' ? 'active' : ''}" data-align="left">Left</button>
+              <button type="button" class="fmt-tool-btn fmt-btn-align ${item.textAlign === 'center' ? 'active' : ''}" data-align="center">Center</button>
+              <button type="button" class="fmt-tool-btn fmt-btn-align ${item.textAlign === 'right' ? 'active' : ''}" data-align="right">Right</button>
+              <button type="button" class="fmt-tool-btn fmt-btn-delete" title="Delete Text Box" style="color: #ef4444;">🗑️</button>
+            </div>
+
+            <!-- Resize Corner Handles -->
+            <div class="resize-handle top-left" data-handle="tl"></div>
+            <div class="resize-handle top-right" data-handle="tr"></div>
+            <div class="resize-handle bottom-left" data-handle="bl"></div>
+            <div class="resize-handle bottom-right" data-handle="br"></div>
+          ` : ''}
+
+          <div contenteditable="true" class="admin-text-content" style="font-size: ${item.fontSize}px; font-weight: ${item.fontWeight}; font-style: ${item.fontStyle}; color: ${item.color}; text-align: ${item.textAlign};">${item.text}</div>
+        `;
+
+        // Select box on click
+        box.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (selectedOverlayId !== item.id) {
+            selectedOverlayId = item.id;
+            renderTextOverlays();
+          }
+        });
+
+        // Content editable input listener
+        const contentDiv = box.querySelector('.admin-text-content');
+        if (contentDiv) {
+          contentDiv.addEventListener('input', () => {
+            item.text = contentDiv.innerText.trim();
+            markDraftChanged();
+          });
+        }
+
+        // Formatting controls listeners
+        if (isSelected) {
+          const fontSizeInput = box.querySelector('.fmt-input-size');
+          if (fontSizeInput) {
+            fontSizeInput.addEventListener('change', () => {
+              item.fontSize = parseInt(fontSizeInput.value) || 16;
+              markDraftChanged();
+              renderTextOverlays();
+            });
+          }
+
+          const boldBtn = box.querySelector('.fmt-btn-bold');
+          if (boldBtn) {
+            boldBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              item.fontWeight = item.fontWeight === 'bold' ? 'normal' : 'bold';
+              markDraftChanged();
+              renderTextOverlays();
+            });
+          }
+
+          const italicBtn = box.querySelector('.fmt-btn-italic');
+          if (italicBtn) {
+            italicBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              item.fontStyle = item.fontStyle === 'italic' ? 'normal' : 'italic';
+              markDraftChanged();
+              renderTextOverlays();
+            });
+          }
+
+          const colorPicker = box.querySelector('.fmt-color-picker');
+          if (colorPicker) {
+            colorPicker.addEventListener('change', () => {
+              item.color = colorPicker.value;
+              markDraftChanged();
+              renderTextOverlays();
+            });
+          }
+
+          const bgSelect = box.querySelector('.fmt-select-bg');
+          if (bgSelect) {
+            bgSelect.addEventListener('change', () => {
+              item.bgFill = bgSelect.value;
+              markDraftChanged();
+              renderTextOverlays();
+            });
+          }
+
+          box.querySelectorAll('.fmt-btn-align').forEach(alignBtn => {
+            alignBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              item.textAlign = alignBtn.getAttribute('data-align');
+              markDraftChanged();
+              renderTextOverlays();
+            });
+          });
+
+          const delBtn = box.querySelector('.fmt-btn-delete');
+          if (delBtn) {
+            delBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const idx = overlays.findIndex(o => o.id === item.id);
+              if (idx !== -1) {
+                overlays.splice(idx, 1);
+                selectedOverlayId = null;
+                markDraftChanged();
+                renderTextOverlays();
+              }
+            });
+          }
+
+          // Dragging Mechanic
+          box.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('resize-handle') || e.target.closest('.admin-text-formatting-bar') || e.target.classList.contains('admin-text-content')) return;
+
+            const rect = stageWrapper.getBoundingClientRect();
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const initialLeft = item.left;
+            const initialTop = item.top;
+
+            function onMouseMove(ev) {
+              const deltaX = ev.clientX - startX;
+              const deltaY = ev.clientY - startY;
+
+              const percentX = (deltaX / rect.width) * 100;
+              const percentY = (deltaY / rect.height) * 100;
+
+              item.left = Math.max(0, Math.min(85, initialLeft + percentX));
+              item.top = Math.max(0, Math.min(85, initialTop + percentY));
+
+              box.style.left = `${item.left}%`;
+              box.style.top = `${item.top}%`;
+              markDraftChanged();
+            }
+
+            function onMouseUp() {
+              window.removeEventListener('mousemove', onMouseMove);
+              window.removeEventListener('mouseup', onMouseUp);
+            }
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+          });
+
+          // Resizing Mechanic
+          box.querySelectorAll('.resize-handle').forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+              e.stopPropagation();
+              const rect = stageWrapper.getBoundingClientRect();
+              const startX = e.clientX;
+              const startY = e.clientY;
+              const initialWidth = item.width;
+              const initialHeight = item.height;
+
+              function onResizeMove(ev) {
+                const deltaX = ev.clientX - startX;
+                const deltaY = ev.clientY - startY;
+
+                const percentW = (deltaX / rect.width) * 100;
+                const percentH = (deltaY / rect.height) * 100;
+
+                item.width = Math.max(10, initialWidth + percentW);
+                item.height = Math.max(5, initialHeight + percentH);
+
+                box.style.width = `${item.width}%`;
+                box.style.minHeight = `${item.height}%`;
+                markDraftChanged();
+              }
+
+              function onResizeUp() {
+                window.removeEventListener('mousemove', onResizeMove);
+                window.removeEventListener('mouseup', onResizeUp);
+              }
+
+              window.addEventListener('mousemove', onResizeMove);
+              window.addEventListener('mouseup', onResizeUp);
+            });
+          });
+        }
+
+        stageWrapper.appendChild(box);
+      } else {
+        // Visitor Mode: Read-Only HTML Absolute Layer
+        const box = document.createElement('div');
+        box.className = 'visitor-text-overlay-box';
+        box.style.left = `${item.left}%`;
+        box.style.top = `${item.top}%`;
+        box.style.width = `${item.width}%`;
+        box.style.minHeight = `${item.height}%`;
+        box.style.backgroundColor = item.bgFill || 'transparent';
+        box.style.fontSize = `${item.fontSize}px`;
+        box.style.fontWeight = item.fontWeight;
+        box.style.fontStyle = item.fontStyle;
+        box.style.color = item.color;
+        box.style.textAlign = item.textAlign;
+        box.innerText = item.text;
+
+        stageWrapper.appendChild(box);
+      }
+    });
+  }
+
   function renderLightboxView() {
     if (itemModal) itemModal.classList.remove('profile-lightbox-mode');
 
@@ -1180,6 +1459,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (itemModalCounter) {
       itemModalCounter.textContent = `Image ${currentRenderIndex + 1} of ${total} ${descLabel}`;
+    }
+
+    // Admin Mode Trigger Action
+    const adminActionsContainer = document.getElementById('item-modal-admin-actions');
+    const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+
+    if (adminActionsContainer) {
+      if (isAdmin) {
+        adminActionsContainer.innerHTML = `
+          <button id="btn-add-overlay-text" class="btn btn-sm btn-primary" style="background: #0284c7; color: #ffffff; font-weight: 700; border-radius: 6px; padding: 0.35rem 0.75rem; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;">
+            <span>+ Text Box</span>
+          </button>
+        `;
+        const addBtn = document.getElementById('btn-add-overlay-text');
+        if (addBtn) {
+          addBtn.onclick = function() {
+            addTextOverlayToActiveImage();
+          };
+        }
+      } else {
+        adminActionsContainer.innerHTML = '';
+      }
     }
 
     const footerThumbsContainer = document.getElementById('item-modal-footer-thumbs');
@@ -1217,6 +1518,9 @@ document.addEventListener('DOMContentLoaded', () => {
         <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 80vh; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
       </div>
     `;
+
+    // Render Text Overlays
+    renderTextOverlays();
 
     // Trigger Dynamic Corner Pixel Color Sampling for Seamless Canvas Blending
     const stageWrapper = document.getElementById('item-modal-stage-wrapper');
