@@ -249,16 +249,31 @@ h1, h2, h3, h4 {
 }
 
 .btn-secondary {
-  background-color: #ffffff;
-  color: var(--text-main);
-  border-color: var(--border-color);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
 .btn-secondary:hover {
-  background-color: var(--bg-alt);
-  border-color: var(--border-hover);
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #ffffff;
+  color: #ffffff;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+:root[data-theme="light"] .btn-secondary {
+  background-color: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+}
+
+:root[data-theme="light"] .btn-secondary:hover {
+  background-color: #f1f5f9;
+  border-color: #94a3b8;
+  color: #0f172a;
 }
 
 .btn-outline {
@@ -1713,15 +1728,147 @@ dialog::backdrop {
 /* --- Software Proficiency & Engineering Stack --- */
 .software-card {
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
-  border: 1px solid var(--border-color);
-  background-color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-md);
+  color: var(--text-main);
+  position: relative;
+}
+
+.software-card h3 {
+  color: #f8fafc;
+}
+
+.software-card p {
+  color: #94a3b8;
+}
+
+:root[data-theme="light"] .software-card {
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+}
+
+:root[data-theme="light"] .software-card h3 {
+  color: var(--text-main);
+}
+
+:root[data-theme="light"] .software-card p {
+  color: var(--text-muted);
 }
 
 .software-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   border-color: var(--accent-primary);
+}
+
+/* Software Icon Edit Overlay in Admin Mode */
+.software-card-logo {
+  position: relative;
+}
+
+.software-icon-edit-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #0284c7;
+  color: #ffffff;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-size: 11px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1.5px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  z-index: 10;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.software-icon-edit-btn:hover {
+  transform: scale(1.15);
+  background: #0369a1;
+}
+
+body.admin-mode-active .software-icon-edit-btn {
+  display: inline-flex !important;
+}
+
+/* Brand Logo Edit Badge in Admin Mode */
+body.admin-mode-active .brand-logo {
+  position: relative;
+  cursor: pointer;
+  outline: 2px dashed #0284c7;
+  outline-offset: 2px;
+}
+
+body.admin-mode-active .brand-logo::after {
+  content: '✎';
+  position: absolute;
+  bottom: -4px;
+  right: -4px;
+  background: #0284c7;
+  color: #ffffff;
+  font-size: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Brand Logo Live Cropper Modal Controls */
+.cropper-preview-container {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.cropper-preview-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cropper-preview-box span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.preview-avatar-square {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background: var(--bg-alt);
+}
+
+.preview-avatar-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background: var(--bg-alt);
+}
+
+.preview-avatar-square img,
+.preview-avatar-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 

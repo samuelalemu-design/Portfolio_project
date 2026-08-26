@@ -1978,6 +1978,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkAdminSession() {
       const isLogged = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+      document.body.classList.toggle('admin-mode-active', isLogged);
       
       if (adminWrapper) {
         adminWrapper.style.display = isLogged ? 'inline-flex' : 'none';
@@ -1990,6 +1991,267 @@ document.addEventListener('DOMContentLoaded', () => {
       renderExperienceSection();
       return isLogged;
     }
+
+    // =========================================================================
+    // EDITABLE SOFTWARE PROFICIENCY ICONS (ADMIN MODE)
+    // =========================================================================
+    const softwareIconFileInput = document.getElementById('software-icon-file-input');
+    let currentEditingSoftwareId = null;
+
+    function loadSavedSoftwareIcons() {
+      try {
+        const savedIcons = JSON.parse(localStorage.getItem('samuel_software_icons') || '{}');
+        Object.keys(savedIcons).forEach(swId => {
+          const card = document.querySelector(`.software-card[data-software-id="${swId}"]`);
+          if (card) {
+            const logoContainer = card.querySelector('.software-card-logo');
+            if (logoContainer && savedIcons[swId]) {
+              const editBtn = logoContainer.querySelector('.software-icon-edit-btn');
+              logoContainer.innerHTML = '';
+              if (editBtn) logoContainer.appendChild(editBtn);
+              
+              const img = document.createElement('img');
+              img.src = savedIcons[swId];
+              img.alt = 'Software Icon';
+              img.style.height = '36px';
+              img.style.width = 'auto';
+              img.style.maxHeight = '36px';
+              img.style.objectFit = 'contain';
+              logoContainer.appendChild(img);
+            }
+          }
+        });
+      } catch(e) {
+        console.error('Error loading software icons from localStorage:', e);
+      }
+    }
+
+    document.querySelectorAll('.software-icon-edit-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        currentEditingSoftwareId = btn.getAttribute('data-software-id');
+        if (softwareIconFileInput) {
+          softwareIconFileInput.value = '';
+          softwareIconFileInput.click();
+        }
+      });
+    });
+
+    if (softwareIconFileInput) {
+      softwareIconFileInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file || !currentEditingSoftwareId) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const dataUrl = evt.target.result;
+          try {
+            const savedIcons = JSON.parse(localStorage.getItem('samuel_software_icons') || '{}');
+            savedIcons[currentEditingSoftwareId] = dataUrl;
+            localStorage.setItem('samuel_software_icons', JSON.stringify(savedIcons));
+            loadSavedSoftwareIcons();
+            showToast('Custom software icon uploaded and saved successfully!');
+          } catch(err) {
+            showToast('Failed to save software icon.');
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    loadSavedSoftwareIcons();
+
+    // =========================================================================
+    // HERO BRAND LOGO EDIT & LIVE CROPPER (ADMIN MODE)
+    // =========================================================================
+    const brandLogoElem = document.querySelector('.nav-brand .brand-logo');
+    const brandLogoModal = document.getElementById('brand-logo-cropper-modal');
+    const cropperModalClose = document.getElementById('cropper-modal-close');
+    const cropperBtnCancel = document.getElementById('cropper-btn-cancel');
+    const cropperBtnSave = document.getElementById('cropper-btn-save');
+    const cropperFileInput = document.getElementById('cropper-file-input');
+    const cropperStage = document.getElementById('cropper-stage');
+    const cropperCanvas = document.getElementById('cropper-canvas');
+    const cropCanvasContainer = document.getElementById('crop-canvas-container');
+    const cropperZoom = document.getElementById('cropper-zoom');
+    const cropperZoomVal = document.getElementById('cropper-zoom-val');
+    const previewSquareContainer = document.getElementById('preview-square-container');
+    const previewCircleContainer = document.getElementById('preview-circle-container');
+
+    let loadedCropperImg = null;
+    let cropperScale = 1.0;
+    let cropperOffsetX = 0;
+    let cropperOffsetY = 0;
+    let isDraggingCanvas = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+
+    function loadSavedBrandLogo() {
+      const savedLogo = localStorage.getItem('samuel_brand_logo');
+      if (savedLogo && brandLogoElem) {
+        brandLogoElem.innerHTML = `<img src="${savedLogo}" alt="Samuel Alemu Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);">`;
+      }
+    }
+
+    if (brandLogoElem) {
+      brandLogoElem.addEventListener('click', (e) => {
+        const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+        if (isAdmin) {
+          e.preventDefault();
+          e.stopPropagation();
+          openBrandLogoCropperModal();
+        }
+      });
+    }
+
+    function openBrandLogoCropperModal() {
+      if (!brandLogoModal) return;
+      if (cropperFileInput) cropperFileInput.value = '';
+      if (cropperStage) cropperStage.style.display = 'none';
+      if (cropperBtnSave) cropperBtnSave.disabled = true;
+      if (typeof brandLogoModal.showModal === 'function') {
+        brandLogoModal.showModal();
+      } else {
+        brandLogoModal.setAttribute('open', '');
+      }
+    }
+
+    function closeBrandLogoCropperModal() {
+      if (!brandLogoModal) return;
+      if (typeof brandLogoModal.close === 'function') {
+        brandLogoModal.close();
+      } else {
+        brandLogoModal.removeAttribute('open');
+      }
+    }
+
+    if (cropperModalClose) cropperModalClose.addEventListener('click', closeBrandLogoCropperModal);
+    if (cropperBtnCancel) cropperBtnCancel.addEventListener('click', closeBrandLogoCropperModal);
+
+    if (cropperFileInput) {
+      cropperFileInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          loadedCropperImg = new Image();
+          loadedCropperImg.onload = () => {
+            cropperScale = 1.0;
+            cropperOffsetX = 0;
+            cropperOffsetY = 0;
+            if (cropperZoom) cropperZoom.value = 1;
+            if (cropperZoomVal) cropperZoomVal.textContent = '100%';
+            if (cropperStage) cropperStage.style.display = 'flex';
+            if (cropperBtnSave) cropperBtnSave.disabled = false;
+            renderCropperCanvas();
+          };
+          loadedCropperImg.src = evt.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderCropperCanvas() {
+      if (!loadedCropperImg || !cropperCanvas) return;
+      const ctx = cropperCanvas.getContext('2d');
+      const w = cropperCanvas.width;
+      const h = cropperCanvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#0b0f19';
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.save();
+      ctx.translate(w / 2 + cropperOffsetX, h / 2 + cropperOffsetY);
+      ctx.scale(cropperScale, cropperScale);
+
+      const imgW = loadedCropperImg.width;
+      const imgH = loadedCropperImg.height;
+      const baseScale = Math.max(w / imgW, h / imgH);
+      const drawW = imgW * baseScale;
+      const drawH = imgH * baseScale;
+
+      ctx.drawImage(loadedCropperImg, -drawW / 2, -drawH / 2, drawW, drawH);
+      ctx.restore();
+
+      updateCropperPreviews();
+    }
+
+    function updateCropperPreviews() {
+      if (!cropperCanvas) return;
+      const dataUrl = cropperCanvas.toDataURL('image/png');
+      if (previewSquareContainer) {
+        previewSquareContainer.innerHTML = `<img src="${dataUrl}" alt="Square Preview">`;
+      }
+      if (previewCircleContainer) {
+        previewCircleContainer.innerHTML = `<img src="${dataUrl}" alt="Circle Preview">`;
+      }
+    }
+
+    if (cropperZoom) {
+      cropperZoom.addEventListener('input', (e) => {
+        cropperScale = parseFloat(e.target.value);
+        if (cropperZoomVal) cropperZoomVal.textContent = `${Math.round(cropperScale * 100)}%`;
+        renderCropperCanvas();
+      });
+    }
+
+    if (cropCanvasContainer) {
+      cropCanvasContainer.addEventListener('mousedown', (e) => {
+        isDraggingCanvas = true;
+        dragStartX = e.clientX - cropperOffsetX;
+        dragStartY = e.clientY - cropperOffsetY;
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDraggingCanvas) return;
+        cropperOffsetX = e.clientX - dragStartX;
+        cropperOffsetY = e.clientY - dragStartY;
+        renderCropperCanvas();
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDraggingCanvas = false;
+      });
+
+      cropCanvasContainer.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          isDraggingCanvas = true;
+          dragStartX = e.touches[0].clientX - cropperOffsetX;
+          dragStartY = e.touches[0].clientY - cropperOffsetY;
+        }
+      });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!isDraggingCanvas || e.touches.length !== 1) return;
+        cropperOffsetX = e.touches[0].clientX - dragStartX;
+        cropperOffsetY = e.touches[0].clientY - dragStartY;
+        renderCropperCanvas();
+      });
+
+      window.addEventListener('touchend', () => {
+        isDraggingCanvas = false;
+      });
+    }
+
+    if (cropperBtnSave) {
+      cropperBtnSave.addEventListener('click', () => {
+        if (!cropperCanvas) return;
+        const croppedDataUrl = cropperCanvas.toDataURL('image/png');
+        try {
+          localStorage.setItem('samuel_brand_logo', croppedDataUrl);
+          loadSavedBrandLogo();
+          closeBrandLogoCropperModal();
+          showToast('Hero brand logo updated and saved successfully!');
+        } catch(e) {
+          showToast('Failed to save brand logo image.');
+        }
+      });
+    }
+
+    loadSavedBrandLogo();
 
     if (btnGoogleLogin) {
       btnGoogleLogin.addEventListener('click', () => {
