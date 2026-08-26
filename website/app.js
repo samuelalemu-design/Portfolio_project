@@ -960,29 +960,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 4. Refined Lightbox Renderer (Profile Mode & Docked Project Gallery Layout)
+   * 4. Maximized Project Gallery Lightbox Renderer
    * ------------------------------------------------------------------------ */
   function renderLightboxView() {
-    const isProfileMode = currentProject && currentProject.isProfileMode;
-
-    if (isProfileMode) {
-      if (itemModal) itemModal.classList.add('profile-lightbox-mode');
-      
-      const activeSrc = (currentProject && currentProject.image) ? currentProject.image : 'assets/projects/samuel_hero_avatar.png';
-
-      itemModalBody.innerHTML = `
-        <div style="position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
-          <button type="button" aria-label="Close Profile Lightbox" onclick="closeItemModal()" style="position: absolute; top: -45px; right: -10px; background: rgba(15, 23, 42, 0.85); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.2); width: 38px; height: 38px; border-radius: 50%; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; z-index: 100;">&times;</button>
-          
-          <div style="display: flex; align-items: center; justify-content: center; background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; padding: 0.75rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); max-height: 80vh; max-width: 100%; overflow: hidden;">
-            <img src="${activeSrc}" alt="Samuel Alemu Profile Photo" style="max-height: 75vh; max-width: 100%; width: auto; height: auto; object-fit: contain; border-radius: 10px; user-select: none; -webkit-user-select: none;">
-          </div>
-        </div>
-      `;
-      return;
-    }
-
-    // Normal Project Gallery Lightbox Mode
     if (itemModal) itemModal.classList.remove('profile-lightbox-mode');
 
     const gallery = (currentProject && currentProject.allGalleryImages) ? currentProject.allGalleryImages : [(currentProject ? currentProject.image : '')];
@@ -1030,13 +1010,13 @@ document.addEventListener('DOMContentLoaded', () => {
     itemModalBody.innerHTML = `
       <div style="display: flex; flex-direction: column; width: 100%; height: 100%; min-height: 0; gap: 0.5rem; overflow: hidden;">
         
-        <!-- Main Canvas & Navigation Stage (flex: 1; min-height: 0;) -->
+        <!-- Maximized Main Canvas & Navigation Stage (flex: 1; min-height: 0;) -->
         <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 0.5rem; overflow: hidden;">
           ${prevNavHTML}
 
           <!-- Main Image Canvas Wrapper -->
-          <div style="flex: 1; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0.75rem; overflow: hidden; position: relative;">
-            <img src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
+          <div style="flex: 1; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; background: #0b0f19; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 0.5rem; overflow: hidden; position: relative;">
+            <img src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 75vh; height: 100%; object-fit: contain; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
           </div>
 
           ${nextNavHTML}
@@ -2643,6 +2623,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    const heroProfileOverlay = document.getElementById('hero-profile-raw-overlay');
+    const heroProfileImg = document.getElementById('hero-profile-raw-img');
+
+    if (heroProfileOverlay) {
+      heroProfileOverlay.addEventListener('click', () => {
+        if (typeof heroProfileOverlay.close === 'function') {
+          heroProfileOverlay.close();
+        } else {
+          heroProfileOverlay.removeAttribute('open');
+        }
+        document.body.style.overflow = '';
+      });
+    }
+
     if (brandLogoElem) {
       brandLogoElem.addEventListener('click', (e) => {
         const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
@@ -2651,7 +2645,7 @@ document.addEventListener('DOMContentLoaded', () => {
           e.stopPropagation();
           openBrandLogoCropperModal();
         } else {
-          // Universal Photo Viewer Modal Trigger for Homepage Profile Logo
+          // Dedicated Hero Profile / Logo Quick-View (Strict Isolation: Raw Image & Click-to-Dismiss)
           e.preventDefault();
           e.stopPropagation();
 
@@ -2659,17 +2653,15 @@ document.addEventListener('DOMContentLoaded', () => {
           const savedLogo = localStorage.getItem('samuel_brand_logo');
           const logoSrc = (imgElem && imgElem.src) ? imgElem.src : (savedLogo || 'assets/projects/samuel_hero_avatar.png');
 
-          currentProject = {
-            category: 'EXPERIMENTAL PROJECTS',
-            title: 'Ratchet',
-            overview: 'Mechanical Design Engineer & CAD Specialist Brand Identity',
-            image: logoSrc,
-            allGalleryImages: [logoSrc]
-          };
-          currentRenderIndex = 0;
-
-          openModalWindow();
-          renderLightboxView();
+          if (heroProfileImg && heroProfileOverlay) {
+            heroProfileImg.src = logoSrc;
+            document.body.style.overflow = 'hidden';
+            if (typeof heroProfileOverlay.showModal === 'function') {
+              heroProfileOverlay.showModal();
+            } else {
+              heroProfileOverlay.setAttribute('open', '');
+            }
+          }
         }
       });
     }

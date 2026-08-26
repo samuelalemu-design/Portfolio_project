@@ -1171,6 +1171,13 @@
     </div>
   </dialog>
 
+  <!-- Dedicated Hero Profile / Logo Raw Quick-View Overlay (Click anywhere on screen to dismiss) -->
+  <dialog id="hero-profile-raw-overlay" style="border: none; padding: 0; background: transparent; cursor: pointer;">
+    <div id="hero-profile-raw-wrapper" style="display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+      <img id="hero-profile-raw-img" src="" alt="Samuel Alemu Profile Photo" style="max-height: 82vh; max-width: 88vw; width: auto; height: auto; object-fit: contain; border-radius: 12px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7); user-select: none; -webkit-user-select: none; transition: transform 0.2s ease;">
+    </div>
+  </dialog>
+
   <!-- In-Context Inline Project Editor Form (Add / Edit Machine Project) -->
   <dialog id="inline-project-editor-container" class="project-modal" style="border: none; padding: 0; background: transparent;">
     <div class="modal-wrapper" style="max-width: 860px; width: 94%; margin: auto; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg);">
