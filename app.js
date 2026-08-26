@@ -964,8 +964,121 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ------------------------------------------------------------------------
-   * 4. Right-Sidebar Docked Lightbox Renderer (Auto-Fit Canvas & Zero Overlap)
+   * 4. Lightbox Renderer with Auto-Cropping & Bottom Footer Thumbnails
    * ------------------------------------------------------------------------ */
+  const croppedImageCache = new Map();
+
+  function autoCropImage(src, callback) {
+    if (!src) {
+      callback(src);
+      return;
+    }
+    if (croppedImageCache.has(src)) {
+      callback(croppedImageCache.get(src));
+      return;
+    }
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+        if (!w || !h) {
+          croppedImageCache.set(src, src);
+          callback(src);
+          return;
+        }
+
+        canvas.width = w;
+        canvas.height = h;
+        ctx.drawImage(img, 0, 0);
+
+        const imgData = ctx.getImageData(0, 0, w, h);
+        const data = imgData.data;
+
+        let minX = w, minY = h, maxX = 0, maxY = 0;
+        let foundContent = false;
+
+        const bgR = data[0];
+        const bgG = data[1];
+        const bgB = data[2];
+        const isWhiteBg = (bgR > 230 && bgG > 230 && bgB > 230);
+
+        for (let y = 0; y < h; y += 2) {
+          for (let x = 0; x < w; x += 2) {
+            const idx = (y * w + x) * 4;
+            const r = data[idx];
+            const g = data[idx + 1];
+            const b = data[idx + 2];
+            const a = data[idx + 3];
+
+            if (a < 15) continue;
+
+            let isBg = false;
+            if (isWhiteBg) {
+              if (r > 235 && g > 235 && b > 235) isBg = true;
+            } else {
+              const diff = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
+              if (diff < 25) isBg = true;
+            }
+
+            if (!isBg) {
+              foundContent = true;
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+
+        if (!foundContent || maxX <= minX || maxY <= minY) {
+          croppedImageCache.set(src, src);
+          callback(src);
+          return;
+        }
+
+        const padX = Math.round((maxX - minX) * 0.02);
+        const padY = Math.round((maxY - minY) * 0.02);
+
+        minX = Math.max(0, minX - padX);
+        minY = Math.max(0, minY - padY);
+        maxX = Math.min(w - 1, maxX + padX);
+        maxY = Math.min(h - 1, maxY + padY);
+
+        const cropW = maxX - minX;
+        const cropH = maxY - minY;
+
+        if (cropW >= w * 0.96 && cropH >= h * 0.96) {
+          croppedImageCache.set(src, src);
+          callback(src);
+          return;
+        }
+
+        const cropCanvas = document.createElement('canvas');
+        cropCanvas.width = cropW;
+        cropCanvas.height = cropH;
+        const cropCtx = cropCanvas.getContext('2d');
+        cropCtx.drawImage(canvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+
+        const croppedDataUrl = cropCanvas.toDataURL('image/png');
+        croppedImageCache.set(src, croppedDataUrl);
+        callback(croppedDataUrl);
+      } catch (err) {
+        croppedImageCache.set(src, src);
+        callback(src);
+      }
+    };
+    img.onerror = function() {
+      croppedImageCache.set(src, src);
+      callback(src);
+    };
+    img.src = src;
+  }
+
   function renderLightboxView() {
     if (itemModal) itemModal.classList.remove('profile-lightbox-mode');
 
@@ -990,6 +1103,19 @@ document.addEventListener('DOMContentLoaded', () => {
       itemModalCounter.textContent = `Image ${currentRenderIndex + 1} of ${total} ${descLabel}`;
     }
 
+    const footerThumbsContainer = document.getElementById('item-modal-footer-thumbs');
+    if (footerThumbsContainer) {
+      if (total > 1) {
+        footerThumbsContainer.style.display = 'flex';
+        footerThumbsContainer.innerHTML = gallery.map((imgSrc, idx) => `
+          <img src="${imgSrc}" alt="Thumb ${idx + 1}" class="modal-thumb-item ${idx === currentRenderIndex ? 'active' : ''}" onclick="window.selectRenderIndex(${idx})">
+        `).join('');
+      } else {
+        footerThumbsContainer.style.display = 'none';
+        footerThumbsContainer.innerHTML = '';
+      }
+    }
+
     const showNav = total > 1;
     const prevNavHTML = showNav ? `
       <button type="button" class="modal-nav-btn" aria-label="Previous Image" onclick="window.navRender(-1)" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); z-index: 20;">
@@ -1003,32 +1129,25 @@ document.addEventListener('DOMContentLoaded', () => {
       </button>
     ` : '';
 
-    const thumbsHTML = gallery.map((imgSrc, idx) => `
-      <img src="${imgSrc}" alt="Thumb ${idx + 1}" class="modal-thumb-item ${idx === currentRenderIndex ? 'active' : ''}" onclick="window.selectRenderIndex(${idx})">
-    `).join('');
-
-    const rightSidebarHTML = total > 1 ? `
-      <!-- Docked Right Sidebar Thumbnail Gallery Column -->
-      <div class="modal-thumb-sidebar" style="display: flex; flex-direction: column; gap: 10px; padding: 8px; flex-shrink: 0; max-height: 80vh; overflow-y: auto; overflow-x: hidden;">
-        ${thumbsHTML}
-      </div>
-    ` : '';
-
     itemModalBody.innerHTML = `
-      <div style="display: flex; flex-direction: row; align-items: center; width: 100%; height: 100%; min-height: 0; gap: 16px; position: relative; overflow: hidden; padding: 0; margin: 0;">
-        
-        <!-- Main Image Canvas Stage (Fills remaining width) -->
-        <div style="flex: 1; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-          ${prevNavHTML}
-          ${nextNavHTML}
+      <div style="position: relative; width: 100%; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: transparent; border: none; padding: 0; margin: 0;">
+        ${prevNavHTML}
+        ${nextNavHTML}
 
-          <!-- Auto-Scaled Edge-to-Edge Image Canvas -->
-          <img src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 80vh; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none;">
-        </div>
-
-        ${rightSidebarHTML}
+        <!-- Auto-Cropped Full-Width CAD Render Canvas -->
+        <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 80vh; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
       </div>
     `;
+
+    // Trigger Client-Side Auto-Cropping of CAD Render Whitespace
+    const mainImgElem = document.getElementById('item-modal-main-img');
+    if (mainImgElem) {
+      autoCropImage(activeSrc, (croppedUrl) => {
+        if (mainImgElem && croppedUrl) {
+          mainImgElem.src = croppedUrl;
+        }
+      });
+    }
   }
 
   window.navRender = function(direction) {

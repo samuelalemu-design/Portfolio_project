@@ -1555,12 +1555,13 @@ dialog.project-modal::backdrop {
 }
 
 #item-modal .modal-footer {
-  padding: 0.9rem 1.5rem;
+  padding: 0.6rem 1.25rem;
   background: #0f172a;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   flex-shrink: 0;
 }
 
@@ -1568,6 +1569,7 @@ dialog.project-modal::backdrop {
   font-size: 0.875rem;
   color: #94a3b8;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* Light Theme Synchronization Overrides */
@@ -1654,49 +1656,49 @@ dialog.project-modal::backdrop {
   opacity: 0.75 !important;
 }
 
-/* Docked Right Sidebar Thumbnail Strip (Zero Image Overlap) */
-.modal-thumb-sidebar {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+/* Bottom Footer Docked Thumbnail Row (Horizontally Scrollable) */
+.modal-footer-thumbs {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  overflow-x: auto;
+  max-width: 60%;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  padding: 2px 8px;
+  flex: 1;
 }
 
-.modal-thumb-sidebar .modal-thumb-item {
-  width: 64px;
-  height: 64px;
+.modal-footer-thumbs .modal-thumb-item {
+  width: 44px;
+  height: 44px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 2px solid transparent;
   cursor: pointer;
   opacity: 0.75;
+  flex-shrink: 0;
   transition: all 0.2s ease;
 }
 
-.modal-thumb-sidebar .modal-thumb-item:hover {
+.modal-footer-thumbs .modal-thumb-item:hover {
   opacity: 1;
-  transform: scale(1.04);
+  transform: scale(1.06);
 }
 
-.modal-thumb-sidebar .modal-thumb-item.active {
+.modal-footer-thumbs .modal-thumb-item.active {
   opacity: 1;
   border-color: #38bdf8;
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
 }
 
-:root[data-theme="light"] .modal-thumb-sidebar {
-  background: rgba(248, 250, 252, 0.85) !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
-}
-
-:root[data-theme="light"] .modal-thumb-sidebar .modal-thumb-item:not(.active) {
+:root[data-theme="light"] .modal-footer-thumbs .modal-thumb-item:not(.active) {
   border-color: #cbd5e1 !important;
 }
 
-:root[data-theme="light"] .modal-thumb-sidebar .modal-thumb-item.active {
+:root[data-theme="light"] .modal-footer-thumbs .modal-thumb-item.active {
   border-color: #0284c7 !important;
   box-shadow: 0 0 10px rgba(2, 132, 199, 0.3) !important;
 }
