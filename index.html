@@ -1477,6 +1477,35 @@
     </div>
   </dialog>
 
+  <!-- Unsaved Changes Warning Modal (Admin Logout Confirmation) -->
+  <dialog id="admin-unsaved-changes-modal" class="project-modal" style="border: none; padding: 0; background: transparent;">
+    <div class="modal-wrapper" style="max-width: 440px; width: 92%; margin: auto; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+      <div class="modal-header" style="padding: 1.25rem 1.5rem; background: #fff1f2; border-bottom: 1px solid #fecdd3; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: #ffe4e6; color: #e11d48; display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div>
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: #9f1239; margin: 0;">Unsaved Draft Changes</h3>
+            <span style="font-size: 0.75rem; color: #be123c;">Admin Session Warning</span>
+          </div>
+        </div>
+        <button id="btn-cancel-discard-x" style="font-size: 1.5rem; background: none; border: none; color: #9f1239; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+        <p style="font-size: 0.925rem; color: var(--text-main); margin: 0; line-height: 1.5;">
+          You have uncommitted draft edits. Logging out without clicking <strong>"Save Changes"</strong> will discard all unsaved modifications.
+        </p>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          <button type="button" id="btn-cancel-discard-logout" class="btn btn-secondary btn-sm" style="padding: 0.5rem 1rem;">Cancel</button>
+          <button type="button" id="btn-confirm-discard-logout" class="btn btn-primary btn-sm" style="background: #ef4444; color: #ffffff; border: none; padding: 0.5rem 1.25rem; font-weight: 700; cursor: pointer;">Confirm Logout (Discard Edits)</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
   <!-- Footer -->
   <footer class="footer">
     <div class="container footer-container">

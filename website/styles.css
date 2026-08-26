@@ -1800,6 +1800,35 @@ dialog::backdrop {
   border-color: var(--accent-primary);
 }
 
+/* Projects Card Edit Button Contrast Fix */
+.live-edit-card-btn {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+}
+
+.live-edit-card-btn svg {
+  stroke: #ffffff !important;
+}
+
+.live-edit-card-btn:hover,
+.live-edit-card-btn:focus,
+.live-edit-card-btn:active {
+  background-color: #0369a1 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
 /* Software Icon Edit Overlay in Admin Mode */
 .software-card-logo {
   position: relative;

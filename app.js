@@ -604,7 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const adminControlsHTML = isAdmin ? `
         <div class="admin-card-actions" style="margin-top: 0.75rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; border-top: 1px dashed var(--border-color); padding-top: 0.6rem;">
-          <button type="button" class="btn btn-outline btn-sm live-edit-card-btn" data-project="${project.id}" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; font-weight: 700; color: #0284c7; border-color: #0284c7; display: inline-flex; align-items: center; gap: 0.3rem;">
+          <button type="button" class="btn btn-sm live-edit-card-btn" data-project="${project.id}">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> <span>Edit Card</span>
           </button>
           <button type="button" class="btn btn-sm admin-delete-proj-btn" data-project="${project.id}" style="background: #ef4444; color: #ffffff; border: none; font-size: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;">
@@ -949,9 +949,9 @@ document.addEventListener('DOMContentLoaded', () => {
           if (idx !== -1) {
             projectsData.splice(idx, 1);
             delete projectsMap[projId];
-            saveProjectsToStorage();
+            markDraftChanged();
             renderProjectCards();
-            showToast(`Deleted "${project.title}". Project list updated.`);
+            showToast(`Deleted "${project.title}" (draft). Click "Save Changes" to persist.`);
           }
         }
       });
@@ -1917,10 +1917,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = document.getElementById('exp-edit-id').value;
         if (id) {
           experienceList = experienceList.filter(e => e.id !== id);
-          saveExperienceData();
+          markDraftChanged();
           renderExperienceSection();
           closeExperienceEditorModal();
-          showToast('Experience entry deleted!');
+          showToast('Experience entry deleted (draft state)! Click "Save Changes" to persist.');
         }
       });
     }
@@ -1950,7 +1950,7 @@ document.addEventListener('DOMContentLoaded', () => {
             item.description = description;
             item.bulletPoints = bulletPoints;
             item.tags = tags;
-            showToast(`Experience role "${title}" updated successfully!`);
+            showToast(`Experience role "${title}" updated (draft)! Click "Save Changes" to persist.`);
           }
         } else {
           const newId = `exp_${Date.now()}`;
@@ -1964,10 +1964,10 @@ document.addEventListener('DOMContentLoaded', () => {
             bulletPoints: bulletPoints,
             tags: tags
           });
-          showToast(`New experience entry "${title}" added successfully!`);
+          showToast(`New experience entry "${title}" added (draft)! Click "Save Changes" to persist.`);
         }
 
-        saveExperienceData();
+        markDraftChanged();
         renderExperienceSection();
         closeExperienceEditorModal();
       });
@@ -2275,10 +2275,10 @@ document.addEventListener('DOMContentLoaded', () => {
           card.description = document.getElementById('sw-edit-description').value.trim();
           card.icons = [...tempEditIcons];
 
-          saveSoftwareData();
+          markDraftChanged();
           renderSoftwareSection();
           closeSoftwareCardEditorModal();
-          showToast(`Software card "${card.title}" updated successfully!`);
+          showToast(`Software card "${card.title}" updated (draft)! Click "Save Changes" to persist.`);
         }
       });
     }
@@ -2465,10 +2465,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!cropperCanvas) return;
         const croppedDataUrl = cropperCanvas.toDataURL('image/png');
         try {
-          localStorage.setItem('samuel_brand_logo', croppedDataUrl);
-          loadSavedBrandLogo();
+          localStorage.setItem('samuel_brand_logo_draft', croppedDataUrl);
+          if (brandLogoElem) {
+            brandLogoElem.innerHTML = `<img src="${croppedDataUrl}" alt="Samuel Alemu Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);">`;
+          }
+          markDraftChanged();
           closeBrandLogoCropperModal();
-          showToast('Hero brand logo updated and saved successfully!');
+          showToast('Hero brand logo updated (draft)! Click "Save Changes" to persist.');
         } catch(e) {
           showToast('Failed to save brand logo image.');
         }
@@ -2515,13 +2518,65 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    function handleLogout() {
+    function performLogout() {
       sessionStorage.removeItem('samuel_alemu_admin');
       sessionStorage.removeItem('samuel_admin_user');
       history.pushState("", document.title, window.location.pathname + window.location.search);
       checkAdminSession();
       showToast('Logged out of Admin Portal');
     }
+
+    const unsavedModal = document.getElementById('admin-unsaved-changes-modal');
+    const btnConfirmDiscardLogout = document.getElementById('btn-confirm-discard-logout');
+    const btnCancelDiscardLogout = document.getElementById('btn-cancel-discard-logout');
+    const btnCancelDiscardX = document.getElementById('btn-cancel-discard-x');
+
+    function closeUnsavedChangesModal() {
+      if (unsavedModal) {
+        if (typeof unsavedModal.close === 'function') {
+          try { unsavedModal.close(); } catch(e) {}
+        } else {
+          unsavedModal.removeAttribute('open');
+        }
+      }
+    }
+
+    function handleLogout() {
+      const isLogged = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+      if (isLogged && hasUnsavedChanges) {
+        if (unsavedModal) {
+          if (typeof unsavedModal.showModal === 'function') {
+            unsavedModal.showModal();
+          } else {
+            unsavedModal.setAttribute('open', '');
+          }
+        }
+      } else {
+        performLogout();
+      }
+    }
+
+    if (btnConfirmDiscardLogout) {
+      btnConfirmDiscardLogout.addEventListener('click', () => {
+        localStorage.removeItem('samuel_brand_logo_draft');
+        loadSavedWebpageEdits();
+        loadSavedExperienceData();
+        loadSavedSoftwareData();
+        loadSavedBrandLogo();
+
+        renderProjectCards();
+        renderExperienceSection();
+        renderSoftwareSection();
+
+        hasUnsavedChanges = false;
+        closeUnsavedChangesModal();
+        performLogout();
+        showToast('Logged out. Unsaved draft edits discarded.');
+      });
+    }
+
+    if (btnCancelDiscardLogout) btnCancelDiscardLogout.addEventListener('click', closeUnsavedChangesModal);
+    if (btnCancelDiscardX) btnCancelDiscardX.addEventListener('click', closeUnsavedChangesModal);
 
     const logoutButtons = document.querySelectorAll('#admin-logout-btn, .admin-logout-btn');
     logoutButtons.forEach(btn => btn.addEventListener('click', handleLogout));
@@ -2823,9 +2878,10 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast(`New project "${title}" created successfully!`);
         }
 
-        saveProjectsToStorage();
+        markDraftChanged();
         renderProjectCards();
         closeInlineProjectEditor();
+        showToast(`Project "${title}" saved to draft! Click "Save Changes" to persist.`);
       });
     }
 
@@ -2858,15 +2914,39 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast(isEditModeActive ? 'Inline Text Edit Mode ENABLED! Click any text on page to edit directly.' : 'Inline Edit Mode DISABLED.');
     }
 
+    // =========================================================================
+    // ADMIN DRAFT STATE & SAVE CHANGES COMMIT LOGIC
+    // =========================================================================
+    let hasUnsavedChanges = false;
+
+    function markDraftChanged() {
+      hasUnsavedChanges = true;
+    }
+
     function saveAllWebpageEdits() {
       const overrides = {};
       const editableSelectors = '.hero-title, .hero-description, .section-title, .section-description, .brand-name, .brand-title, .stat-number, .stat-label';
       document.querySelectorAll(editableSelectors).forEach((el, index) => {
         overrides[`elem_${index}`] = el.innerHTML;
       });
-      localStorage.setItem('samuel_site_text_overrides', JSON.stringify(overrides));
-      localStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
-      showToast('All webpage edits & project changes saved successfully!');
+
+      try {
+        localStorage.setItem('samuel_site_text_overrides', JSON.stringify(overrides));
+        localStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+        saveExperienceData();
+        saveSoftwareData();
+
+        const draftLogo = localStorage.getItem('samuel_brand_logo_draft');
+        if (draftLogo) {
+          localStorage.setItem('samuel_brand_logo', draftLogo);
+          localStorage.removeItem('samuel_brand_logo_draft');
+        }
+      } catch(e) {
+        console.error('Error saving edits to storage:', e);
+      }
+
+      hasUnsavedChanges = false;
+      showToast('All webpage edits & project changes committed and saved successfully!');
     }
 
     function loadSavedWebpageEdits() {
