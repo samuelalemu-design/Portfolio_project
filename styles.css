@@ -1654,39 +1654,51 @@ dialog.project-modal::backdrop {
   opacity: 0.75 !important;
 }
 
-/* Floating Translucent Docked Thumbnail Overlay Pill */
-.modal-thumb-dock {
-  background: rgba(15, 23, 42, 0.75);
+/* Docked Right Sidebar Thumbnail Strip (Zero Image Overlap) */
+.modal-thumb-sidebar {
+  background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
-:root[data-theme="light"] .modal-thumb-dock {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border-color: rgba(0, 0, 0, 0.12) !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+.modal-thumb-sidebar .modal-thumb-item {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: all 0.2s ease;
 }
 
-/* Floating Zoom Controls */
-.modal-zoom-controls {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+.modal-thumb-sidebar .modal-thumb-item:hover {
+  opacity: 1;
+  transform: scale(1.04);
 }
 
-:root[data-theme="light"] .modal-zoom-controls {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border-color: rgba(0, 0, 0, 0.12) !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12) !important;
+.modal-thumb-sidebar .modal-thumb-item.active {
+  opacity: 1;
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
 }
 
-:root[data-theme="light"] .modal-zoom-btn {
-  background: rgba(0, 0, 0, 0.06) !important;
-  color: #0f172a !important;
+:root[data-theme="light"] .modal-thumb-sidebar {
+  background: rgba(248, 250, 252, 0.85) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12) !important;
+}
+
+:root[data-theme="light"] .modal-thumb-sidebar .modal-thumb-item:not(.active) {
+  border-color: #cbd5e1 !important;
+}
+
+:root[data-theme="light"] .modal-thumb-sidebar .modal-thumb-item.active {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 10px rgba(2, 132, 199, 0.3) !important;
 }
 
 #hero-profile-raw-overlay::backdrop {
