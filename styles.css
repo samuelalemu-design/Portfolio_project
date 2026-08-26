@@ -1621,6 +1621,37 @@ dialog.project-modal::backdrop {
   background: #e2e8f0;
 }
 
+/* Dynamic Light Mode Backdrop Overlay & Canvas Separation */
+:root[data-theme="light"] .project-modal::backdrop {
+  background-color: rgba(248, 250, 252, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+:root[data-theme="light"] #hero-profile-raw-overlay::backdrop {
+  background-color: rgba(248, 250, 252, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+:root[data-theme="light"] #hero-profile-raw-wrapper {
+  background: rgba(248, 250, 252, 0.88) !important;
+}
+
+:root[data-theme="light"] .modal-stage-wrapper {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+:root[data-theme="light"] .modal-thumb-item {
+  background: #f1f5f9 !important;
+}
+
+:root[data-theme="light"] .modal-thumb-item:not(.active) {
+  border-color: #cbd5e1 !important;
+  opacity: 0.75 !important;
+}
+
 #hero-profile-raw-overlay::backdrop {
   background-color: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
