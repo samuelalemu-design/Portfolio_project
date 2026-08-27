@@ -970,15 +970,20 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ------------------------------------------------------------------------
    * 4. Lightbox Renderer with Dynamic Color Sampling & Auto-Cropping
    * ------------------------------------------------------------------------ */
-  const sampledColorCache = new Map();
+  /* ------------------------------------------------------------------------
+   * 4. Lightbox Image Processor: Background Variance Detection,
+   *    Conditional Edge-Color Sampling & CAD Render Auto-Cropping
+   * ------------------------------------------------------------------------ */
+  const backgroundAnalysisCache = new Map();
+  const croppedImageCache = new Map();
 
-  function sampleEdgeColor(src, callback) {
+  function analyzeImageBackground(src, callback) {
     if (!src) {
-      callback({ color: 'transparent', isDarkBg: true });
+      callback({ isSolidBg: false, color: 'transparent', isDarkBg: true });
       return;
     }
-    if (sampledColorCache.has(src)) {
-      callback(sampledColorCache.get(src));
+    if (backgroundAnalysisCache.has(src)) {
+      callback(backgroundAnalysisCache.get(src));
       return;
     }
 
@@ -991,8 +996,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const w = img.naturalWidth;
         const h = img.naturalHeight;
         if (!w || !h) {
-          const fallback = { color: 'transparent', isDarkBg: true };
-          sampledColorCache.set(src, fallback);
+          const fallback = { isSolidBg: false, color: 'transparent', isDarkBg: true };
+          backgroundAnalysisCache.set(src, fallback);
           callback(fallback);
           return;
         }
@@ -1001,55 +1006,103 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.height = h;
         ctx.drawImage(img, 0, 0);
 
+        // Helper to sample average color of a 3x3 pixel corner area
+        function sampleCornerArea(startX, startY) {
+          const x = Math.max(0, Math.min(w - 3, startX));
+          const y = Math.max(0, Math.min(h - 3, startY));
+          const imgData = ctx.getImageData(x, y, 3, 3).data;
+          let r = 0, g = 0, b = 0, a = 0, count = 0;
+          for (let i = 0; i < imgData.length; i += 4) {
+            r += imgData[i];
+            g += imgData[i + 1];
+            b += imgData[i + 2];
+            a += imgData[i + 3];
+            count++;
+          }
+          return [Math.round(r / count), Math.round(g / count), Math.round(b / count), a / count];
+        }
+
+        // Inspect 4 corners of the canvas
         const corners = [
-          ctx.getImageData(Math.min(2, w - 1), Math.min(2, h - 1), 1, 1).data,
-          ctx.getImageData(Math.max(0, w - 3), Math.min(2, h - 1), 1, 1).data,
-          ctx.getImageData(Math.min(2, w - 1), Math.max(0, h - 3), 1, 1).data,
-          ctx.getImageData(Math.max(0, w - 3), Math.max(0, h - 3), 1, 1).data
+          sampleCornerArea(2, 2),                  // Top-Left
+          sampleCornerArea(w - 5, 2),              // Top-Right
+          sampleCornerArea(2, h - 5),              // Bottom-Left
+          sampleCornerArea(w - 5, h - 5)           // Bottom-Right
         ];
 
-        let rSum = 0, gSum = 0, bSum = 0, aSum = 0;
-        corners.forEach(c => {
-          rSum += c[0];
-          gSum += c[1];
-          bSum += c[2];
-          aSum += c[3];
-        });
-
-        const r = Math.round(rSum / 4);
-        const g = Math.round(gSum / 4);
-        const b = Math.round(bSum / 4);
-        const a = aSum / 4;
-
-        if (a < 15) {
-          const fallback = { color: 'transparent', isDarkBg: true };
-          sampledColorCache.set(src, fallback);
-          callback(fallback);
+        const avgAlpha = corners.reduce((acc, c) => acc + c[3], 0) / 4;
+        if (avgAlpha < 15) {
+          const res = { isSolidBg: false, color: 'transparent', isDarkBg: true };
+          backgroundAnalysisCache.set(src, res);
+          callback(res);
           return;
         }
 
-        const sampledColor = `rgb(${r}, ${g}, ${b})`;
-        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-        const isDarkBg = luminance < 140;
+        // Calculate maximum color variance (RGB delta sum) between all 4 corners
+        let maxCornerDiff = 0;
+        for (let i = 0; i < corners.length; i++) {
+          for (let j = i + 1; j < corners.length; j++) {
+            const diff = Math.abs(corners[i][0] - corners[j][0]) +
+                         Math.abs(corners[i][1] - corners[j][1]) +
+                         Math.abs(corners[i][2] - corners[j][2]);
+            if (diff > maxCornerDiff) {
+              maxCornerDiff = diff;
+            }
+          }
+        }
 
-        const res = { color: sampledColor, isDarkBg: isDarkBg };
-        sampledColorCache.set(src, res);
-        callback(res);
+        // EDGE UNIFORMITY & SOLID BACKGROUND DETECTION:
+        // - Low variance across corners (maxCornerDiff <= 40): Classified as CAD Render (Solid Background).
+        // - High variance across corners (maxCornerDiff > 40): Classified as Real Photo (Complex Background).
+        const CORNER_VARIANCE_THRESHOLD = 40;
+        const isSolidBg = (maxCornerDiff <= CORNER_VARIANCE_THRESHOLD);
+
+        let sampledColor = 'transparent';
+        let isDarkBg = true;
+
+        if (isSolidBg) {
+          const r = Math.round(corners.reduce((acc, c) => acc + c[0], 0) / 4);
+          const g = Math.round(corners.reduce((acc, c) => acc + c[1], 0) / 4);
+          const b = Math.round(corners.reduce((acc, c) => acc + c[2], 0) / 4);
+
+          sampledColor = `rgb(${r}, ${g}, ${b})`;
+          const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+          isDarkBg = luminance < 140;
+        }
+
+        const result = {
+          isSolidBg: isSolidBg,
+          color: sampledColor,
+          isDarkBg: isDarkBg,
+          maxCornerDiff: maxCornerDiff
+        };
+
+        backgroundAnalysisCache.set(src, result);
+        callback(result);
       } catch (err) {
-        const fallback = { color: 'transparent', isDarkBg: true };
-        sampledColorCache.set(src, fallback);
+        const fallback = { isSolidBg: false, color: 'transparent', isDarkBg: true };
+        backgroundAnalysisCache.set(src, fallback);
         callback(fallback);
       }
     };
     img.onerror = function() {
-      const fallback = { color: 'transparent', isDarkBg: true };
-      sampledColorCache.set(src, fallback);
+      const fallback = { isSolidBg: false, color: 'transparent', isDarkBg: true };
+      backgroundAnalysisCache.set(src, fallback);
       callback(fallback);
     };
     img.src = src;
   }
 
-  const croppedImageCache = new Map();
+  function sampleEdgeColor(src, callback) {
+    analyzeImageBackground(src, (info) => {
+      if (info && info.isSolidBg) {
+        callback(info);
+      } else {
+        // FOR REAL PHOTOGRAPHS: DISABLE color sampling & background fills completely
+        callback({ isSolidBg: false, color: 'transparent', isDarkBg: true });
+      }
+    });
+  }
 
   function autoCropImage(src, callback) {
     if (!src) {
@@ -1061,105 +1114,115 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = function() {
-      try {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const w = img.naturalWidth;
-        const h = img.naturalHeight;
-        if (!w || !h) {
-          croppedImageCache.set(src, src);
-          callback(src);
-          return;
-        }
-
-        canvas.width = w;
-        canvas.height = h;
-        ctx.drawImage(img, 0, 0);
-
-        const imgData = ctx.getImageData(0, 0, w, h);
-        const data = imgData.data;
-
-        let minX = w, minY = h, maxX = 0, maxY = 0;
-        let foundContent = false;
-
-        const bgR = data[0];
-        const bgG = data[1];
-        const bgB = data[2];
-        const isWhiteBg = (bgR > 230 && bgG > 230 && bgB > 230);
-
-        for (let y = 0; y < h; y += 2) {
-          for (let x = 0; x < w; x += 2) {
-            const idx = (y * w + x) * 4;
-            const r = data[idx];
-            const g = data[idx + 1];
-            const b = data[idx + 2];
-            const a = data[idx + 3];
-
-            if (a < 15) continue;
-
-            let isBg = false;
-            if (isWhiteBg) {
-              if (r > 235 && g > 235 && b > 235) isBg = true;
-            } else {
-              const diff = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
-              if (diff < 25) isBg = true;
-            }
-
-            if (!isBg) {
-              foundContent = true;
-              if (x < minX) minX = x;
-              if (x > maxX) maxX = x;
-              if (y < minY) minY = y;
-              if (y > maxY) maxY = y;
-            }
-          }
-        }
-
-        if (!foundContent || maxX <= minX || maxY <= minY) {
-          croppedImageCache.set(src, src);
-          callback(src);
-          return;
-        }
-
-        const padX = Math.round((maxX - minX) * 0.02);
-        const padY = Math.round((maxY - minY) * 0.02);
-
-        minX = Math.max(0, minX - padX);
-        minY = Math.max(0, minY - padY);
-        maxX = Math.min(w - 1, maxX + padX);
-        maxY = Math.min(h - 1, maxY + padY);
-
-        const cropW = maxX - minX;
-        const cropH = maxY - minY;
-
-        if (cropW >= w * 0.96 && cropH >= h * 0.96) {
-          croppedImageCache.set(src, src);
-          callback(src);
-          return;
-        }
-
-        const cropCanvas = document.createElement('canvas');
-        cropCanvas.width = cropW;
-        cropCanvas.height = cropH;
-        const cropCtx = cropCanvas.getContext('2d');
-        cropCtx.drawImage(canvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
-
-        const croppedDataUrl = cropCanvas.toDataURL('image/png');
-        croppedImageCache.set(src, croppedDataUrl);
-        callback(croppedDataUrl);
-      } catch (err) {
+    analyzeImageBackground(src, (analysis) => {
+      // FOR REAL PHOTOGRAPHS: DISABLE automatic border cropping completely!
+      if (!analysis || !analysis.isSolidBg) {
         croppedImageCache.set(src, src);
         callback(src);
+        return;
       }
-    };
-    img.onerror = function() {
-      croppedImageCache.set(src, src);
-      callback(src);
-    };
-    img.src = src;
+
+      // FOR SOLID CAD RENDERS: Execute bounding-box margin trimming
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          if (!w || !h) {
+            croppedImageCache.set(src, src);
+            callback(src);
+            return;
+          }
+
+          canvas.width = w;
+          canvas.height = h;
+          ctx.drawImage(img, 0, 0);
+
+          const imgData = ctx.getImageData(0, 0, w, h);
+          const data = imgData.data;
+
+          let minX = w, minY = h, maxX = 0, maxY = 0;
+          let foundContent = false;
+
+          const bgR = data[0];
+          const bgG = data[1];
+          const bgB = data[2];
+          const isWhiteBg = (bgR > 230 && bgG > 230 && bgB > 230);
+
+          for (let y = 0; y < h; y += 2) {
+            for (let x = 0; x < w; x += 2) {
+              const idx = (y * w + x) * 4;
+              const r = data[idx];
+              const g = data[idx + 1];
+              const b = data[idx + 2];
+              const a = data[idx + 3];
+
+              if (a < 15) continue;
+
+              let isBg = false;
+              if (isWhiteBg) {
+                if (r > 235 && g > 235 && b > 235) isBg = true;
+              } else {
+                const diff = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
+                if (diff < 25) isBg = true;
+              }
+
+              if (!isBg) {
+                foundContent = true;
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+              }
+            }
+          }
+
+          if (!foundContent || maxX <= minX || maxY <= minY) {
+            croppedImageCache.set(src, src);
+            callback(src);
+            return;
+          }
+
+          const padX = Math.round((maxX - minX) * 0.02);
+          const padY = Math.round((maxY - minY) * 0.02);
+
+          minX = Math.max(0, minX - padX);
+          minY = Math.max(0, minY - padY);
+          maxX = Math.min(w - 1, maxX + padX);
+          maxY = Math.min(h - 1, maxY + padY);
+
+          const cropW = maxX - minX;
+          const cropH = maxY - minY;
+
+          if (cropW >= w * 0.96 && cropH >= h * 0.96) {
+            croppedImageCache.set(src, src);
+            callback(src);
+            return;
+          }
+
+          const cropCanvas = document.createElement('canvas');
+          cropCanvas.width = cropW;
+          cropCanvas.height = cropH;
+          const cropCtx = cropCanvas.getContext('2d');
+          cropCtx.drawImage(canvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+
+          const croppedDataUrl = cropCanvas.toDataURL('image/png');
+          croppedImageCache.set(src, croppedDataUrl);
+          callback(croppedDataUrl);
+        } catch (err) {
+          croppedImageCache.set(src, src);
+          callback(src);
+        }
+      };
+      img.onerror = function() {
+        croppedImageCache.set(src, src);
+        callback(src);
+      };
+      img.src = src;
+    });
   }
 
   /* ------------------------------------------------------------------------
