@@ -1393,15 +1393,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ------------------------------------------------------------------------
-  // Full-Screen Profile Image Modal Handler (Logo Header Click)
+  // Full-Screen Avatar / Profile Image Modal Overlay Handler
   // ------------------------------------------------------------------------
   const profileModal = document.getElementById('profile-image-modal');
   const profileModalCloseBtn = document.getElementById('profile-modal-close');
   const profileModalOverlay = document.getElementById('profile-modal-overlay');
-  const brandLogoLink = document.querySelector('.nav-brand');
+  const navAvatarTrigger = document.getElementById('nav-avatar-trigger');
+  const navAvatarImg = document.getElementById('nav-avatar-img');
 
   function openProfileImageModal(e) {
-    if (e) e.preventDefault();
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+    }
     if (!profileModal) return;
     if (typeof profileModal.showModal === 'function') {
       profileModal.showModal();
@@ -1410,7 +1414,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function closeProfileImageModal() {
+  function closeProfileImageModal(e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     if (!profileModal) return;
     if (typeof profileModal.close === 'function') {
       profileModal.close();
@@ -1419,23 +1424,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  if (brandLogoLink) {
-    brandLogoLink.addEventListener('click', (e) => {
-      openProfileImageModal(e);
-    });
+  if (navAvatarTrigger) {
+    navAvatarTrigger.addEventListener('click', openProfileImageModal);
+  }
+  if (navAvatarImg && navAvatarImg !== navAvatarTrigger) {
+    navAvatarImg.addEventListener('click', openProfileImageModal);
   }
 
   if (profileModalCloseBtn) {
-    profileModalCloseBtn.addEventListener('click', (e) => {
-      if (e) e.stopPropagation();
-      closeProfileImageModal();
-    });
+    profileModalCloseBtn.addEventListener('click', closeProfileImageModal);
   }
 
   if (profileModalOverlay) {
     profileModalOverlay.addEventListener('click', (e) => {
-      if (e.target === profileModalOverlay || e.target.classList.contains('profile-modal-overlay')) {
-        closeProfileImageModal();
+      const modalImg = document.getElementById('profile-modal-img');
+      // If click target is outside the photo, close modal
+      if (modalImg && modalImg.contains(e.target)) return;
+      closeProfileImageModal(e);
+    });
+  }
+
+  if (profileModal) {
+    profileModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeProfileImageModal(e);
       }
     });
   }
