@@ -620,8 +620,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return `
         <div class="project-card card" data-category="${project.category}" data-project="${project.id}" id="card-${project.id}">
           
-          <!-- Front-Level Hero Image Container (Clicking hero image opens Lightbox starting with Hero Image) -->
-          <div class="project-img-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="${project.id}">
+          <!-- Front-Level Hero Image Container with Theme-Aware Stage Wrapper -->
+          <div class="project-img-wrapper project-img-stage" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="${project.id}">
             <img src="${project.image}" alt="${project.title}" class="project-card-img" style="object-fit: contain; max-height: 400px; width: 100%; height: 100%; transition: transform 0.3s ease;" loading="lazy">
             <span class="project-category-badge ${categoryClass}">${project.category}</span>
           </div>
@@ -1093,6 +1093,86 @@ document.addEventListener('DOMContentLoaded', () => {
     img.src = src;
   }
 
+  const transparentImageCache = new Map();
+
+  function useTransparentImage(imageSrc, callback) {
+    if (!imageSrc) {
+      callback({ transparentSrc: imageSrc, isProcessed: false });
+      return;
+    }
+
+    if (transparentImageCache.has(imageSrc)) {
+      callback({ transparentSrc: transparentImageCache.get(imageSrc), isProcessed: true });
+      return;
+    }
+
+    analyzeImageBackground(imageSrc, (analysis) => {
+      // Check if AI background removal toggle is enabled in Admin mode or global config
+      const isBgRemovalEnabled = localStorage.getItem('samuel_ai_bg_removal_enabled') === 'true';
+
+      // Fallback: If non-CAD photo, complex background, or removal disabled, return original image
+      if (!analysis || !analysis.isSolidBg || !isBgRemovalEnabled) {
+        transparentImageCache.set(imageSrc, imageSrc);
+        callback({ transparentSrc: imageSrc, isProcessed: false });
+        return;
+      }
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          if (!w || !h) {
+            transparentImageCache.set(imageSrc, imageSrc);
+            callback({ transparentSrc: imageSrc, isProcessed: false });
+            return;
+          }
+
+          canvas.width = w;
+          canvas.height = h;
+          ctx.drawImage(img, 0, 0);
+
+          const imgData = ctx.getImageData(0, 0, w, h);
+          const data = imgData.data;
+
+          const bgR = data[0];
+          const bgG = data[1];
+          const bgB = data[2];
+
+          // Transparent alpha thresholding for studio background removal
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            const diff = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
+
+            if (diff < 35 || (r > 240 && g > 240 && b > 240)) {
+              data[i + 3] = 0;
+            }
+          }
+
+          ctx.putImageData(imgData, 0, 0);
+
+          const transparentDataUrl = canvas.toDataURL('image/png');
+          transparentImageCache.set(imageSrc, transparentDataUrl);
+          callback({ transparentSrc: transparentDataUrl, isProcessed: true });
+        } catch (err) {
+          transparentImageCache.set(imageSrc, imageSrc);
+          callback({ transparentSrc: imageSrc, isProcessed: false });
+        }
+      };
+      img.onerror = function() {
+        transparentImageCache.set(imageSrc, imageSrc);
+        callback({ transparentSrc: imageSrc, isProcessed: false });
+      };
+      img.src = imageSrc;
+    });
+  }
+
   function sampleEdgeColor(src, callback) {
     analyzeImageBackground(src, (info) => {
       if (info && info.isSolidBg) {
@@ -1392,6 +1472,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Admin Mode AI Background Removal Toggle Handler
+  const bgRemovalToggle = document.getElementById('admin-toggle-bg-removal');
+  if (bgRemovalToggle) {
+    const isSavedActive = localStorage.getItem('samuel_ai_bg_removal_enabled') === 'true';
+    bgRemovalToggle.checked = isSavedActive;
+
+    bgRemovalToggle.addEventListener('change', (e) => {
+      const isChecked = e.target.checked;
+      localStorage.setItem('samuel_ai_bg_removal_enabled', isChecked ? 'true' : 'false');
+      if (typeof transparentImageCache !== 'undefined') {
+        transparentImageCache.clear();
+      }
+      renderProjectCards();
+      renderLightboxView();
+      if (typeof showToast === 'function') {
+        showToast(isChecked ? 'AI Background Removal Enabled (Dark Mode Matched)' : 'AI Background Removal Disabled');
+      }
+    });
+  }
+
   // ------------------------------------------------------------------------
   // Full-Screen Avatar / Profile Image Modal Overlay Handler
   // ------------------------------------------------------------------------
@@ -1553,31 +1653,47 @@ document.addEventListener('DOMContentLoaded', () => {
         ${prevNavHTML}
         ${nextNavHTML}
 
-        <!-- Framed Canvas Stage Box (Restricted sampled studio background, rounded corners) -->
-        <div id="item-modal-framed-stage" style="position: relative; width: 100%; height: 100%; max-height: 76vh; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; background: transparent; transition: background-color 0.3s ease, box-shadow 0.3s ease;">
+        <!-- Framed Canvas Stage Box with Theme-Aware Container Wrapper -->
+        <div id="item-modal-framed-stage" class="project-img-stage" style="position: relative; width: 100%; height: 100%; max-height: 76vh; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; transition: background-color 0.3s ease, box-shadow 0.3s ease;">
           <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease; border-radius: 12px;">
         </div>
       </div>
     `;
 
-    // Trigger Dynamic Corner Pixel Color Sampling for Framed Canvas Stage
+    // Dynamic Theme Matching & Stage Surface Color Binding
     sampleEdgeColor(activeSrc, (info) => {
       const framedStage = document.getElementById('item-modal-framed-stage');
-      if (framedStage && info && info.isSolidBg && info.color !== 'transparent') {
-        framedStage.style.backgroundColor = info.color;
-        framedStage.style.boxShadow = info.isDarkBg ? '0 10px 30px rgba(0, 0, 0, 0.4)' : '0 10px 30px rgba(0, 0, 0, 0.08)';
-      } else if (framedStage) {
-        framedStage.style.backgroundColor = 'transparent';
-        framedStage.style.boxShadow = 'none';
+      if (framedStage) {
+        if (info && info.isSolidBg && info.color !== 'transparent') {
+          const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+          const surfaceColor = currentTheme === 'light' ? '#ffffff' : '#0f172a';
+          framedStage.style.backgroundColor = info.color || surfaceColor;
+          framedStage.style.boxShadow = info.isDarkBg ? '0 10px 30px rgba(0, 0, 0, 0.4)' : '0 10px 30px rgba(0, 0, 0, 0.08)';
+        } else {
+          framedStage.style.backgroundColor = 'transparent';
+          framedStage.style.boxShadow = 'none';
+        }
       }
     });
 
-    // Trigger Client-Side Auto-Cropping of CAD Render Whitespace
+    // Client-Side AI Background Removal Pipeline & Fallback
     const mainImgElem = document.getElementById('item-modal-main-img');
     if (mainImgElem) {
-      autoCropImage(activeSrc, (croppedUrl) => {
-        if (mainImgElem && croppedUrl) {
-          mainImgElem.src = croppedUrl;
+      mainImgElem.classList.add('img-skeleton-shimmer');
+      useTransparentImage(activeSrc, (result) => {
+        if (mainImgElem && result && result.transparentSrc) {
+          mainImgElem.classList.remove('img-skeleton-shimmer');
+          if (result.isProcessed) {
+            mainImgElem.src = result.transparentSrc;
+          } else {
+            autoCropImage(activeSrc, (croppedUrl) => {
+              if (mainImgElem && croppedUrl) {
+                mainImgElem.src = croppedUrl;
+              }
+            });
+          }
+        } else if (mainImgElem) {
+          mainImgElem.classList.remove('img-skeleton-shimmer');
         }
       });
     }

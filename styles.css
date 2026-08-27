@@ -3107,3 +3107,39 @@ body.modal-open {
   filter: none !important;
   display: block !important;
 }
+
+/* Theme-Aware Project Image Stage Container */
+.project-img-stage {
+  background: var(--bg-card);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+:root[data-theme="light"] .project-img-stage {
+  background: #ffffff;
+}
+
+:root[data-theme="dark"] .project-img-stage {
+  background: #0f172a;
+}
+
+/* Skeleton Loading Shimmer State */
+.img-skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 100%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite ease-in-out;
+}
+
+:root[data-theme="light"] .img-skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(241, 245, 249, 0.6) 0%, rgba(226, 232, 240, 0.9) 50%, rgba(241, 245, 249, 0.6) 100%);
+  background-size: 200% 100%;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
