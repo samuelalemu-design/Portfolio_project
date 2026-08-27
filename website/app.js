@@ -1475,47 +1475,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const showNav = total > 1;
     const prevNavHTML = showNav ? `
-      <button type="button" class="modal-nav-btn" aria-label="Previous Image" onclick="window.navRender(-1)" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); z-index: 20;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <button type="button" class="modal-nav-btn modal-nav-prev" aria-label="Previous Image" onclick="window.navRender(-1)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
     ` : '';
 
     const nextNavHTML = showNav ? `
-      <button type="button" class="modal-nav-btn" aria-label="Next Image" onclick="window.navRender(1)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); z-index: 20;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      <button type="button" class="modal-nav-btn modal-nav-next" aria-label="Next Image" onclick="window.navRender(1)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     ` : '';
 
     itemModalBody.innerHTML = `
-      <div id="item-modal-stage-wrapper" style="position: relative; width: 100%; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background: transparent; transition: background-color 0.3s ease; border: none; padding: 0; margin: 0;">
+      <div id="item-modal-stage-wrapper" style="position: relative; width: 100%; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 1.25rem 3.5rem; margin: 0; box-sizing: border-box;">
         ${prevNavHTML}
         ${nextNavHTML}
 
-        <!-- Auto-Cropped Full-Width CAD Render Canvas -->
-        <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 80vh; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
+        <!-- Framed Canvas Stage Box (Restricted sampled studio background, rounded corners) -->
+        <div id="item-modal-framed-stage" style="position: relative; width: 100%; height: 100%; max-height: 76vh; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; background: transparent; transition: background-color 0.3s ease, box-shadow 0.3s ease;">
+          <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease; border-radius: 12px;">
+        </div>
       </div>
     `;
 
-    // Trigger Dynamic Corner Pixel Color Sampling for Seamless Canvas Blending
-    const stageWrapper = document.getElementById('item-modal-stage-wrapper');
+    // Trigger Dynamic Corner Pixel Color Sampling for Framed Canvas Stage
     sampleEdgeColor(activeSrc, (info) => {
-      if (stageWrapper && info && info.color !== 'transparent') {
-        stageWrapper.style.backgroundColor = info.color;
-
-        // Adapt UI contrast on navigation arrows based on background luminance
-        const navBtns = stageWrapper.querySelectorAll('.modal-nav-btn');
-        navBtns.forEach(btn => {
-          const svg = btn.querySelector('svg');
-          if (info.isDarkBg) {
-            btn.style.background = 'rgba(15, 23, 42, 0.75)';
-            if (svg) svg.setAttribute('stroke', '#ffffff');
-          } else {
-            btn.style.background = 'rgba(255, 255, 255, 0.85)';
-            if (svg) svg.setAttribute('stroke', '#0f172a');
-          }
-        });
-      } else if (stageWrapper) {
-        stageWrapper.style.backgroundColor = 'transparent';
+      const framedStage = document.getElementById('item-modal-framed-stage');
+      if (framedStage && info && info.isSolidBg && info.color !== 'transparent') {
+        framedStage.style.backgroundColor = info.color;
+        framedStage.style.boxShadow = info.isDarkBg ? '0 10px 30px rgba(0, 0, 0, 0.4)' : '0 10px 30px rgba(0, 0, 0, 0.08)';
+      } else if (framedStage) {
+        framedStage.style.backgroundColor = 'transparent';
+        framedStage.style.boxShadow = 'none';
       }
     });
 

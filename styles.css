@@ -1570,6 +1570,40 @@ dialog.project-modal::backdrop {
   transition: background-color 0.3s ease;
 }
 
+#item-modal .modal-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+#item-modal .modal-nav-prev {
+  left: 14px;
+}
+
+#item-modal .modal-nav-next {
+  right: 14px;
+}
+
+#item-modal .modal-nav-btn:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+  transform: translateY(-50%) scale(1.08);
+}
+
 #item-modal .modal-footer {
   padding: 0.6rem 1.25rem;
   background: #0f172a;
@@ -1624,6 +1658,19 @@ dialog.project-modal::backdrop {
 :root[data-theme="light"] #item-modal .modal-body {
   background: transparent;
   color: #0f172a;
+}
+
+:root[data-theme="light"] #item-modal .modal-nav-btn {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme="light"] #item-modal .modal-nav-btn:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
 }
 
 :root[data-theme="light"] #item-modal .modal-footer {
