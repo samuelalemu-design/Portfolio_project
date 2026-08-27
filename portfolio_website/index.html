@@ -1151,11 +1151,12 @@
       
       <!-- Modal Header -->
       <div class="modal-header">
-        <div>
+        <div style="flex: 1; min-width: 0; padding-right: 1rem;">
           <span class="modal-category" id="item-modal-category">EXPERIMENTAL PROJECTS</span>
           <h2 class="modal-title" id="item-modal-title">Ratchet</h2>
+          <p class="modal-img-description" id="item-modal-img-description" style="display: none; margin: 0.35rem 0 0 0; font-size: 0.9rem; font-weight: 500; line-height: 1.45; word-break: break-word; white-space: pre-wrap; color: var(--text-muted, #94a3b8);"></p>
         </div>
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0;">
           <div id="item-modal-admin-actions"></div>
           <button class="modal-close" id="item-modal-close" aria-label="Close window">&times;</button>
         </div>
@@ -1172,6 +1173,43 @@
         <div id="item-modal-footer-thumbs" class="modal-footer-thumbs"></div>
         <button class="btn btn-secondary" id="item-modal-close-btn">Close Window</button>
       </div>
+    </div>
+  </dialog>
+
+  <!-- Dedicated Image Description Form Modal (Admin Mode) -->
+  <dialog id="image-description-modal" class="project-modal" style="border: none; padding: 0; background: transparent;">
+    <div class="modal-wrapper" style="max-width: 600px; width: 92%; margin: auto; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+      
+      <!-- Form Header -->
+      <div style="padding: 1.25rem 1.5rem; background: var(--bg-alt); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: var(--accent-primary); display: flex; align-items: center; justify-content: center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div>
+            <h3 id="image-desc-modal-heading" style="font-size: 1.2rem; font-weight: 800; color: var(--text-main); margin: 0;">Image Description</h3>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Add subtitle or technical detail text for current active image</span>
+          </div>
+        </div>
+        <button id="image-desc-modal-close" type="button" style="font-size: 1.75rem; background: none; border: none; color: var(--text-muted); cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <!-- Form Body -->
+      <form id="image-description-form" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; margin: 0;">
+        <div>
+          <label for="image-description-input" style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">Image Description *</label>
+          <textarea id="image-description-input" rows="5" style="width: 100%; padding: 0.75rem 1rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; line-height: 1.5; resize: vertical;" placeholder="Enter image description, technical notes, or render subtitle..."></textarea>
+        </div>
+
+        <!-- Form Actions Footer -->
+        <div style="display: flex; gap: 0.75rem; justify-content: space-between; align-items: center; margin-top: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          <button type="button" id="image-desc-btn-clear" class="btn btn-sm" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid #ef4444; font-weight: 700; padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; display: none;">Clear Description</button>
+          <div style="display: flex; gap: 0.75rem; margin-left: auto;">
+            <button type="button" id="image-desc-btn-cancel" class="btn btn-secondary" style="padding: 0.65rem 1.25rem;">Cancel</button>
+            <button type="submit" id="image-desc-btn-save" class="btn btn-primary" style="padding: 0.65rem 1.5rem; font-weight: 800;">Save Description</button>
+          </div>
+        </div>
+      </form>
     </div>
   </dialog>
 

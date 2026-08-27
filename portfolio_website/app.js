@@ -1169,325 +1169,162 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getActiveImageSrc() {
     const gallery = (currentProject && currentProject.allGalleryImages) ? currentProject.allGalleryImages : [(currentProject ? currentProject.image : '')];
-    return gallery[currentRenderIndex] || '';
+    const item = gallery[currentRenderIndex];
+    if (typeof item === 'object' && item !== null) {
+      return item.link || item.src || item.url || '';
+    }
+    return item || '';
   }
 
-  function addTextOverlayToActiveImage(e) {
+  function getActiveImageObject() {
+    if (!currentProject) return null;
+    const gallery = (currentProject && currentProject.allGalleryImages) ? currentProject.allGalleryImages : [(currentProject ? currentProject.image : '')];
+    const activeItem = gallery[currentRenderIndex];
+
+    currentProject.imageDescriptions = currentProject.imageDescriptions || {};
+    currentProject.imageObjects = currentProject.imageObjects || {};
+
+    if (typeof activeItem === 'object' && activeItem !== null) {
+      const srcKey = activeItem.link || activeItem.src || activeItem.url || JSON.stringify(activeItem);
+      if (activeItem.description === undefined) {
+        activeItem.description = currentProject.imageDescriptions[srcKey] || '';
+      } else if (activeItem.description) {
+        currentProject.imageDescriptions[srcKey] = activeItem.description;
+      }
+      return activeItem;
+    }
+
+    const src = activeItem || '';
+    if (!currentProject.imageObjects[src]) {
+      currentProject.imageObjects[src] = {
+        src: src,
+        description: currentProject.imageDescriptions[src] || ''
+      };
+    } else {
+      if (currentProject.imageDescriptions[src] !== undefined) {
+        currentProject.imageObjects[src].description = currentProject.imageDescriptions[src];
+      }
+    }
+
+    return currentProject.imageObjects[src];
+  }
+
+  function saveActiveImageDescription(descVal) {
+    const currentImage = getActiveImageObject();
+    if (!currentImage || !currentProject) return;
+
+    const trimmed = (descVal || '').trim();
+    currentImage.description = trimmed;
+
+    const activeSrc = getActiveImageSrc();
+    if (activeSrc) {
+      currentProject.imageDescriptions = currentProject.imageDescriptions || {};
+      if (trimmed) {
+        currentProject.imageDescriptions[activeSrc] = trimmed;
+      } else {
+        delete currentProject.imageDescriptions[activeSrc];
+      }
+    }
+
+    if (typeof markDraftChanged === 'function') {
+      markDraftChanged();
+    }
+  }
+
+  function openImageDescriptionModal(e) {
     if (e) {
       if (typeof e.stopPropagation === 'function') e.stopPropagation();
       if (typeof e.preventDefault === 'function') e.preventDefault();
     }
-    const now = Date.now();
-    if (now - lastTextCreationTime < 300) return;
-    lastTextCreationTime = now;
+    const modal = document.getElementById('image-description-modal');
+    const input = document.getElementById('image-description-input');
+    const heading = document.getElementById('image-desc-modal-heading');
+    const clearBtn = document.getElementById('image-desc-btn-clear');
 
-    if (!currentProject) return;
-    currentProject.imageTextOverlays = currentProject.imageTextOverlays || {};
-    const activeSrc = getActiveImageSrc();
-    if (!activeSrc) return;
+    if (!modal || !input) return;
 
-    if (!Array.isArray(currentProject.imageTextOverlays[activeSrc])) {
-      currentProject.imageTextOverlays[activeSrc] = [];
+    const currentImage = getActiveImageObject();
+    const existingDesc = (currentImage && currentImage.description) ? currentImage.description : '';
+
+    input.value = existingDesc;
+    if (heading) {
+      heading.textContent = existingDesc ? 'Edit Image Description' : 'Add Image Description';
     }
 
-    currentProject.imageTextOverlays[activeSrc].forEach(o => o.isEditing = false);
+    if (clearBtn) {
+      clearBtn.style.display = existingDesc ? 'inline-block' : 'none';
+    }
 
-    const newAnnotation = {
-      id: 'txt_' + now + '_' + Math.random().toString(36).substring(2, 6),
-      text: 'Click to edit text',
-      left: 50,
-      top: 50,
-      fontSize: 20,
-      color: '#ffffff',
-      fontFamily: 'Inter, sans-serif',
-      isBold: false,
-      bgFill: 'transparent',
-      isEditing: true
-    };
-
-    currentProject.imageTextOverlays[activeSrc].push(newAnnotation);
-    markDraftChanged();
-    renderTextOverlays();
+    if (typeof modal.showModal === 'function') {
+      modal.showModal();
+    } else {
+      modal.setAttribute('open', '');
+    }
   }
 
-  window.addTextOverlayToActiveImage = addTextOverlayToActiveImage;
+  window.openImageDescriptionModal = openImageDescriptionModal;
+  window.addTextOverlayToActiveImage = openImageDescriptionModal;
 
-  function attachOverlayDragHandlers(el, item) {
-    el.style.cursor = 'grab';
+  // Initialize Image Description Form Modal Event Handlers
+  const imgDescModal = document.getElementById('image-description-modal');
+  const imgDescForm = document.getElementById('image-description-form');
+  const imgDescCloseBtn = document.getElementById('image-desc-modal-close');
+  const imgDescCancelBtn = document.getElementById('image-desc-btn-cancel');
+  const imgDescSaveBtn = document.getElementById('image-desc-btn-save');
+  const imgDescClearBtn = document.getElementById('image-desc-btn-clear');
 
-    function onPointerDown(e) {
-      if (e.target.closest('.admin-text-formatting-bar')) return;
-
-      let isDragging = false;
-      const startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
-      const startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
-      const startLeftPct = item.left || 50;
-      const startTopPct = item.top || 50;
-
-      el.style.cursor = 'grabbing';
-      document.body.style.cursor = 'grabbing';
-      el.style.zIndex = '50';
-
-      function onPointerMove(ev) {
-        const clientX = ev.clientX || (ev.touches && ev.touches[0].clientX) || 0;
-        const clientY = ev.clientY || (ev.touches && ev.touches[0].clientY) || 0;
-        const deltaX = clientX - startX;
-        const deltaY = clientY - startY;
-
-        if (Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2) {
-          isDragging = true;
-          const stageWrapper = document.getElementById('item-modal-stage-wrapper');
-          if (stageWrapper) {
-            const rect = stageWrapper.getBoundingClientRect();
-            if (rect.width > 0 && rect.height > 0) {
-              const newLeftPct = Math.max(5, Math.min(95, startLeftPct + (deltaX / rect.width) * 100));
-              const newTopPct = Math.max(5, Math.min(95, startTopPct + (deltaY / rect.height) * 100));
-
-              item.left = newLeftPct;
-              item.top = newTopPct;
-              el.style.left = `${newLeftPct}%`;
-              el.style.top = `${newTopPct}%`;
-            }
-          }
-        }
-      }
-
-      function onPointerUp() {
-        el.style.cursor = 'grab';
-        document.body.style.cursor = '';
-        el.style.zIndex = item.isEditing ? '35' : '20';
-
-        if (isDragging) {
-          markDraftChanged();
-        }
-
-        window.removeEventListener('mousemove', onPointerMove);
-        window.removeEventListener('mouseup', onPointerUp);
-        window.removeEventListener('touchmove', onPointerMove);
-        window.removeEventListener('touchend', onPointerUp);
-      }
-
-      window.addEventListener('mousemove', onPointerMove);
-      window.addEventListener('mouseup', onPointerUp);
-      window.addEventListener('touchmove', onPointerMove);
-      window.addEventListener('touchend', onPointerUp);
+  function closeImageDescModal() {
+    if (!imgDescModal) return;
+    if (typeof imgDescModal.close === 'function') {
+      imgDescModal.close();
+    } else {
+      imgDescModal.removeAttribute('open');
     }
-
-    el.addEventListener('mousedown', onPointerDown);
-    el.addEventListener('touchstart', onPointerDown, { passive: true });
   }
 
-  function updateAnnotationProperty(item, key, value, contentDiv) {
-    item[key] = value;
-    if (contentDiv) {
-      if (key === 'color') {
-        contentDiv.style.setProperty('color', value, 'important');
-      } else if (key === 'fontSize') {
-        contentDiv.style.setProperty('font-size', `${value}px`, 'important');
-      } else if (key === 'isBold') {
-        contentDiv.style.setProperty('font-weight', value ? '700' : '400', 'important');
-      } else if (key === 'fontFamily') {
-        contentDiv.style.setProperty('font-family', value, 'important');
-      }
+  function handleSaveImageDescription(e) {
+    if (e) e.preventDefault();
+    const input = document.getElementById('image-description-input');
+    const textVal = input ? input.value : '';
+    saveActiveImageDescription(textVal);
+    closeImageDescModal();
+    renderLightboxView();
+    if (typeof showToast === 'function') {
+      showToast(textVal.trim() ? 'Image description saved!' : 'Image description cleared.');
     }
-    markDraftChanged();
   }
 
-  function renderTextOverlays() {
-    const stageWrapper = document.getElementById('item-modal-stage-wrapper');
-    if (!stageWrapper || !currentProject) return;
+  if (imgDescForm) imgDescForm.addEventListener('submit', handleSaveImageDescription);
+  if (imgDescCloseBtn) imgDescCloseBtn.addEventListener('click', closeImageDescModal);
+  if (imgDescCancelBtn) imgDescCancelBtn.addEventListener('click', closeImageDescModal);
+  if (imgDescSaveBtn) imgDescSaveBtn.addEventListener('click', handleSaveImageDescription);
 
-    if (currentProject) {
-      stageWrapper.setAttribute('data-render-key', `${currentProject.id}-${currentRenderIndex}`);
-    }
+  if (imgDescClearBtn) {
+    imgDescClearBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      saveActiveImageDescription('');
+      closeImageDescModal();
+      renderLightboxView();
+      if (typeof showToast === 'function') {
+        showToast('Image description cleared.');
+      }
+    });
+  }
 
-    stageWrapper.querySelectorAll('.admin-text-overlay-box, .visitor-text-overlay-box').forEach(el => el.remove());
-
-    const activeSrc = getActiveImageSrc();
-    currentProject.imageTextOverlays = currentProject.imageTextOverlays || {};
-    const overlays = currentProject.imageTextOverlays[activeSrc] || [];
-    const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
-
-    overlays.forEach(item => {
-      if (isAdmin) {
-        const box = document.createElement('div');
-        box.className = 'admin-text-overlay-box';
-        box.setAttribute('data-id', item.id);
-        box.style.position = 'absolute';
-        box.style.left = `${item.left || 50}%`;
-        box.style.top = `${item.top || 50}%`;
-        box.style.transform = 'translate(-50%, -50%)';
-        box.style.zIndex = item.isEditing ? '35' : '20';
-        box.style.display = 'inline-flex';
-        box.style.flexDirection = 'column';
-        box.style.alignItems = 'center';
-
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'admin-text-content';
-        contentDiv.contentEditable = item.isEditing ? 'true' : 'false';
-        contentDiv.style.setProperty('color', item.color || '#ffffff', 'important');
-        contentDiv.style.setProperty('font-size', `${item.fontSize || 20}px`, 'important');
-        contentDiv.style.setProperty('font-weight', item.isBold ? '700' : '400', 'important');
-        contentDiv.style.setProperty('font-family', item.fontFamily || 'Inter, sans-serif', 'important');
-        contentDiv.style.setProperty('background-color', item.bgFill || 'transparent', 'important');
-        contentDiv.style.padding = '6px 12px';
-        contentDiv.style.borderRadius = '6px';
-        contentDiv.style.outline = item.isEditing ? '2px dashed #38bdf8' : 'none';
-        contentDiv.style.boxShadow = item.isEditing ? '0 0 0 4px rgba(56, 189, 248, 0.25)' : 'none';
-        contentDiv.style.cursor = item.isEditing ? 'text' : 'grab';
-        contentDiv.style.userSelect = item.isEditing ? 'text' : 'none';
-        contentDiv.style.whiteSpace = 'pre-wrap';
-        contentDiv.innerText = item.text || 'Click to edit text';
-
-        if (item.isEditing) {
-          const toolbar = document.createElement('div');
-          toolbar.className = 'admin-text-formatting-bar';
-          toolbar.style.position = 'absolute';
-          toolbar.style.top = '-46px';
-          toolbar.style.left = '50%';
-          toolbar.style.transform = 'translateX(-50%)';
-          toolbar.style.display = 'flex';
-          toolbar.style.alignItems = 'center';
-          toolbar.style.gap = '6px';
-          toolbar.style.background = '#0f172a';
-          toolbar.style.padding = '5px 10px';
-          toolbar.style.borderRadius = '8px';
-          toolbar.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-          toolbar.style.boxShadow = '0 8px 24px rgba(0,0,0,0.6)';
-          toolbar.style.whiteSpace = 'nowrap';
-          toolbar.style.zIndex = '40';
-
-          toolbar.innerHTML = `
-            <input type="color" value="${item.color || '#ffffff'}" class="fmt-color-picker" title="Text Color" style="width: 26px; height: 26px; border: none; background: transparent; cursor: pointer;">
-            <input type="range" min="14" max="72" value="${item.fontSize || 20}" class="fmt-size-range" title="Font Size (14px - 72px)" style="width: 70px; accent-color: #38bdf8; cursor: pointer;">
-            <span class="fmt-size-label" style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600; min-width: 32px; text-align: center;">${item.fontSize || 20}px</span>
-            <select class="fmt-font-family" title="Font Family" style="background: #1e293b; color: #ffffff; border: 1px solid #334155; border-radius: 4px; padding: 2px 4px; font-size: 0.75rem; cursor: pointer;">
-              <option value="Inter, sans-serif" ${(!item.fontFamily || item.fontFamily.includes('sans-serif')) ? 'selected' : ''}>Sans-Serif</option>
-              <option value="Playfair Display, serif" ${(item.fontFamily && item.fontFamily.includes('serif')) ? 'selected' : ''}>Serif</option>
-              <option value="JetBrains Mono, monospace" ${(item.fontFamily && item.fontFamily.includes('monospace')) ? 'selected' : ''}>Monospace</option>
-            </select>
-            <button type="button" class="fmt-btn-bold" title="Bold" style="background: ${item.isBold ? '#0284c7' : '#1e293b'}; color: #ffffff; border: 1px solid #334155; border-radius: 4px; padding: 2px 8px; font-weight: 800; font-size: 0.8rem; cursor: pointer;">B</button>
-            <button type="button" class="fmt-btn-delete" title="Delete Text" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.95rem; padding: 0 4px;">🗑️</button>
-          `;
-
-          const colorInput = toolbar.querySelector('.fmt-color-picker');
-          const sizeInput = toolbar.querySelector('.fmt-size-range');
-          const sizeLabel = toolbar.querySelector('.fmt-size-label');
-          const familySelect = toolbar.querySelector('.fmt-font-family');
-          const boldBtn = toolbar.querySelector('.fmt-btn-bold');
-          const deleteBtn = toolbar.querySelector('.fmt-btn-delete');
-
-          if (colorInput) {
-            colorInput.addEventListener('input', (e) => {
-              updateAnnotationProperty(item, 'color', e.target.value, contentDiv);
-            });
-          }
-
-          if (sizeInput && sizeLabel) {
-            sizeInput.addEventListener('input', (e) => {
-              const val = parseInt(e.target.value) || 20;
-              sizeLabel.textContent = `${val}px`;
-              updateAnnotationProperty(item, 'fontSize', val, contentDiv);
-            });
-          }
-
-          if (familySelect) {
-            familySelect.addEventListener('change', (e) => {
-              updateAnnotationProperty(item, 'fontFamily', e.target.value, contentDiv);
-            });
-          }
-
-          if (boldBtn) {
-            boldBtn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              item.isBold = !item.isBold;
-              boldBtn.style.background = item.isBold ? '#0284c7' : '#1e293b';
-              updateAnnotationProperty(item, 'isBold', item.isBold, contentDiv);
-            });
-          }
-
-          if (deleteBtn) {
-            deleteBtn.addEventListener('click', (e) => {
-              e.stopPropagation();
-              const idx = overlays.findIndex(o => o.id === item.id);
-              if (idx !== -1) {
-                overlays.splice(idx, 1);
-                markDraftChanged();
-                renderTextOverlays();
-              }
-            });
-          }
-
-          box.appendChild(toolbar);
+  if (imgDescModal) {
+    imgDescModal.addEventListener('click', (e) => {
+      const wrapper = imgDescModal.querySelector('.modal-wrapper');
+      if (wrapper) {
+        const rect = wrapper.getBoundingClientRect();
+        const isInDialog = (
+          e.clientX >= rect.left &&
+          e.clientX <= rect.right &&
+          e.clientY >= rect.top &&
+          e.clientY <= rect.bottom
+        );
+        if (!isInDialog) {
+          closeImageDescModal();
         }
-
-        contentDiv.addEventListener('input', () => {
-          item.text = contentDiv.innerText.trim() || 'Text';
-          markDraftChanged();
-        });
-
-        contentDiv.addEventListener('blur', (e) => {
-          if (e.relatedTarget && e.relatedTarget.closest('.admin-text-formatting-bar')) return;
-          if (item.isEditing) {
-            item.isEditing = false;
-            renderTextOverlays();
-          }
-        });
-
-        contentDiv.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            contentDiv.blur();
-          }
-        });
-
-        box.appendChild(contentDiv);
-
-        box.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (!item.isEditing) {
-            overlays.forEach(o => o.isEditing = false);
-            item.isEditing = true;
-            renderTextOverlays();
-          }
-        });
-
-        attachOverlayDragHandlers(box, item);
-        stageWrapper.appendChild(box);
-
-        if (item.isEditing) {
-          setTimeout(() => {
-            contentDiv.focus();
-            try {
-              const range = document.createRange();
-              range.selectNodeContents(contentDiv);
-              const sel = window.getSelection();
-              sel.removeAllRanges();
-              sel.addRange(range);
-            } catch (err) {}
-          }, 30);
-        }
-      } else {
-        const box = document.createElement('div');
-        box.className = 'visitor-text-overlay-box';
-        box.style.position = 'absolute';
-        box.style.left = `${item.left || 50}%`;
-        box.style.top = `${item.top || 50}%`;
-        box.style.transform = 'translate(-50%, -50%)';
-        box.style.zIndex = '20';
-        box.style.setProperty('color', item.color || '#ffffff', 'important');
-        box.style.setProperty('font-size', `${item.fontSize || 20}px`, 'important');
-        box.style.setProperty('font-weight', item.isBold ? '700' : '400', 'important');
-        box.style.setProperty('font-family', item.fontFamily || 'Inter, sans-serif', 'important');
-        box.style.setProperty('background-color', item.bgFill || 'transparent', 'important');
-        box.style.padding = '6px 12px';
-        box.style.borderRadius = '6px';
-        box.style.pointerEvents = 'none';
-        box.style.userSelect = 'none';
-        box.style.whiteSpace = 'pre-wrap';
-        box.innerText = item.text;
-
-        stageWrapper.appendChild(box);
       }
     });
   }
@@ -1510,29 +1347,49 @@ document.addEventListener('DOMContentLoaded', () => {
       itemModalTitle.textContent = currentProject && currentProject.title ? currentProject.title : 'Ratchet';
     }
 
+    // Active Image Description Header Display
+    const currentImage = getActiveImageObject();
+    const hasDesc = currentImage && currentImage.description && currentImage.description.trim().length > 0;
+    const descElem = document.getElementById('item-modal-img-description');
+    if (descElem) {
+      if (hasDesc) {
+        descElem.textContent = currentImage.description.trim();
+        descElem.style.display = 'block';
+      } else {
+        descElem.textContent = '';
+        descElem.style.display = 'none';
+      }
+    }
+
     const descLabel = (currentRenderIndex === 0 ? '(Hero Image)' : `(Render View ${currentRenderIndex + 1})`);
 
     if (itemModalCounter) {
       itemModalCounter.textContent = `Image ${currentRenderIndex + 1} of ${total} ${descLabel}`;
     }
 
-    // Admin Mode Trigger Action
+    // Admin Mode Trigger Action (+ Add Description or Edit Description)
     const adminActionsContainer = document.getElementById('item-modal-admin-actions');
     const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
 
     if (adminActionsContainer) {
       if (isAdmin) {
+        const btnLabel = hasDesc ? 'Edit Description' : '+ Add Description';
+        const btnIcon = hasDesc
+          ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`
+          : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+
         adminActionsContainer.innerHTML = `
-          <button type="button" id="btn-add-overlay-text" class="btn btn-sm btn-primary" onclick="window.addTextOverlayToActiveImage()" style="background: #0284c7; color: #ffffff; font-weight: 700; border-radius: 6px; padding: 0.35rem 0.85rem; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; pointer-events: auto !important; opacity: 1 !important; z-index: 100;">
-            <span>+ Text Box</span>
+          <button type="button" id="btn-edit-img-desc" class="btn btn-sm btn-primary" style="background: #0284c7; color: #ffffff; font-weight: 700; border-radius: 6px; padding: 0.35rem 0.85rem; font-size: 0.85rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; pointer-events: auto !important; opacity: 1 !important; z-index: 100;">
+            ${btnIcon}
+            <span>${btnLabel}</span>
           </button>
         `;
-        const addBtn = document.getElementById('btn-add-overlay-text');
-        if (addBtn) {
-          addBtn.disabled = false;
-          addBtn.addEventListener('click', (e) => {
+        const descBtn = document.getElementById('btn-edit-img-desc');
+        if (descBtn) {
+          descBtn.disabled = false;
+          descBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            addTextOverlayToActiveImage();
+            openImageDescriptionModal(e);
           });
         }
       } else {
@@ -1575,9 +1432,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; max-height: 80vh; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease;">
       </div>
     `;
-
-    // Render Text Overlays
-    renderTextOverlays();
 
     // Trigger Dynamic Corner Pixel Color Sampling for Seamless Canvas Blending
     const stageWrapper = document.getElementById('item-modal-stage-wrapper');
