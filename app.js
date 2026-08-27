@@ -3198,23 +3198,19 @@ document.addEventListener('DOMContentLoaded', () => {
           e.stopPropagation();
           openBrandLogoCropperModal();
         } else {
-          // Dedicated Hero Profile / Logo Quick-View (Strict Isolation: Raw Image & Click-to-Dismiss)
+          // Open full-screen blurred profile photo viewer
           e.preventDefault();
           e.stopPropagation();
 
           const imgElem = brandLogoElem.querySelector('img');
           const savedLogo = localStorage.getItem('samuel_brand_logo');
-          const logoSrc = (imgElem && imgElem.src) ? imgElem.src : (savedLogo || 'assets/projects/samuel_hero_avatar.png');
+          const logoSrc = (imgElem && imgElem.src) ? imgElem.src : (savedLogo || 'assets/logos/Website logo.jpg');
 
-          if (heroProfileImg && heroProfileOverlay) {
-            heroProfileImg.src = logoSrc;
-            document.body.style.overflow = 'hidden';
-            if (typeof heroProfileOverlay.showModal === 'function') {
-              heroProfileOverlay.showModal();
-            } else {
-              heroProfileOverlay.setAttribute('open', '');
-            }
+          const profileModalImg = document.getElementById('profile-modal-img');
+          if (profileModalImg) {
+            profileModalImg.src = logoSrc;
           }
+          openProfileImageModal(e);
         }
       });
     }
