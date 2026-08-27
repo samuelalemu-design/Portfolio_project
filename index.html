@@ -1213,6 +1213,21 @@
     </div>
   </dialog>
 
+  <!-- Full-Screen Profile Image Modal -->
+  <dialog id="profile-image-modal" class="profile-image-modal-dialog">
+    <div class="profile-modal-overlay" id="profile-modal-overlay">
+      <button type="button" id="profile-modal-close" class="profile-modal-close-btn" aria-label="Close Profile Image">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="profile-modal-img-container">
+        <img src="assets/logos/Website logo.jpg" alt="Samuel Alemu - Profile Photo" class="profile-modal-img" id="profile-modal-img">
+      </div>
+    </div>
+  </dialog>
+
   <!-- Dedicated Hero Profile / Logo Raw Quick-View Overlay (Click anywhere on screen to dismiss) -->
   <dialog id="hero-profile-raw-overlay" style="border: none; padding: 0; background: transparent; cursor: pointer;">
     <div id="hero-profile-raw-wrapper" style="display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">

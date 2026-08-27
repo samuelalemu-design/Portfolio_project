@@ -1392,6 +1392,54 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ------------------------------------------------------------------------
+  // Full-Screen Profile Image Modal Handler (Logo Header Click)
+  // ------------------------------------------------------------------------
+  const profileModal = document.getElementById('profile-image-modal');
+  const profileModalCloseBtn = document.getElementById('profile-modal-close');
+  const profileModalOverlay = document.getElementById('profile-modal-overlay');
+  const brandLogoLink = document.querySelector('.nav-brand');
+
+  function openProfileImageModal(e) {
+    if (e) e.preventDefault();
+    if (!profileModal) return;
+    if (typeof profileModal.showModal === 'function') {
+      profileModal.showModal();
+    } else {
+      profileModal.setAttribute('open', '');
+    }
+  }
+
+  function closeProfileImageModal() {
+    if (!profileModal) return;
+    if (typeof profileModal.close === 'function') {
+      profileModal.close();
+    } else {
+      profileModal.removeAttribute('open');
+    }
+  }
+
+  if (brandLogoLink) {
+    brandLogoLink.addEventListener('click', (e) => {
+      openProfileImageModal(e);
+    });
+  }
+
+  if (profileModalCloseBtn) {
+    profileModalCloseBtn.addEventListener('click', (e) => {
+      if (e) e.stopPropagation();
+      closeProfileImageModal();
+    });
+  }
+
+  if (profileModalOverlay) {
+    profileModalOverlay.addEventListener('click', (e) => {
+      if (e.target === profileModalOverlay || e.target.classList.contains('profile-modal-overlay')) {
+        closeProfileImageModal();
+      }
+    });
+  }
+
   function renderLightboxView() {
     if (itemModal) itemModal.classList.remove('profile-lightbox-mode');
 
