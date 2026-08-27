@@ -1407,6 +1407,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof e.preventDefault === 'function') e.preventDefault();
     }
     if (!profileModal) return;
+    document.body.style.overflow = 'hidden';
     if (typeof profileModal.showModal === 'function') {
       profileModal.showModal();
     } else {
@@ -1417,6 +1418,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeProfileImageModal(e) {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     if (!profileModal) return;
+    document.body.style.overflow = '';
     if (typeof profileModal.close === 'function') {
       profileModal.close();
     } else {
