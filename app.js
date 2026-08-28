@@ -569,13 +569,39 @@ const projectsData = [
 
 document.addEventListener('DOMContentLoaded', () => {
 
+  // Backup original codebase defaults for reset capability
+  const DEFAULT_PROJECTS = JSON.parse(JSON.stringify(projectsData));
+
   // Map for fast lookup by project ID
   const projectsMap = {};
-  projectsData.forEach(p => {
-    p.annotations = p.annotations || [];
-    p.imageTextOverlays = p.imageTextOverlays || {};
-    projectsMap[p.id] = p;
-  });
+
+  function loadSavedProjects() {
+    const saved = localStorage.getItem('portfolio_admin_projects') || localStorage.getItem('samuel_projects_override');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          projectsData.length = 0;
+          parsed.forEach(p => {
+            p.annotations = p.annotations || [];
+            p.imageTextOverlays = p.imageTextOverlays || {};
+            projectsData.push(p);
+          });
+        }
+      } catch (e) {
+        console.error('Failed to load portfolio_admin_projects from localStorage:', e);
+      }
+    }
+
+    Object.keys(projectsMap).forEach(k => delete projectsMap[k]);
+    projectsData.forEach(p => {
+      p.annotations = p.annotations || [];
+      p.imageTextOverlays = p.imageTextOverlays || {};
+      projectsMap[p.id] = p;
+    });
+  }
+
+  loadSavedProjects();
 
   /* ------------------------------------------------------------------------
    * 1. Top Logo / Name Click Handler (Scroll to Top Home Page)
@@ -959,8 +985,11 @@ document.addEventListener('DOMContentLoaded', () => {
             projectsData.splice(idx, 1);
             delete projectsMap[projId];
             markDraftChanged();
+            if (typeof saveProjectsToStorage === 'function') {
+              saveProjectsToStorage();
+            }
             renderProjectCards();
-            showToast(`Deleted "${project.title}" (draft). Click "Save Changes" to persist.`);
+            showToast(`Deleted "${project.title}" successfully!`);
           }
         }
       });
@@ -1371,6 +1400,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (typeof markDraftChanged === 'function') {
       markDraftChanged();
+    }
+    if (typeof saveProjectsToStorage === 'function') {
+      saveProjectsToStorage();
     }
   }
 
@@ -2635,11 +2667,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function saveProjectsToStorage() {
     try {
-      localStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+      const dataStr = JSON.stringify(projectsData);
+      localStorage.setItem('portfolio_admin_projects', dataStr);
+      localStorage.setItem('samuel_projects_override', dataStr);
     } catch (err) {
       console.warn('localStorage quota exceeded, saving to sessionStorage fallback:', err);
       try {
-        sessionStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+        const dataStr = JSON.stringify(projectsData);
+        sessionStorage.setItem('portfolio_admin_projects', dataStr);
+        sessionStorage.setItem('samuel_projects_override', dataStr);
       } catch (e2) {}
     }
   }
@@ -3881,9 +3917,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         markDraftChanged();
+        if (typeof saveProjectsToStorage === 'function') {
+          saveProjectsToStorage();
+        }
         renderProjectCards();
         closeInlineProjectEditor();
-        showToast(`Project "${title}" saved to draft! Click "Save Changes" to persist.`);
+        showToast(`Project "${title}" saved successfully!`);
       });
     }
 
@@ -3933,8 +3972,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       try {
+        const serialized = JSON.stringify(projectsData);
+        localStorage.setItem('portfolio_admin_projects', serialized);
         localStorage.setItem('samuel_site_text_overrides', JSON.stringify(overrides));
-        localStorage.setItem('samuel_projects_override', JSON.stringify(projectsData));
+        localStorage.setItem('samuel_projects_override', serialized);
         saveExperienceData();
         saveSoftwareData();
 
@@ -3952,16 +3993,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadSavedWebpageEdits() {
-      const savedProjects = localStorage.getItem('samuel_projects_override');
-      if (savedProjects) {
-        try {
-          const parsed = JSON.parse(savedProjects);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            projectsData.length = 0;
-            parsed.forEach(p => { projectsData.push(p); projectsMap[p.id] = p; });
-          }
-        } catch(e) {}
-      }
+      loadSavedProjects();
       
       const textOverrides = localStorage.getItem('samuel_site_text_overrides');
       if (textOverrides) {
@@ -3979,15 +4011,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadSavedWebpageEdits();
 
+    function resetPortfolioDataToDefaults() {
+      if (confirm('Are you sure you want to reset all portfolio data to codebase defaults? Any custom projects, tags, or image descriptions will be restored to original defaults.')) {
+        localStorage.removeItem('portfolio_admin_projects');
+        localStorage.removeItem('samuel_projects_override');
+        localStorage.removeItem('samuel_site_text_overrides');
+        
+        projectsData.length = 0;
+        DEFAULT_PROJECTS.forEach(p => {
+          const copy = JSON.parse(JSON.stringify(p));
+          projectsData.push(copy);
+        });
+
+        Object.keys(projectsMap).forEach(k => delete projectsMap[k]);
+        projectsData.forEach(p => {
+          p.annotations = p.annotations || [];
+          p.imageTextOverlays = p.imageTextOverlays || {};
+          projectsMap[p.id] = p;
+        });
+
+        hasUnsavedChanges = false;
+        renderProjectCards();
+        showToast('Portfolio project data successfully reset to codebase defaults!');
+      }
+    }
+
     const editHeaderBtn = document.getElementById('admin-toggle-edit-mode-header');
     const editDashBtn = document.getElementById('admin-toggle-edit-mode-btn');
     const saveHeaderBtn = document.getElementById('admin-save-all-header');
     const saveDashBtn = document.getElementById('admin-save-all-changes-btn');
+    const resetBtns = document.querySelectorAll('#admin-reset-portfolio-header-btn, #admin-reset-portfolio-dash-btn, #admin-reset-portfolio-btn, .admin-reset-portfolio-btn');
 
     if (editHeaderBtn) editHeaderBtn.addEventListener('click', () => toggleInlineEditMode());
     if (editDashBtn) editDashBtn.addEventListener('click', () => toggleInlineEditMode());
     if (saveHeaderBtn) saveHeaderBtn.addEventListener('click', saveAllWebpageEdits);
     if (saveDashBtn) saveDashBtn.addEventListener('click', saveAllWebpageEdits);
+    resetBtns.forEach(btn => btn.addEventListener('click', resetPortfolioDataToDefaults));
 
     checkAdminSession();
   }
