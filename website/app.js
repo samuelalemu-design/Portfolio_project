@@ -610,6 +610,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Map for fast lookup by project ID
   const projectsMap = {};
+  projectsData.forEach(p => {
+    projectsMap[p.id] = p;
+  });
+
 
 
   function getSupabaseClient() {
@@ -995,9 +999,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const projectId = elem.getAttribute('data-project');
         const modalType = elem.getAttribute('data-modal-type');
-        const project = projectsMap[projectId];
+        let project = projectsMap[projectId] || projectsData.find(p => p.id === projectId);
 
         if (!project || !itemModal) return;
+
         currentProject = project;
 
         if (itemModalCategory) itemModalCategory.textContent = project.category;
@@ -3714,16 +3719,16 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast("Changes saved locally!");
         }
 
-        if (client && operationSuccess) {
-          await fetchAllDataFromSupabase();
-        } else {
-          renderSoftwareSection();
-        }
-
+        renderSoftwareSection();
         markDraftChanged();
         closeSoftwareCardEditorModal();
+
+        if (client && operationSuccess) {
+          fetchAllDataFromSupabase();
+        }
       });
     }
+
 
 
 
