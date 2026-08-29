@@ -23,7 +23,22 @@
 
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- Supabase JS Client SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    (function() {
+      var supabaseUrl = (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_SUPABASE_URL) || 'https://yudcsarufgftnncyzuat.supabase.co';
+      var supabaseAnonKey = (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) || 'sb_publishable_J6d3i52t2h3Pm2L5cSneZw_MInpF0Y1';
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        var client = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        window.supabaseClient = client;
+        window.supabase = client;
+      }
+    })();
+  </script>
 </head>
+
 <body>
 
   <!-- Toast Notification Container -->

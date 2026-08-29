@@ -613,11 +613,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   function getSupabaseClient() {
-    if (typeof supabase !== 'undefined' && supabase && typeof supabase.from === 'function') return supabase;
-    if (typeof window !== 'undefined' && window.supabaseClient) return window.supabaseClient;
-    if (typeof window !== 'undefined' && window.supabase && typeof window.supabase.from === 'function') return window.supabase;
+    if (typeof window !== 'undefined' && window.supabaseClient && typeof window.supabaseClient.from === 'function') {
+      return window.supabaseClient;
+    }
+    if (typeof window !== 'undefined' && window.supabase && typeof window.supabase.from === 'function') {
+      return window.supabase;
+    }
+    if (typeof supabase !== 'undefined' && supabase && typeof supabase.from === 'function') {
+      return supabase;
+    }
+
+    const url = (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_SUPABASE_URL) 
+      ? process.env.NEXT_PUBLIC_SUPABASE_URL 
+      : 'https://yudcsarufgftnncyzuat.supabase.co';
+    const key = (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+      ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      : 'sb_publishable_J6d3i52t2h3Pm2L5cSneZw_MInpF0Y1';
+
+    if (typeof window !== 'undefined' && window.supabase && typeof window.supabase.createClient === 'function') {
+      const client = window.supabase.createClient(url, key);
+      window.supabaseClient = client;
+      window.supabase = client;
+      return client;
+    }
+
     return null;
   }
+
 
   async function fetchAllDataFromSupabase() {
     let client = getSupabaseClient();
