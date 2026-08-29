@@ -991,7 +991,334 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  function updateModalWrapperWidth(tabName) {
+    if (!itemModal) return;
+    const wrapper = itemModal.querySelector('.modal-wrapper');
+    const footerThumbs = document.getElementById('item-modal-footer-thumbs');
+    const counter = document.getElementById('item-modal-counter');
+
+    if (tabName === 'renderings' || tabName === 'webgl') {
+      if (wrapper) {
+        wrapper.style.maxWidth = '1100px';
+        wrapper.style.width = '96%';
+      }
+      if (footerThumbs) footerThumbs.style.display = 'flex';
+      if (counter) counter.style.display = 'inline-block';
+    } else if (tabName === 'attachments') {
+      if (wrapper) {
+        wrapper.style.maxWidth = '860px';
+        wrapper.style.width = '92%';
+      }
+      if (footerThumbs) footerThumbs.style.display = 'none';
+      if (counter) counter.style.display = 'none';
+    } else {
+      // specs / overview / description
+      if (wrapper) {
+        wrapper.style.maxWidth = '800px';
+        wrapper.style.width = '92%';
+      }
+      if (footerThumbs) footerThumbs.style.display = 'none';
+      if (counter) counter.style.display = 'none';
+    }
+  }
+
+  function renderModalTabContent(tabName) {
+    if (!currentProject || !itemModalBody) return;
+    const project = currentProject;
+
+    // Highlight top tab bar buttons
+    document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+      const btnTab = btn.getAttribute('data-tab');
+      if (btnTab === tabName || (tabName === 'description' && btnTab === 'specs') || (tabName === 'webgl' && btnTab === 'renderings')) {
+        btn.classList.add('active');
+        btn.style.background = 'var(--accent-primary)';
+        btn.style.color = '#ffffff';
+        btn.style.border = 'none';
+      } else {
+        btn.classList.remove('active');
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--text-muted)';
+        btn.style.border = '1px solid var(--border-color)';
+      }
+    });
+
+    updateModalWrapperWidth(tabName);
+
+    if (tabName === 'description' || tabName === 'specs') {
+      renderSpecsAndOverviewTab();
+    } else if (tabName === 'renderings') {
+      let allImages = project.image ? [project.image] : [];
+      const rawGallery = project.renderings || project.allGalleryImages || project.gallery || [];
+      if (Array.isArray(rawGallery) && rawGallery.length > 0) {
+        rawGallery.forEach(img => {
+          const src = typeof img === 'object' ? (img.link || img.src || img.url) : img;
+          if (src && !allImages.includes(src)) {
+            allImages.push(src);
+          }
+        });
+      }
+      currentProject.allGalleryImages = allImages;
+      currentRenderIndex = 0;
+      renderLightboxView();
+    } else if (tabName === 'webgl') {
+      renderWebglTab();
+    } else if (tabName === 'attachments') {
+      renderAttachmentsTab();
+    }
+  }
+
+  function renderSpecsAndOverviewTab() {
+    if (!currentProject || !itemModalBody) return;
+    const project = currentProject;
+    const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
+
+    const specsList = (project.specs && project.specs.length > 0) ? project.specs : [
+      'SolidWorks 2024 Parametric 3D CAD Assembly & Part Modeling',
+      'Sheet Metal Design & DFM Optimization (K-Factor Bend Tables)',
+      'Shop-Floor Manufacturing Blueprints & Structural Weldment Cut Lists'
+    ];
+
+    const toolsList = (project.softwareTools && project.softwareTools.length > 0) ? project.softwareTools : [
+      'SolidWorks 2024 Parametric 3D CAD - Full part & assembly modeling',
+      'Sheet Metal Module - K-Factor bend tables & automated DXF flat patterns',
+      'Weldments & Structural Tubing - Frame weldment cut lists & DFM/DFA'
+    ];
+
+    const derivedTags = new Set(project.dfmTags || []);
+    derivedTags.add(project.category || 'Real Projects');
+    derivedTags.add('Sheet Metal Design');
+    derivedTags.add('DFM Optimized');
+    derivedTags.add('SolidWorks CAD');
+
+    if (isAdmin) {
+      // ADMIN MODE: Spec Editor Form
+      itemModalBody.innerHTML = `
+        <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+          <div style="background: var(--accent-light); border: 1px solid var(--accent-primary); padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+            <span style="font-size: 0.85rem; font-weight: 700; color: var(--accent-primary);">⚡ Edit Technical Spec &mdash; ${project.title}</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Modify technical spec fields &amp; save</span>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">1. Technical and DFM deliverables (One item per line)</label>
+            <textarea id="spec-edit-deliverables" rows="4" style="width: 100%; padding: 0.75rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; resize: vertical;">${specsList.join('\n')}</textarea>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">2. Software and tools used (One item per line)</label>
+            <textarea id="spec-edit-tools" rows="3" style="width: 100%; padding: 0.75rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; resize: vertical;">${toolsList.join('\n')}</textarea>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--accent-primary); margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">3. TAGS (Comma separated)</label>
+            <input type="text" id="spec-edit-tags" value="${Array.from(derivedTags).join(', ')}" style="width: 100%; padding: 0.75rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem;">
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color);">
+            <button type="button" id="spec-btn-save-updates" class="btn btn-primary" style="background: #16a34a; color: #ffffff; font-weight: 800; padding: 0.65rem 1.5rem; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              <span>💾 Save Technical Specs</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      const saveSpecBtn = document.getElementById('spec-btn-save-updates');
+      if (saveSpecBtn) {
+        saveSpecBtn.addEventListener('click', () => {
+          const rawDeliverables = document.getElementById('spec-edit-deliverables').value.trim();
+          const rawTools = document.getElementById('spec-edit-tools').value.trim();
+          const rawTags = document.getElementById('spec-edit-tags').value.trim();
+
+          project.specs = rawDeliverables ? rawDeliverables.split('\n').map(s => s.trim()).filter(Boolean) : [];
+          project.softwareTools = rawTools ? rawTools.split('\n').map(t => t.trim()).filter(Boolean) : [];
+          project.dfmTags = rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+          saveProjectsToStorage();
+          renderProjectCards();
+          showToast(`Technical specs for "${project.title}" updated successfully!`);
+          closeItemModal();
+        });
+      }
+    } else {
+      // PUBLIC MODE: Dynamic Theme Native HTML (No hardcoded white background block)
+      const deliverablesHTML = specsList.map(spec => `<li style="padding: 0.35rem 0; font-size: 0.95rem; color: var(--text-main); display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: var(--accent-primary); font-weight: 800;">&bull;</span> <span>${spec}</span></li>`).join('');
+      const toolsHTML = toolsList.map(tool => `<li style="font-size: 0.95rem; color: var(--text-main); display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: var(--accent-primary); font-weight: 800;">&bull;</span> <span>${tool}</span></li>`).join('');
+      const tagsHTML = Array.from(derivedTags).map(tag => `<span class="badge" style="font-size: 0.8rem; background: var(--accent-light); color: var(--accent-primary); border: 1px solid var(--border-color); font-weight: 600; padding: 0.3rem 0.75rem; border-radius: 20px;"># ${tag}</span>`).join('');
+
+      itemModalBody.innerHTML = `
+        <div style="background: var(--bg-card); color: var(--text-main); display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem;">
+          
+          <!-- Machine Overview Section -->
+          ${project.overview ? `
+          <div style="background: var(--bg-alt); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--accent-primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              Machine Engineering Overview
+            </h3>
+            <p style="font-size: 0.975rem; line-height: 1.7; color: var(--text-main); margin: 0; white-space: pre-wrap;">${project.overview}</p>
+          </div>` : ''}
+
+          <!-- Deliverables -->
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              Technical and DFM Deliverables
+            </h4>
+            <ul style="list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 0.2rem;">
+              ${deliverablesHTML}
+            </ul>
+          </div>
+
+          <!-- Tools Used -->
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              Software and Tools Used
+            </h4>
+            <ul style="list-style: none; padding-left: 0; margin: 0; color: var(--text-main); display: flex; flex-direction: column; gap: 0.35rem;">
+              ${toolsHTML}
+            </ul>
+          </div>
+
+          ${project.materials ? `
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+              🛠️ Engineering Materials
+            </h4>
+            <p style="font-size: 0.95rem; color: var(--text-main); margin: 0; background: var(--bg-alt); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); font-weight: 600;">${project.materials}</p>
+          </div>` : ''}
+
+          ${(project.manufacturing_process || project.manufacturingProcess) ? `
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+              ⚙️ Manufacturing Processes
+            </h4>
+            <p style="font-size: 0.95rem; color: var(--text-main); margin: 0; background: var(--bg-alt); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); font-weight: 600;">${project.manufacturing_process || project.manufacturingProcess}</p>
+          </div>` : ''}
+
+          ${(project.pdf_url || project.pdfUrl) ? `
+          <div style="padding: 1rem; background: var(--accent-light); border: 1px solid var(--accent-primary); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <span style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); display: block;">Official Technical PDF Blueprint / Manual</span>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">High-resolution manufacturing blueprint &amp; documentation</span>
+            </div>
+            <a href="${project.pdf_url || project.pdfUrl}" target="_blank" download class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: var(--accent-primary); color: #ffffff; font-weight: 700; text-decoration: none; border-radius: 8px;">
+              <span>Download PDF Blueprint 📄</span>
+            </a>
+          </div>` : ''}
+
+          <!-- TAGS -->
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              TAGS
+            </h4>
+            <div class="dfm-tags" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              ${tagsHTML}
+            </div>
+          </div>
+
+        </div>
+      `;
+    }
+  }
+
+  function renderWebglTab() {
+    if (!currentProject || !itemModalBody) return;
+    const project = currentProject;
+    const webglSrc = project.webgl_url || project.webglUrl || '';
+    itemModalBody.innerHTML = `
+      <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+          <div>
+            <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0;">🌐 Interactive 3D WebGL Model Viewer</h4>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Inspect parametric geometry, CAD assemblies &amp; exploded components</span>
+          </div>
+          ${webglSrc ? `<a href="${webglSrc}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.8rem; font-weight: 700;">Open Full Screen ↗</a>` : ''}
+        </div>
+        ${webglSrc ? `
+          <div style="width: 100%; height: 500px; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
+            <iframe src="${webglSrc}" style="width: 100%; height: 100%; border: none;" allowfullscreen title="3D WebGL Model Viewer"></iframe>
+          </div>
+        ` : `
+          <div style="padding: 3rem; text-align: center; color: var(--text-muted); background: var(--bg-alt); border-radius: 10px; border: 1px dashed var(--border-color);">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 0.75rem;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            <p style="font-size: 0.95rem; font-weight: 600; margin: 0;">No 3D WebGL URL configured for this project yet.</p>
+            <span style="font-size: 0.8rem;">Edit project in Admin mode to attach an interactive 3D WebGL viewer URL.</span>
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  function renderAttachmentsTab() {
+    if (!currentProject || !itemModalBody) return;
+    const project = currentProject;
+    const drawingsList = project.drawings || project.attachments || [];
+    const pdfUrl = project.pdf_url || project.pdfUrl;
+
+    const itemsHTML = drawingsList.map((docItem, idx) => {
+      const fileLink = typeof docItem === 'object' ? (docItem.link || docItem.url || '') : docItem;
+      const fileName = typeof docItem === 'object' ? (docItem.title || docItem.name || `Drawing #${idx + 1}`) : `Drawing #${idx + 1}`;
+      const isPdf = typeof fileLink === 'string' && (fileLink.toLowerCase().includes('.pdf') || fileLink.startsWith('data:application/pdf'));
+
+      const previewGraphic = isPdf ? `
+        <div style="height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-alt); border-radius: 6px; color: #ef4444;">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span style="font-size: 0.75rem; font-weight: 700; margin-top: 0.25rem; color: var(--text-muted);">PDF DOCUMENT</span>
+        </div>
+      ` : `
+        <img src="${fileLink}" alt="${fileName}" style="max-height: 130px; width: 100%; object-fit: contain; border-radius: 6px;">
+      `;
+
+      return `
+        <div style="padding: 0.75rem; text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 0.5rem;">
+          ${previewGraphic}
+          <div style="margin-top: 0.25rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+            <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 120px;">${fileName}</span>
+            <a href="${fileLink}" target="_blank" download="${fileName}" class="btn btn-primary btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">Open File</a>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    itemModalBody.innerHTML = `
+      <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem;">
+        ${pdfUrl ? `
+          <div style="margin-bottom: 1.25rem; padding: 0.85rem 1rem; background: var(--accent-light); border: 1px solid var(--accent-primary); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              <div>
+                <h5 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin: 0;">Official Technical PDF Blueprint / Manual</h5>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">High-resolution manufacturing blueprint &amp; documentation</span>
+              </div>
+            </div>
+            <a href="${pdfUrl}" target="_blank" download class="btn btn-primary btn-sm" style="background: var(--accent-primary); color: #ffffff; padding: 0.5rem 1rem; font-weight: 700; text-decoration: none; border-radius: 8px;">Download PDF Blueprint 📄</a>
+          </div>
+        ` : ''}
+
+        <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Drawings & Attachments (${drawingsList.length})</h4>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">Technical blueprints, PDF drawings, and engineering documentation for this machine.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
+          ${itemsHTML || '<p style="color: var(--text-muted); font-size: 0.9rem;">No standalone drawing files attached yet.</p>'}
+        </div>
+      </div>
+    `;
+  }
+
   function attachModalWindowListeners() {
+    // Bind Tab Bar Buttons inside Modal Header
+    document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const tabName = btn.getAttribute('data-tab');
+        if (currentProject) {
+          renderModalTabContent(tabName);
+        }
+      });
+    });
+
     document.querySelectorAll('[data-modal-type]').forEach(elem => {
       elem.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1009,250 +1336,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (itemModalTitle) itemModalTitle.textContent = project.title;
         if (itemModalCounter) itemModalCounter.textContent = '';
 
-        if (modalType === 'description') {
-          itemModalBody.innerHTML = `
-            <div style="background: #ffffff; padding: 0.5rem; color: #0f172a;">
-              <h3 style="font-size: 1.15rem; font-weight: 700; color: #0284c7; margin-bottom: 0.75rem;">Machine Engineering Overview</h3>
-              <p style="font-size: 1.05rem; line-height: 1.7; color: #1e293b; margin: 0;">${project.overview}</p>
-            </div>
-          `;
-        } else if (modalType === 'specs') {
-          const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
-
-          const specsList = (project.specs && project.specs.length > 0) ? project.specs : [
-            'SolidWorks 2024 Parametric 3D CAD Assembly & Part Modeling',
-            'Sheet Metal Design & DFM Optimization (K-Factor Bend Tables)',
-            'Shop-Floor Manufacturing Blueprints & Structural Weldment Cut Lists'
-          ];
-
-          const toolsList = (project.softwareTools && project.softwareTools.length > 0) ? project.softwareTools : [
-            'SolidWorks 2024 Parametric 3D CAD - Full part & assembly modeling',
-            'Sheet Metal Module - K-Factor bend tables & automated DXF flat patterns',
-            'Weldments & Structural Tubing - Frame weldment cut lists & DFM/DFA'
-          ];
-
-          const derivedTags = new Set(project.dfmTags || []);
-          derivedTags.add(project.category || 'Real Projects');
-          derivedTags.add('Sheet Metal Design');
-          derivedTags.add('DFM Optimized');
-          derivedTags.add('SolidWorks CAD');
-
-          if (isAdmin) {
-            // ADMIN MODE: Focused Technical Spec Edit Form (No redirect to project creation form)
-            itemModalBody.innerHTML = `
-              <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
-                <div style="background: rgba(37, 99, 235, 0.1); border: 1px solid #2563eb; padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
-                  <span style="font-size: 0.85rem; font-weight: 700; color: #2563eb;">⚡ Edit Technical Spec &mdash; ${project.title}</span>
-                  <span style="font-size: 0.75rem; color: var(--text-muted);">Modify technical spec fields &amp; save</span>
-                </div>
-
-                <div>
-                  <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #2563eb; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">1. Technical and DFM deliverables (One item per line)</label>
-                  <textarea id="spec-edit-deliverables" rows="4" style="width: 100%; padding: 0.75rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; resize: vertical;">${specsList.join('\n')}</textarea>
-                </div>
-
-                <div>
-                  <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #2563eb; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">2. Software and tools used (One item per line)</label>
-                  <textarea id="spec-edit-tools" rows="3" style="width: 100%; padding: 0.75rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; resize: vertical;">${toolsList.join('\n')}</textarea>
-                </div>
-
-                <div>
-                  <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #2563eb; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em;">3. TAGS (Comma separated)</label>
-                  <input type="text" id="spec-edit-tags" value="${Array.from(derivedTags).join(', ')}" style="width: 100%; padding: 0.75rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem;">
-                </div>
-
-                <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color);">
-                  <button type="button" id="spec-btn-save-updates" class="btn btn-primary" style="background: #16a34a; color: #ffffff; font-weight: 800; padding: 0.65rem 1.5rem; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                    <span>💾 Save Technical Specs</span>
-                  </button>
-                </div>
-              </div>
-            `;
-
-            const saveSpecBtn = document.getElementById('spec-btn-save-updates');
-            if (saveSpecBtn) {
-              saveSpecBtn.addEventListener('click', () => {
-                const rawDeliverables = document.getElementById('spec-edit-deliverables').value.trim();
-                const rawTools = document.getElementById('spec-edit-tools').value.trim();
-                const rawTags = document.getElementById('spec-edit-tags').value.trim();
-
-                project.specs = rawDeliverables ? rawDeliverables.split('\n').map(s => s.trim()).filter(Boolean) : [];
-                project.softwareTools = rawTools ? rawTools.split('\n').map(t => t.trim()).filter(Boolean) : [];
-                project.dfmTags = rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : [];
-
-                saveProjectsToStorage();
-                renderProjectCards();
-                showToast(`Technical specs for "${project.title}" updated successfully!`);
-                closeItemModal();
-              });
-            }
-          } else {
-            // PUBLIC MODE: Clean 3-Header Viewer
-            const deliverablesHTML = specsList.map(spec => `<li style="padding: 0.35rem 0; font-size: 0.95rem; color: var(--text-main); display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #2563eb; font-weight: 800;">&bull;</span> <span>${spec}</span></li>`).join('');
-
-            const toolsHTML = toolsList.map(tool => `<li style="font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: #2563eb; font-weight: 800;">&bull;</span> <span>${tool}</span></li>`).join('');
-
-            const tagsHTML = Array.from(derivedTags).map(tag => `<span class="badge" style="font-size: 0.8rem; background: rgba(13, 148, 136, 0.12); color: #0d9488; border: 1px solid rgba(13, 148, 136, 0.3); font-weight: 600; padding: 0.3rem 0.75rem; border-radius: 20px;"># ${tag}</span>`).join('');
-
-            itemModalBody.innerHTML = `
-              <div style="background: var(--bg-card); color: var(--text-main); display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem;">
-                
-                <!-- 1. Technical and DFM deliverables -->
-                <div>
-                  <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                    Technical and DFM deliverables
-                  </h4>
-                  <ul style="list-style: none; padding-left: 0; margin: 0; display: flex; flex-direction: column; gap: 0.2rem;">
-                    ${deliverablesHTML}
-                  </ul>
-                </div>
-
-                <!-- 2. Software and tools used -->
-                <div>
-                  <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                    Software and tools used
-                  </h4>
-                  <ul style="list-style: none; padding-left: 0; margin: 0; color: var(--text-main); display: flex; flex-direction: column; gap: 0.35rem;">
-                    ${toolsHTML}
-                  </ul>
-                </div>
-
-                ${project.materials ? `
-                <div>
-                  <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
-                    🛠️ Engineering Materials
-                  </h4>
-                  <p style="font-size: 0.95rem; color: var(--text-main); margin: 0; background: var(--bg-alt); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); font-weight: 600;">${project.materials}</p>
-                </div>` : ''}
-
-                ${(project.manufacturing_process || project.manufacturingProcess) ? `
-                <div>
-                  <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
-                    ⚙️ Manufacturing Processes
-                  </h4>
-                  <p style="font-size: 0.95rem; color: var(--text-main); margin: 0; background: var(--bg-alt); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); font-weight: 600;">${project.manufacturing_process || project.manufacturingProcess}</p>
-                </div>` : ''}
-
-                ${(project.pdf_url || project.pdfUrl) ? `
-                <div>
-                  <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
-                    📄 Technical Blueprint PDF
-                  </h4>
-                  <a href="${project.pdf_url || project.pdfUrl}" target="_blank" download class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: #2563eb; color: #ffffff; font-weight: 700; text-decoration: none; border-radius: 8px;">
-                    <span>Download Technical PDF Blueprint / Manual 📄</span>
-                  </a>
-                </div>` : ''}
-
-                <!-- 3. TAGS -->
-                <div>
-                  <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                    TAGS
-                  </h4>
-                  <div class="dfm-tags" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                    ${tagsHTML}
-                  </div>
-                </div>
-
-              </div>
-            `;
-          }
-        } else if (modalType === 'webgl') {
-          const webglSrc = project.webgl_url || project.webglUrl || '';
-          itemModalBody.innerHTML = `
-            <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem; display: flex; flex-direction: column; gap: 1rem;">
-              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
-                <div>
-                  <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0;">🌐 Interactive 3D WebGL Model Viewer</h4>
-                  <span style="font-size: 0.75rem; color: var(--text-muted);">Inspect parametric geometry, CAD assemblies &amp; exploded components</span>
-                </div>
-                ${webglSrc ? `<a href="${webglSrc}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.8rem; font-weight: 700;">Open Full Screen ↗</a>` : ''}
-              </div>
-              ${webglSrc ? `
-                <div style="width: 100%; height: 500px; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
-                  <iframe src="${webglSrc}" style="width: 100%; height: 100%; border: none;" allowfullscreen title="3D WebGL Model Viewer"></iframe>
-                </div>
-              ` : `
-                <div style="padding: 3rem; text-align: center; color: var(--text-muted); background: var(--bg-alt); border-radius: 10px; border: 1px dashed var(--border-color);">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 0.75rem;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-                  <p style="font-size: 0.95rem; font-weight: 600; margin: 0;">No 3D WebGL URL configured for this project yet.</p>
-                  <span style="font-size: 0.8rem;">Edit project in Admin mode to attach an interactive 3D WebGL viewer URL.</span>
-                </div>
-              `}
-            </div>
-          `;
-        } else if (modalType === 'renderings') {
-          // Build gallery with HERO IMAGE ALWAYS AS FIRST IMAGE (#1)
-          let allImages = project.image ? [project.image] : [];
-          const rawGallery = project.renderings || project.allGalleryImages || project.gallery || project.galleryPhotos || [];
-          if (Array.isArray(rawGallery) && rawGallery.length > 0) {
-            rawGallery.forEach(img => {
-              const src = typeof img === 'object' ? (img.link || img.src || img.url) : img;
-              if (src && !allImages.includes(src)) {
-                allImages.push(src);
-              }
-            });
-          }
-          currentProject.allGalleryImages = allImages;
-          currentRenderIndex = 0; // Starts at index 0 (Hero Image!)
-          renderLightboxView();
-        } else if (modalType === 'attachments') {
-          const drawingsList = project.drawings || project.attachments || [];
-          const pdfUrl = project.pdf_url || project.pdfUrl;
-
-          const itemsHTML = drawingsList.map((docItem, idx) => {
-            const fileLink = typeof docItem === 'object' ? (docItem.link || docItem.url || '') : docItem;
-            const fileName = typeof docItem === 'object' ? (docItem.title || docItem.name || `Drawing #${idx + 1}`) : `Drawing #${idx + 1}`;
-            const isPdf = typeof fileLink === 'string' && (fileLink.toLowerCase().includes('.pdf') || fileLink.startsWith('data:application/pdf'));
-
-            const previewGraphic = isPdf ? `
-              <div style="height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 6px; color: #ef4444;">
-                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                <span style="font-size: 0.75rem; font-weight: 700; margin-top: 0.25rem; color: #475569;">PDF DOCUMENT</span>
-              </div>
-            ` : `
-              <img src="${fileLink}" alt="${fileName}" style="max-height: 130px; width: 100%; object-fit: contain; border-radius: 6px;">
-            `;
-
-            return `
-              <div style="padding: 0.75rem; text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 0.5rem;">
-                ${previewGraphic}
-                <div style="margin-top: 0.25rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
-                  <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 120px;">${fileName}</span>
-                  <a href="${fileLink}" target="_blank" download="${fileName}" class="btn btn-primary btn-sm" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; font-weight: 700; white-space: nowrap;">Open File</a>
-                </div>
-              </div>
-            `;
-          }).join('');
-
-          itemModalBody.innerHTML = `
-            <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem;">
-              ${pdfUrl ? `
-                <div style="margin-bottom: 1.25rem; padding: 0.85rem 1rem; background: rgba(37, 99, 235, 0.1); border: 1px solid #2563eb; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
-                  <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                    <div>
-                      <h5 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin: 0;">Official Technical PDF Blueprint / Manual</h5>
-                      <span style="font-size: 0.75rem; color: var(--text-muted);">High-resolution manufacturing blueprint &amp; documentation</span>
-                    </div>
-                  </div>
-                  <a href="${pdfUrl}" target="_blank" download class="btn btn-primary btn-sm" style="background: #2563eb; color: #ffffff; padding: 0.5rem 1rem; font-weight: 700; text-decoration: none; border-radius: 8px;">Download PDF Blueprint 📄</a>
-                </div>
-              ` : ''}
-
-              <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Drawings & Attachments (${drawingsList.length})</h4>
-              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">Technical blueprints, PDF drawings, and engineering documentation for this machine.</p>
-              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
-                ${itemsHTML}
-              </div>
-            </div>
-          `;
-        }
-
-
+        renderModalTabContent(modalType);
         openModalWindow();
       });
     });

@@ -1165,36 +1165,52 @@
     </section>
   </main>
 
-  <!-- Dedicated Refined Photo Viewer Modal -->
+  <!-- Dedicated Refined Photo & Project Specs Viewer Modal -->
   <dialog id="item-modal" class="project-modal" style="border: none; padding: 0; background: transparent;">
-    <div class="modal-wrapper">
+    <div class="modal-wrapper" style="width: 94%; margin: auto; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg); transition: max-width 0.3s ease;">
       
       <!-- Modal Header -->
-      <div class="modal-header">
-        <div style="flex: 1; min-width: 0; padding-right: 1rem;">
-          <span class="modal-category" id="item-modal-category">EXPERIMENTAL PROJECTS</span>
-          <h2 class="modal-title" id="item-modal-title">Ratchet</h2>
-          <p class="modal-img-description" id="item-modal-img-description" style="display: none; margin: 0.35rem 0 0 0; font-size: 0.9rem; font-weight: 500; line-height: 1.45; word-break: break-word; white-space: pre-wrap; color: var(--text-muted, #94a3b8);"></p>
+      <div class="modal-header" style="background: var(--bg-alt); border-bottom: 1px solid var(--border-color); padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; width: 100%;">
+          <div style="flex: 1; min-width: 0;">
+            <span class="modal-category" id="item-modal-category" style="font-size: 0.75rem; font-weight: 700; color: var(--accent-primary); letter-spacing: 0.05em; text-transform: uppercase;">REAL PROJECTS</span>
+            <h2 class="modal-title" id="item-modal-title" style="font-size: 1.35rem; font-weight: 800; color: var(--text-main); margin: 0.2rem 0 0 0;">Project Title</h2>
+            <p class="modal-img-description" id="item-modal-img-description" style="display: none; margin: 0.35rem 0 0 0; font-size: 0.875rem; font-weight: 500; line-height: 1.45; word-break: break-word; white-space: pre-wrap; color: var(--text-muted, #94a3b8);"></p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0;">
+            <div id="item-modal-admin-actions"></div>
+            <button class="modal-close" id="item-modal-close" aria-label="Close window" style="font-size: 1.75rem; background: none; border: none; color: var(--text-muted); cursor: pointer; line-height: 1;">&times;</button>
+          </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0;">
-          <div id="item-modal-admin-actions"></div>
-          <button class="modal-close" id="item-modal-close" aria-label="Close window">&times;</button>
+
+        <!-- Clean Top Tabbed Navigation -->
+        <div class="modal-tab-bar" id="item-modal-tab-bar" style="display: flex; gap: 0.5rem; align-items: center; border-top: 1px solid var(--border-color); padding-top: 0.65rem; flex-wrap: wrap;">
+          <button type="button" class="btn btn-sm modal-tab-btn active" data-tab="specs" id="tab-btn-specs" style="font-size: 0.8rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 6px; cursor: pointer;">
+            📋 Overview &amp; Specs
+          </button>
+          <button type="button" class="btn btn-sm modal-tab-btn" data-tab="renderings" id="tab-btn-renderings" style="font-size: 0.8rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 6px; cursor: pointer;">
+            🖼️ CAD Gallery &amp; 3D
+          </button>
+          <button type="button" class="btn btn-sm modal-tab-btn" data-tab="attachments" id="tab-btn-attachments" style="font-size: 0.8rem; font-weight: 700; padding: 0.35rem 0.85rem; border-radius: 6px; cursor: pointer;">
+            📄 Drawings &amp; PDF
+          </button>
         </div>
       </div>
 
-      <!-- Modal Body (Integrated Image Stage & Compact Thumbnails) -->
-      <div class="modal-body" id="item-modal-body">
+      <!-- Modal Body (Integrated Content & Image Stage) -->
+      <div class="modal-body" id="item-modal-body" style="background: var(--bg-card); color: var(--text-main); max-height: 75vh; overflow-y: auto; padding: 1.25rem;">
         <!-- Dynamic content rendered by JS -->
       </div>
 
       <!-- Modal Footer -->
-      <div class="modal-footer">
-        <span id="item-modal-counter">Image 1 of 1</span>
-        <div id="item-modal-footer-thumbs" class="modal-footer-thumbs"></div>
-        <button class="btn btn-secondary" id="item-modal-close-btn">Close Window</button>
+      <div class="modal-footer" id="item-modal-footer" style="background: var(--bg-alt); border-top: 1px solid var(--border-color); padding: 0.75rem 1.25rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+        <span id="item-modal-counter" style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Image 1 of 1</span>
+        <div id="item-modal-footer-thumbs" class="modal-footer-thumbs" style="display: flex; gap: 0.5rem; overflow-x: auto;"></div>
+        <button class="btn btn-secondary btn-sm" id="item-modal-close-btn" style="padding: 0.4rem 0.9rem; font-weight: 700; margin-left: auto;">Close Window</button>
       </div>
     </div>
   </dialog>
+
 
   <!-- Dedicated Image Description Form Modal (Admin Mode) -->
   <dialog id="image-description-modal" class="project-modal" style="border: none; padding: 0; background: transparent;">
