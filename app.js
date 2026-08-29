@@ -1261,7 +1261,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
               } else {
                 deleteSuccess = true;
-                showToast(`Deleted "${project.title}" from database!`);
+                showToast("Changes saved to database successfully!");
               }
             } catch (err) {
               console.error('Supabase Delete Exception:', err);
@@ -1270,23 +1270,18 @@ document.addEventListener('DOMContentLoaded', () => {
               return;
             }
           } else {
-            deleteSuccess = true;
-          }
-
-          const idx = projectsData.findIndex(p => p.id === projId);
-          if (idx !== -1) {
-            projectsData.splice(idx, 1);
-            delete projectsMap[projId];
+            alert("Supabase Operation Failed: Database client not connected");
+            showToast("Database client not connected", true);
+            return;
           }
 
           markDraftChanged();
 
           if (client && deleteSuccess) {
             await fetchAllDataFromSupabase();
-          } else {
-            renderProjectCards();
           }
         }
+
 
       });
     });
@@ -3615,8 +3610,6 @@ document.addEventListener('DOMContentLoaded', () => {
           card.description = document.getElementById('sw-edit-description').value.trim();
           card.icons = [...tempEditIcons];
 
-          saveSoftwareData();
-
           const client = getSupabaseClient();
           let operationSuccess = false;
 
@@ -3638,7 +3631,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
               } else {
                 operationSuccess = true;
-                showToast(`Skill "${card.title}" saved to database!`);
+                showToast("Changes saved to database successfully!");
               }
             } catch (err) {
               console.error('Supabase skills upsert exception:', err);
@@ -3647,13 +3640,13 @@ document.addEventListener('DOMContentLoaded', () => {
               return;
             }
           } else {
-            operationSuccess = true;
+            alert("Supabase Operation Failed: Database client not connected");
+            showToast("Database client not connected", true);
+            return;
           }
 
           if (client && operationSuccess) {
             await fetchAllDataFromSupabase();
-          } else {
-            renderSoftwareSection();
           }
 
           markDraftChanged();
@@ -3661,6 +3654,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+
 
 
 
@@ -4378,7 +4372,7 @@ document.addEventListener('DOMContentLoaded', () => {
               return;
             } else {
               operationSuccess = true;
-              showToast(`Project "${title}" saved to database!`);
+              showToast("Changes saved to database successfully!");
             }
           } catch (err) {
             console.error('Supabase Save Exception:', err);
@@ -4387,32 +4381,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
           }
         } else {
-          const localProj = {
-            ...projectPayload,
-            description: overview,
-            dfmTags: dfmTags,
-            attachments: currentEditDrawings
-          };
-          if (editId && projectsMap[editId]) {
-            const idx = projectsData.findIndex(p => p.id === editId);
-            if (idx !== -1) projectsData[idx] = localProj;
-          } else {
-            projectsData.unshift(localProj);
-          }
-          projectsMap[projId] = localProj;
-          operationSuccess = true;
-          showToast(`Project "${title}" updated locally!`);
+          alert("Supabase Operation Failed: Database client not connected");
+          showToast("Database client not connected", true);
+          return;
         }
 
         if (client && operationSuccess) {
           await fetchAllDataFromSupabase();
-        } else {
-          renderProjectCards();
         }
 
         markDraftChanged();
         closeInlineProjectEditor();
       });
+
 
     }
 
@@ -4464,13 +4445,7 @@ document.addEventListener('DOMContentLoaded', () => {
         overrides[`elem_${index}`] = el.innerHTML;
       });
 
-      saveSoftwareData();
-
       const draftLogo = localStorage.getItem('samuel_brand_logo_draft');
-      if (draftLogo) {
-        localStorage.setItem('samuel_brand_logo', draftLogo);
-        localStorage.removeItem('samuel_brand_logo_draft');
-      }
       const logoVal = draftLogo || localStorage.getItem('samuel_brand_logo') || '';
 
       const client = getSupabaseClient();
@@ -4485,29 +4460,38 @@ document.addEventListener('DOMContentLoaded', () => {
             updated_at: new Date().toISOString()
           }));
 
-          await Promise.all([
+          const results = await Promise.all([
             client.from('site_content').upsert([{ key: 'text_overrides', value: overrides, updated_at: new Date().toISOString() }]),
             client.from('site_content').upsert([{ key: 'brand_logo', value: { url: logoVal }, updated_at: new Date().toISOString() }]),
             client.from('site_content').upsert([{ key: 'projects_backup', value: projectsData, updated_at: new Date().toISOString() }]),
             client.from('skills').upsert(skillPayloads)
           ]);
-          showToast('✓ All webpage text edits & software skills committed to Supabase database!');
+
+          const errRes = results.find(r => r && r.error);
+          if (errRes && errRes.error) {
+            console.error('Supabase Save Error (site_content):', errRes.error);
+            alert("Supabase Operation Failed: " + errRes.error.message);
+            showToast(`Supabase Save Error: ${errRes.error.message}`, true);
+            return;
+          }
+
+          showToast("Changes saved to database successfully!");
           await fetchAllDataFromSupabase();
         } catch (err) {
           console.error('Supabase Save Error (site_content):', err);
+          alert("Supabase Operation Failed: " + err.message);
           showToast(`Supabase Save Error: ${err.message}`, true);
+          return;
         }
       } else {
-        try {
-          localStorage.setItem('samuel_site_text_overrides', JSON.stringify(overrides));
-          saveExperienceData();
-          saveSoftwareData();
-        } catch(e) {}
-        showToast('All webpage edits saved locally!');
+        alert("Supabase Operation Failed: Database client not connected");
+        showToast("Database client not connected", true);
+        return;
       }
 
       hasUnsavedChanges = false;
     }
+
 
 
 
