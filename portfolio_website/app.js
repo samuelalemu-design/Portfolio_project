@@ -3623,56 +3623,80 @@ document.addEventListener('DOMContentLoaded', () => {
     if (swEditorCancelBtn) swEditorCancelBtn.addEventListener('click', closeSoftwareCardEditorModal);
 
     if (swEditorSaveBtn) {
-      swEditorSaveBtn.addEventListener('click', async () => {
-        if (!currentEditingCardId) return;
+      swEditorSaveBtn.addEventListener('click', async (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
 
-        const card = softwareList.find(c => c.id === currentEditingCardId);
-        if (card) {
-          card.badgeText = document.getElementById('sw-edit-badge').value.trim();
-          card.title = document.getElementById('sw-edit-title').value.trim();
-          card.description = document.getElementById('sw-edit-description').value.trim();
-          card.icons = [...tempEditIcons];
+        const cardId = currentEditingCardId || (document.getElementById('sw-edit-card-id') ? document.getElementById('sw-edit-card-id').value : null);
+        if (!cardId) {
+          showToast('Error: No software card ID found to save.', true);
+          return;
+        }
 
-          const client = getSupabaseClient();
-          let operationSuccess = false;
+        let card = softwareList.find(c => c.id === cardId || String(c.id) === String(cardId));
+        if (!card) {
+          card = {
+            id: cardId,
+            badgeText: '',
+            title: '',
+            description: '',
+            icons: []
+          };
+          softwareList.push(card);
+        }
 
-          if (client) {
-            try {
-              const { error } = await client.from('skills').upsert([{
-                id: card.id,
-                title: card.title,
-                badge_text: card.badgeText,
-                description: card.description,
-                icons: card.icons,
-                updated_at: new Date().toISOString()
-              }]);
+        card.badgeText = document.getElementById('sw-edit-badge') ? document.getElementById('sw-edit-badge').value.trim() : '';
+        card.title = document.getElementById('sw-edit-title') ? document.getElementById('sw-edit-title').value.trim() : '';
+        card.description = document.getElementById('sw-edit-description') ? document.getElementById('sw-edit-description').value.trim() : '';
+        card.icons = [...tempEditIcons];
 
-              if (error) {
-                console.error('Supabase Save Error (skills):', error);
-                showToast(`Supabase Error: ${error.message}`, true);
-                return;
-              } else {
-                operationSuccess = true;
-                showToast("Changes saved to database successfully!");
-              }
-            } catch (err) {
-              console.error('Supabase skills upsert exception:', err);
-              showToast(`Supabase Exception: ${err.message}`, true);
+        if (typeof saveSoftwareData === 'function') {
+          saveSoftwareData();
+        }
+
+        showToast('Saving skill card to database...');
+        const client = getSupabaseClient();
+        let operationSuccess = false;
+
+        if (client) {
+          try {
+            const { error } = await client.from('skills').upsert([{
+              id: card.id,
+              title: card.title,
+              badge_text: card.badgeText,
+              description: card.description,
+              icons: card.icons,
+              updated_at: new Date().toISOString()
+            }]);
+
+            if (error) {
+              console.error('Supabase Save Error (skills):', error);
+              showToast(`Supabase Save Error: ${error.message}`, true);
               return;
+            } else {
+              operationSuccess = true;
+              showToast("Changes saved to database successfully!");
             }
-          } else {
-            showToast("Database client not connected", true);
+          } catch (err) {
+            console.error('Supabase skills upsert exception:', err);
+            showToast(`Supabase Exception: ${err.message}`, true);
             return;
           }
-
-
-          if (client && operationSuccess) {
-            await fetchAllDataFromSupabase();
-          }
-
-          markDraftChanged();
-          closeSoftwareCardEditorModal();
+        } else {
+          operationSuccess = true;
+          showToast("Changes saved locally!");
         }
+
+        if (client && operationSuccess) {
+          await fetchAllDataFromSupabase();
+        } else {
+          renderSoftwareSection();
+        }
+
+        markDraftChanged();
+        closeSoftwareCardEditorModal();
       });
     }
 
