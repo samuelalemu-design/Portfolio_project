@@ -641,9 +641,22 @@ document.addEventListener('DOMContentLoaded', () => {
         client.from('site_content').select('*')
       ]);
 
+      if (projectsRes.error) {
+        console.error('Supabase fetch error (projects):', projectsRes.error);
+        alert("Supabase Operation Failed: " + projectsRes.error.message);
+      }
+      if (skillsRes.error) {
+        console.error('Supabase fetch error (skills):', skillsRes.error);
+        alert("Supabase Operation Failed: " + skillsRes.error.message);
+      }
+      if (contentRes.error) {
+        console.error('Supabase fetch error (site_content):', contentRes.error);
+        alert("Supabase Operation Failed: " + contentRes.error.message);
+      }
+
       let loadedAnything = false;
 
-      // 1. Hydrate Projects
+      // 1. Hydrate Projects - Direct database state overwrite
       if (!projectsRes.error && Array.isArray(projectsRes.data) && projectsRes.data.length > 0) {
         projectsData.length = 0;
         projectsRes.data.forEach(item => {
@@ -680,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadedAnything = true;
       }
 
-      // 2. Hydrate Skills
+      // 2. Hydrate Skills - Direct database state overwrite
       if (!skillsRes.error && Array.isArray(skillsRes.data) && skillsRes.data.length > 0) {
         if (typeof softwareList !== 'undefined' && Array.isArray(softwareList)) {
           softwareList.length = 0;
@@ -693,11 +706,12 @@ document.addEventListener('DOMContentLoaded', () => {
               icons: Array.isArray(item.icons) ? item.icons : (typeof item.icons === 'string' ? JSON.parse(item.icons || '[]') : [])
             });
           });
+          if (typeof saveSoftwareData === 'function') saveSoftwareData();
           loadedAnything = true;
         }
       }
 
-      // 3. Hydrate Site Content (Text Overrides, Logo, Contact, Social)
+      // 3. Hydrate Site Content (Text Overrides, Logo) - Direct database state overwrite
       if (!contentRes.error && Array.isArray(contentRes.data) && contentRes.data.length > 0) {
         contentRes.data.forEach(row => {
           if (row.key === 'text_overrides' && row.value) {
@@ -719,9 +733,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return loadedAnything;
     } catch (err) {
       console.error('Supabase parallel hydration exception:', err);
+      alert("Supabase Operation Failed: " + (err.message || 'Hydration Exception'));
     }
     return false;
   }
+
 
   function applySiteTextOverrides(overrides) {
     if (!overrides || typeof overrides !== 'object') return;
@@ -1239,15 +1255,19 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
               const { error } = await client.from('projects').delete().eq('id', projId);
               if (error) {
-                console.error('Supabase Save Error:', error);
+                console.error('Supabase Delete Error:', error);
+                alert("Supabase Operation Failed: " + error.message);
                 showToast(`Supabase Delete Error: ${error.message}`, true);
+                return;
               } else {
                 deleteSuccess = true;
                 showToast(`Deleted "${project.title}" from database!`);
               }
             } catch (err) {
-              console.error('Supabase Save Error:', err);
+              console.error('Supabase Delete Exception:', err);
+              alert("Supabase Operation Failed: " + err.message);
               showToast(`Supabase Delete Exception: ${err.message}`, true);
+              return;
             }
           } else {
             deleteSuccess = true;
@@ -1262,11 +1282,12 @@ document.addEventListener('DOMContentLoaded', () => {
           markDraftChanged();
 
           if (client && deleteSuccess) {
-            await fetchProjectsFromSupabase();
+            await fetchAllDataFromSupabase();
           } else {
             renderProjectCards();
           }
         }
+
       });
     });
 
@@ -3546,10 +3567,13 @@ document.addEventListener('DOMContentLoaded', () => {
               publicUrl = urlData.publicUrl;
             } else {
               console.error('Supabase icon upload error:', error);
+              alert("Supabase Operation Failed: " + error.message);
             }
           } catch (err) {
             console.error('Icon upload exception:', err);
+            alert("Supabase Operation Failed: " + (err.message || 'Upload Exception'));
           }
+
         }
 
         if (!publicUrl) {
@@ -3594,6 +3618,8 @@ document.addEventListener('DOMContentLoaded', () => {
           saveSoftwareData();
 
           const client = getSupabaseClient();
+          let operationSuccess = false;
+
           if (client) {
             try {
               const { error } = await client.from('skills').upsert([{
@@ -3607,22 +3633,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
               if (error) {
                 console.error('Supabase Save Error (skills):', error);
+                alert("Supabase Operation Failed: " + error.message);
                 showToast(`Supabase Error: ${error.message}`, true);
+                return;
               } else {
+                operationSuccess = true;
                 showToast(`Skill "${card.title}" saved to database!`);
               }
             } catch (err) {
               console.error('Supabase skills upsert exception:', err);
+              alert("Supabase Operation Failed: " + err.message);
               showToast(`Supabase Exception: ${err.message}`, true);
+              return;
             }
+          } else {
+            operationSuccess = true;
+          }
+
+          if (client && operationSuccess) {
+            await fetchAllDataFromSupabase();
+          } else {
+            renderSoftwareSection();
           }
 
           markDraftChanged();
-          renderSoftwareSection();
           closeSoftwareCardEditorModal();
         }
       });
     }
+
 
 
 
@@ -4097,10 +4136,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 publicUrl = urlData.publicUrl;
               } else {
                 console.error('Supabase storage upload error:', error);
+                alert("Supabase Operation Failed: " + error.message);
               }
             } catch (err) {
               console.error('Storage upload exception:', err);
+              alert("Supabase Operation Failed: " + (err.message || 'Upload Exception'));
             }
+
           }
           if (!publicUrl) {
             publicUrl = await compressImageFile(file, 900, 0.78);
@@ -4154,9 +4196,11 @@ document.addEventListener('DOMContentLoaded', () => {
                   publicUrl = urlData.publicUrl;
                 } else {
                   console.error('Supabase storage upload error:', error);
+                  alert("Supabase Operation Failed: " + error.message);
                 }
               } catch (err) {
                 console.error('Storage upload exception:', err);
+                alert("Supabase Operation Failed: " + (err.message || 'Upload Exception'));
               }
             }
             if (!publicUrl) {
@@ -4221,11 +4265,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 publicUrl = urlData.publicUrl;
               } else {
                 console.error('Supabase attachment upload error:', error);
+                alert("Supabase Operation Failed: " + error.message);
               }
             } catch (err) {
               console.error('Drawing upload exception:', err);
+              alert("Supabase Operation Failed: " + (err.message || 'Upload Exception'));
             }
           }
+
           if (publicUrl) {
             currentEditDrawings.push({
               title: file.name,
@@ -4326,14 +4373,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (error) {
               console.error('Supabase Save Error (projects):', error);
+              alert("Supabase Operation Failed: " + error.message);
               showToast(`Supabase Save Error: ${error.message || 'Failed to save project'}`, true);
+              return;
             } else {
               operationSuccess = true;
               showToast(`Project "${title}" saved to database!`);
             }
           } catch (err) {
             console.error('Supabase Save Exception:', err);
+            alert("Supabase Operation Failed: " + err.message);
             showToast(`Supabase Save Exception: ${err.message}`, true);
+            return;
           }
         } else {
           const localProj = {
@@ -4353,15 +4404,16 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast(`Project "${title}" updated locally!`);
         }
 
-        markDraftChanged();
-        closeInlineProjectEditor();
-
         if (client && operationSuccess) {
           await fetchAllDataFromSupabase();
         } else {
           renderProjectCards();
         }
+
+        markDraftChanged();
+        closeInlineProjectEditor();
       });
+
     }
 
 
