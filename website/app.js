@@ -665,16 +665,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (projectsRes.error) {
         console.error('Supabase fetch error (projects):', projectsRes.error);
-        alert("Supabase Operation Failed: " + projectsRes.error.message);
+        showToast("Supabase Operation Failed: " + projectsRes.error.message, true);
       }
       if (skillsRes.error) {
         console.error('Supabase fetch error (skills):', skillsRes.error);
-        alert("Supabase Operation Failed: " + skillsRes.error.message);
+        showToast("Supabase Operation Failed: " + skillsRes.error.message, true);
       }
       if (contentRes.error) {
         console.error('Supabase fetch error (site_content):', contentRes.error);
-        alert("Supabase Operation Failed: " + contentRes.error.message);
+        showToast("Supabase Operation Failed: " + contentRes.error.message, true);
       }
+
 
       let loadedAnything = false;
 
@@ -755,8 +756,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return loadedAnything;
     } catch (err) {
       console.error('Supabase parallel hydration exception:', err);
-      alert("Supabase Operation Failed: " + (err.message || 'Hydration Exception'));
+      showToast("Supabase Operation Failed: " + (err.message || 'Hydration Exception'), true);
     }
+
     return false;
   }
 
@@ -1278,7 +1280,6 @@ document.addEventListener('DOMContentLoaded', () => {
               const { error } = await client.from('projects').delete().eq('id', projId);
               if (error) {
                 console.error('Supabase Delete Error:', error);
-                alert("Supabase Operation Failed: " + error.message);
                 showToast(`Supabase Delete Error: ${error.message}`, true);
                 return;
               } else {
@@ -1287,15 +1288,14 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             } catch (err) {
               console.error('Supabase Delete Exception:', err);
-              alert("Supabase Operation Failed: " + err.message);
               showToast(`Supabase Delete Exception: ${err.message}`, true);
               return;
             }
           } else {
-            alert("Supabase Operation Failed: Database client not connected");
             showToast("Database client not connected", true);
             return;
           }
+
 
           markDraftChanged();
 
@@ -3648,7 +3648,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
               if (error) {
                 console.error('Supabase Save Error (skills):', error);
-                alert("Supabase Operation Failed: " + error.message);
                 showToast(`Supabase Error: ${error.message}`, true);
                 return;
               } else {
@@ -3657,15 +3656,14 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             } catch (err) {
               console.error('Supabase skills upsert exception:', err);
-              alert("Supabase Operation Failed: " + err.message);
               showToast(`Supabase Exception: ${err.message}`, true);
               return;
             }
           } else {
-            alert("Supabase Operation Failed: Database client not connected");
             showToast("Database client not connected", true);
             return;
           }
+
 
           if (client && operationSuccess) {
             await fetchAllDataFromSupabase();
@@ -4389,7 +4387,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (error) {
               console.error('Supabase Save Error (projects):', error);
-              alert("Supabase Operation Failed: " + error.message);
               showToast(`Supabase Save Error: ${error.message || 'Failed to save project'}`, true);
               return;
             } else {
@@ -4398,15 +4395,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           } catch (err) {
             console.error('Supabase Save Exception:', err);
-            alert("Supabase Operation Failed: " + err.message);
             showToast(`Supabase Save Exception: ${err.message}`, true);
             return;
           }
         } else {
-          alert("Supabase Operation Failed: Database client not connected");
           showToast("Database client not connected", true);
           return;
         }
+
 
         if (client && operationSuccess) {
           await fetchAllDataFromSupabase();
@@ -4492,7 +4488,6 @@ document.addEventListener('DOMContentLoaded', () => {
           const errRes = results.find(r => r && r.error);
           if (errRes && errRes.error) {
             console.error('Supabase Save Error (site_content):', errRes.error);
-            alert("Supabase Operation Failed: " + errRes.error.message);
             showToast(`Supabase Save Error: ${errRes.error.message}`, true);
             return;
           }
@@ -4501,15 +4496,14 @@ document.addEventListener('DOMContentLoaded', () => {
           await fetchAllDataFromSupabase();
         } catch (err) {
           console.error('Supabase Save Error (site_content):', err);
-          alert("Supabase Operation Failed: " + err.message);
           showToast(`Supabase Save Error: ${err.message}`, true);
           return;
         }
       } else {
-        alert("Supabase Operation Failed: Database client not connected");
         showToast("Database client not connected", true);
         return;
       }
+
 
       hasUnsavedChanges = false;
     }
