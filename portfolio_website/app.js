@@ -572,8 +572,45 @@ document.addEventListener('DOMContentLoaded', () => {
   // Backup original codebase defaults for reset capability
   const DEFAULT_PROJECTS = JSON.parse(JSON.stringify(projectsData));
 
+  function showToast(message, isError = false) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      container.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 999999; display: flex; flex-direction: column; gap: 10px; max-width: 420px;';
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #ffffff;
+      background: ${isError ? '#dc2626' : '#0284c7'};
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+      border: 1px solid ${isError ? '#ef4444' : '#38bdf8'};
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    `;
+    toast.innerHTML = `<span style="font-size: 1.1rem;">${isError ? '⚠️' : '✓'}</span> <span style="line-height: 1.4;">${message}</span>`;
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+      setTimeout(() => toast.remove(), 300);
+    }, isError ? 7000 : 3500);
+  }
+  window.showToast = showToast;
+
   // Map for fast lookup by project ID
   const projectsMap = {};
+
 
   function getSupabaseClient() {
     if (typeof supabase !== 'undefined' && supabase && typeof supabase.from === 'function') return supabase;
@@ -582,49 +619,77 @@ document.addEventListener('DOMContentLoaded', () => {
     return null;
   }
 
-  async function loadSavedProjects() {
-    let loadedFromDb = false;
-    const client = getSupabaseClient();
-
-    if (client) {
-      try {
-        const { data, error } = await client
-          .from('projects')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (!error && Array.isArray(data) && data.length > 0) {
-          projectsData.length = 0;
-          data.forEach(item => {
-            const p = {
-              id: item.id,
-              number: item.number || 0,
-              title: item.title || '',
-              category: item.category || 'Real Projects',
-              overview: item.overview || item.description || '',
-              description: item.overview || item.description || '',
-              specs: Array.isArray(item.specs) ? item.specs : (typeof item.specs === 'string' ? JSON.parse(item.specs || '[]') : []),
-              image: item.image || item.hero_image || '',
-              renderings: Array.isArray(item.renderings) ? item.renderings : (typeof item.renderings === 'string' ? JSON.parse(item.renderings || '[]') : []),
-              gallery: Array.isArray(item.renderings) ? item.renderings : [],
-              allGalleryImages: Array.isArray(item.renderings) ? item.renderings : [],
-              drawings: Array.isArray(item.drawings) ? item.drawings : (typeof item.drawings === 'string' ? JSON.parse(item.drawings || '[]') : []),
-              attachments: Array.isArray(item.drawings) ? item.drawings : [],
-              dfmTags: Array.isArray(item.dfmTags || item.dfm_tags) ? (item.dfmTags || item.dfm_tags) : [],
-              annotations: item.annotations || [],
-              imageTextOverlays: item.imageTextOverlays || {},
-              created_at: item.created_at
-            };
-            projectsData.push(p);
-          });
-          loadedFromDb = true;
-        }
-      } catch (err) {
-        console.warn('Supabase fetch projects failed, falling back to mock array:', err);
+  async function fetchProjectsFromSupabase() {
+    let client = getSupabaseClient();
+    if (!client) {
+      for (let i = 0; i < 20; i++) {
+        await new Promise(res => setTimeout(res, 100));
+        client = getSupabaseClient();
+        if (client) break;
       }
     }
 
-    if (!loadedFromDb) {
+    if (!client) {
+      console.warn('Supabase client not initialized yet. Falling back to mock array.');
+      return false;
+    }
+
+    try {
+      const { data, error } = await client
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Supabase Save Error:', error);
+        showToast(`Supabase Fetch Error: ${error.message || 'Failed to fetch projects'}`, true);
+        return false;
+      }
+
+      if (Array.isArray(data) && data.length > 0) {
+        projectsData.length = 0;
+        data.forEach(item => {
+          const p = {
+            id: item.id,
+            number: item.number || 0,
+            title: item.title || '',
+            category: item.category || 'Real Projects',
+            overview: item.overview || item.description || '',
+            description: item.overview || item.description || '',
+            specs: Array.isArray(item.specs) ? item.specs : (typeof item.specs === 'string' ? JSON.parse(item.specs || '[]') : []),
+            image: item.image || item.hero_image || '',
+            renderings: Array.isArray(item.renderings) ? item.renderings : (typeof item.renderings === 'string' ? JSON.parse(item.renderings || '[]') : []),
+            gallery: Array.isArray(item.renderings) ? item.renderings : [],
+            allGalleryImages: Array.isArray(item.renderings) ? item.renderings : [],
+            drawings: Array.isArray(item.drawings) ? item.drawings : (typeof item.drawings === 'string' ? JSON.parse(item.drawings || '[]') : []),
+            attachments: Array.isArray(item.drawings) ? item.drawings : [],
+            dfmTags: Array.isArray(item.dfmTags || item.dfm_tags) ? (item.dfmTags || item.dfm_tags) : [],
+            annotations: item.annotations || [],
+            imageTextOverlays: item.imageTextOverlays || {},
+            created_at: item.created_at
+          };
+          projectsData.push(p);
+        });
+
+        Object.keys(projectsMap).forEach(k => delete projectsMap[k]);
+        projectsData.forEach(p => {
+          projectsMap[p.id] = p;
+        });
+
+        if (typeof renderProjectCards === 'function') {
+          renderProjectCards();
+        }
+        return true;
+      }
+    } catch (err) {
+      console.error('Supabase Hydration Exception:', err);
+    }
+    return false;
+  }
+
+  async function loadSavedProjects() {
+    const fetched = await fetchProjectsFromSupabase();
+    if (!fetched) {
       const saved = localStorage.getItem('portfolio_admin_projects') || localStorage.getItem('samuel_projects_override');
       if (saved) {
         try {
@@ -641,21 +706,22 @@ document.addEventListener('DOMContentLoaded', () => {
           console.error('Failed to load portfolio_admin_projects from localStorage:', e);
         }
       }
-    }
 
-    Object.keys(projectsMap).forEach(k => delete projectsMap[k]);
-    projectsData.forEach(p => {
-      p.annotations = p.annotations || [];
-      p.imageTextOverlays = p.imageTextOverlays || {};
-      projectsMap[p.id] = p;
-    });
+      Object.keys(projectsMap).forEach(k => delete projectsMap[k]);
+      projectsData.forEach(p => {
+        p.annotations = p.annotations || [];
+        p.imageTextOverlays = p.imageTextOverlays || {};
+        projectsMap[p.id] = p;
+      });
 
-    if (typeof renderProjectCards === 'function') {
-      renderProjectCards();
+      if (typeof renderProjectCards === 'function') {
+        renderProjectCards();
+      }
     }
   }
 
   loadSavedProjects();
+
 
 
   /* ------------------------------------------------------------------------
@@ -1034,28 +1100,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const projId = btn.getAttribute('data-project');
         const project = projectsMap[projId];
         if (!project) return;
+
         if (confirm(`Are you sure you want to delete "${project.title}" from your portfolio?`)) {
           const client = getSupabaseClient();
+          let deleteSuccess = false;
+
           if (client) {
             try {
               const { error } = await client.from('projects').delete().eq('id', projId);
-              if (error) console.error('Supabase project delete error:', error);
+              if (error) {
+                console.error('Supabase Save Error:', error);
+                showToast(`Supabase Delete Error: ${error.message}`, true);
+              } else {
+                deleteSuccess = true;
+                showToast(`Deleted "${project.title}" from database!`);
+              }
             } catch (err) {
-              console.error('Supabase delete exception:', err);
+              console.error('Supabase Save Error:', err);
+              showToast(`Supabase Delete Exception: ${err.message}`, true);
             }
+          } else {
+            deleteSuccess = true;
           }
 
           const idx = projectsData.findIndex(p => p.id === projId);
           if (idx !== -1) {
             projectsData.splice(idx, 1);
             delete projectsMap[projId];
-            markDraftChanged();
+          }
+
+          markDraftChanged();
+
+          if (client && deleteSuccess) {
+            await fetchProjectsFromSupabase();
+          } else {
             renderProjectCards();
-            showToast(`Deleted "${project.title}" successfully!`);
           }
         }
       });
     });
+
 
   }
 
@@ -4007,6 +4091,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const client = getSupabaseClient();
+        let operationSuccess = false;
 
         if (editId && projectsMap[editId]) {
           // Editing existing project
@@ -4037,13 +4122,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderings: renderings,
                 drawings: currentEditDrawings
               }).eq('id', editId);
-              if (error) console.error('Supabase project update error:', error);
-            } catch (err) {
-              console.error('Supabase update exception:', err);
-            }
-          }
 
-          showToast(`Project "${title}" updated successfully!`);
+              if (error) {
+                console.error('Supabase Save Error:', error);
+                showToast(`Supabase Save Error: ${error.message || 'Failed to update project'}`, true);
+              } else {
+                operationSuccess = true;
+                showToast(`Project "${title}" updated in database!`);
+              }
+            } catch (err) {
+              console.error('Supabase Save Error:', err);
+              showToast(`Supabase Save Exception: ${err.message}`, true);
+            }
+          } else {
+            operationSuccess = true;
+            showToast(`Project "${title}" updated locally!`);
+          }
         } else {
           // Adding new project
           const newId = `proj_${Date.now()}`;
@@ -4081,25 +4175,39 @@ document.addEventListener('DOMContentLoaded', () => {
               }]).select();
 
               if (error) {
-                console.error('Supabase project insert error:', error);
-              } else if (data && data[0] && data[0].id) {
-                newProj.id = data[0].id;
+                console.error('Supabase Save Error:', error);
+                showToast(`Supabase Save Error: ${error.message || 'Failed to insert project'}`, true);
+              } else {
+                if (data && data[0] && data[0].id) {
+                  newProj.id = data[0].id;
+                }
+                operationSuccess = true;
+                showToast(`New project "${title}" created in database!`);
               }
             } catch (err) {
-              console.error('Supabase insert exception:', err);
+              console.error('Supabase Save Error:', err);
+              showToast(`Supabase Save Exception: ${err.message}`, true);
             }
+          } else {
+            projectsData.unshift(newProj);
+            projectsMap[newProj.id] = newProj;
+            operationSuccess = true;
+            showToast(`New project "${title}" created locally!`);
           }
-
-          projectsData.unshift(newProj);
-          projectsMap[newProj.id] = newProj;
-          showToast(`New project "${title}" created successfully!`);
         }
 
         markDraftChanged();
-        renderProjectCards();
         closeInlineProjectEditor();
+
+        // Optimistic update & re-fetch to synchronize UI with database
+        if (client && operationSuccess) {
+          await fetchProjectsFromSupabase();
+        } else {
+          renderProjectCards();
+        }
       });
     }
+
 
 
     // Inline Text Editing Manager
