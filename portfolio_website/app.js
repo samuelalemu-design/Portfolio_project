@@ -3340,19 +3340,15 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const saved = localStorage.getItem('samuel_software_cards_data');
         if (saved) {
-          softwareList = JSON.parse(saved);
-        } else {
-          // Backward compatibility check with single icon map
-          const oldIcons = JSON.parse(localStorage.getItem('samuel_software_icons') || '{}');
-          softwareList = defaultSoftwareList.map(item => {
-            const newItem = { ...item };
-            if (oldIcons[item.id]) {
-              newItem.icons = [oldIcons[item.id]];
-            }
-            return newItem;
-          });
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            softwareList = parsed;
+            return;
+          }
         }
-      } catch(e) {
+      } catch(e) {}
+
+      if (!softwareList || softwareList.length === 0) {
         softwareList = JSON.parse(JSON.stringify(defaultSoftwareList));
       }
     }
@@ -3364,6 +3360,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Error saving software cards data:', e);
       }
     }
+
 
     function renderSoftwareSection() {
       const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
@@ -3594,6 +3591,8 @@ document.addEventListener('DOMContentLoaded', () => {
           card.description = document.getElementById('sw-edit-description').value.trim();
           card.icons = [...tempEditIcons];
 
+          saveSoftwareData();
+
           const client = getSupabaseClient();
           if (client) {
             try {
@@ -3611,7 +3610,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(`Supabase Error: ${error.message}`, true);
               } else {
                 showToast(`Skill "${card.title}" saved to database!`);
-                await fetchAllDataFromSupabase();
               }
             } catch (err) {
               console.error('Supabase skills upsert exception:', err);
@@ -3625,6 +3623,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
     }
+
 
 
     loadSavedSoftwareData();
@@ -4413,6 +4412,8 @@ document.addEventListener('DOMContentLoaded', () => {
         overrides[`elem_${index}`] = el.innerHTML;
       });
 
+      saveSoftwareData();
+
       const draftLogo = localStorage.getItem('samuel_brand_logo_draft');
       if (draftLogo) {
         localStorage.setItem('samuel_brand_logo', draftLogo);
@@ -4423,12 +4424,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const client = getSupabaseClient();
       if (client) {
         try {
+          const skillPayloads = softwareList.map(card => ({
+            id: card.id,
+            title: card.title,
+            badge_text: card.badgeText,
+            description: card.description,
+            icons: card.icons || [],
+            updated_at: new Date().toISOString()
+          }));
+
           await Promise.all([
             client.from('site_content').upsert([{ key: 'text_overrides', value: overrides, updated_at: new Date().toISOString() }]),
             client.from('site_content').upsert([{ key: 'brand_logo', value: { url: logoVal }, updated_at: new Date().toISOString() }]),
-            client.from('site_content').upsert([{ key: 'projects_backup', value: projectsData, updated_at: new Date().toISOString() }])
+            client.from('site_content').upsert([{ key: 'projects_backup', value: projectsData, updated_at: new Date().toISOString() }]),
+            client.from('skills').upsert(skillPayloads)
           ]);
-          showToast('✓ All webpage text edits committed to Supabase database!');
+          showToast('✓ All webpage text edits & software skills committed to Supabase database!');
           await fetchAllDataFromSupabase();
         } catch (err) {
           console.error('Supabase Save Error (site_content):', err);
@@ -4445,6 +4456,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       hasUnsavedChanges = false;
     }
+
 
 
     function loadSavedWebpageEdits() {
