@@ -1,13 +1,16 @@
 {
   "name": "portfolio-website",
   "version": "1.0.0",
+  "type": "module",
   "description": "Samuel Alemu Mechanical Design Engineer Portfolio Website",
+
   "main": "app.js",
   "scripts": {
-    "start": "npx serve -s . -p $PORT",
-    "build": "echo \"Build complete\""
+    "start": "serve .",
+    "build": "echo Build complete"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.109.0",
     "serve": "^14.2.3"
   },
   "engines": {

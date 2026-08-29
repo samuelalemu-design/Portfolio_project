@@ -6,3 +6,6 @@ node_modules/
 .idea/
 
 .vercel
+.env
+.env*.local
+

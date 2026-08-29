@@ -575,21 +575,71 @@ document.addEventListener('DOMContentLoaded', () => {
   // Map for fast lookup by project ID
   const projectsMap = {};
 
-  function loadSavedProjects() {
-    const saved = localStorage.getItem('portfolio_admin_projects') || localStorage.getItem('samuel_projects_override');
-    if (saved) {
+  function getSupabaseClient() {
+    if (typeof supabase !== 'undefined' && supabase && typeof supabase.from === 'function') return supabase;
+    if (typeof window !== 'undefined' && window.supabaseClient) return window.supabaseClient;
+    if (typeof window !== 'undefined' && window.supabase && typeof window.supabase.from === 'function') return window.supabase;
+    return null;
+  }
+
+  async function loadSavedProjects() {
+    let loadedFromDb = false;
+    const client = getSupabaseClient();
+
+    if (client) {
       try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        const { data, error } = await client
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && Array.isArray(data) && data.length > 0) {
           projectsData.length = 0;
-          parsed.forEach(p => {
-            p.annotations = p.annotations || [];
-            p.imageTextOverlays = p.imageTextOverlays || {};
+          data.forEach(item => {
+            const p = {
+              id: item.id,
+              number: item.number || 0,
+              title: item.title || '',
+              category: item.category || 'Real Projects',
+              overview: item.overview || item.description || '',
+              description: item.overview || item.description || '',
+              specs: Array.isArray(item.specs) ? item.specs : (typeof item.specs === 'string' ? JSON.parse(item.specs || '[]') : []),
+              image: item.image || item.hero_image || '',
+              renderings: Array.isArray(item.renderings) ? item.renderings : (typeof item.renderings === 'string' ? JSON.parse(item.renderings || '[]') : []),
+              gallery: Array.isArray(item.renderings) ? item.renderings : [],
+              allGalleryImages: Array.isArray(item.renderings) ? item.renderings : [],
+              drawings: Array.isArray(item.drawings) ? item.drawings : (typeof item.drawings === 'string' ? JSON.parse(item.drawings || '[]') : []),
+              attachments: Array.isArray(item.drawings) ? item.drawings : [],
+              dfmTags: Array.isArray(item.dfmTags || item.dfm_tags) ? (item.dfmTags || item.dfm_tags) : [],
+              annotations: item.annotations || [],
+              imageTextOverlays: item.imageTextOverlays || {},
+              created_at: item.created_at
+            };
             projectsData.push(p);
           });
+          loadedFromDb = true;
         }
-      } catch (e) {
-        console.error('Failed to load portfolio_admin_projects from localStorage:', e);
+      } catch (err) {
+        console.warn('Supabase fetch projects failed, falling back to mock array:', err);
+      }
+    }
+
+    if (!loadedFromDb) {
+      const saved = localStorage.getItem('portfolio_admin_projects') || localStorage.getItem('samuel_projects_override');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            projectsData.length = 0;
+            parsed.forEach(p => {
+              p.annotations = p.annotations || [];
+              p.imageTextOverlays = p.imageTextOverlays || {};
+              projectsData.push(p);
+            });
+          }
+        } catch (e) {
+          console.error('Failed to load portfolio_admin_projects from localStorage:', e);
+        }
       }
     }
 
@@ -599,9 +649,14 @@ document.addEventListener('DOMContentLoaded', () => {
       p.imageTextOverlays = p.imageTextOverlays || {};
       projectsMap[p.id] = p;
     });
+
+    if (typeof renderProjectCards === 'function') {
+      renderProjectCards();
+    }
   }
 
   loadSavedProjects();
+
 
   /* ------------------------------------------------------------------------
    * 1. Top Logo / Name Click Handler (Scroll to Top Home Page)
@@ -973,27 +1028,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.querySelectorAll('.admin-delete-proj-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
         const projId = btn.getAttribute('data-project');
         const project = projectsMap[projId];
         if (!project) return;
         if (confirm(`Are you sure you want to delete "${project.title}" from your portfolio?`)) {
+          const client = getSupabaseClient();
+          if (client) {
+            try {
+              const { error } = await client.from('projects').delete().eq('id', projId);
+              if (error) console.error('Supabase project delete error:', error);
+            } catch (err) {
+              console.error('Supabase delete exception:', err);
+            }
+          }
+
           const idx = projectsData.findIndex(p => p.id === projId);
           if (idx !== -1) {
             projectsData.splice(idx, 1);
             delete projectsMap[projId];
             markDraftChanged();
-            if (typeof saveProjectsToStorage === 'function') {
-              saveProjectsToStorage();
-            }
             renderProjectCards();
             showToast(`Deleted "${project.title}" successfully!`);
           }
         }
       });
     });
+
   }
 
   /* ------------------------------------------------------------------------
@@ -3734,15 +3797,35 @@ document.addEventListener('DOMContentLoaded', () => {
       inputHeroFile.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (file) {
-          showToast('Optimizing hero cover image...');
-          const compressed = await compressImageFile(file, 900, 0.78);
-          currentEditHeroImage = compressed;
-          if (!currentEditRenderings.includes(compressed)) {
-            currentEditRenderings.unshift(compressed);
+          showToast('Uploading hero cover image to Supabase...');
+          const client = getSupabaseClient();
+          let publicUrl = '';
+          if (client) {
+            try {
+              const fileExt = file.name.split('.').pop();
+              const fileName = `${Date.now()}_hero.${fileExt}`;
+              const filePath = `hero/${fileName}`;
+              const { data, error } = await client.storage.from('project-images').upload(filePath, file, { upsert: true });
+              if (!error) {
+                const { data: urlData } = client.storage.from('project-images').getPublicUrl(filePath);
+                publicUrl = urlData.publicUrl;
+              } else {
+                console.error('Supabase storage upload error:', error);
+              }
+            } catch (err) {
+              console.error('Storage upload exception:', err);
+            }
+          }
+          if (!publicUrl) {
+            publicUrl = await compressImageFile(file, 900, 0.78);
+          }
+          currentEditHeroImage = publicUrl;
+          if (!currentEditRenderings.includes(publicUrl)) {
+            currentEditRenderings.unshift(publicUrl);
           }
           updateInlineHeroPreviewUI();
           updateInlineRenderingsPreviewUI();
-          showToast('âœ“ Hero image ready!');
+          showToast('✓ Hero image ready!');
         }
       });
     }
@@ -3754,7 +3837,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="position: relative; width: 100px; height: 70px; border-radius: 8px; overflow: hidden; border: 2px solid var(--accent-primary);">
             <img src="${currentEditHeroImage}" alt="Hero Cover" style="width: 100%; height: 100%; object-fit: cover;">
           </div>
-          <span style="font-size: 0.8rem; color: #16a34a; font-weight: 700;">âœ“ Hero Image Ready</span>
+          <span style="font-size: 0.8rem; color: #16a34a; font-weight: 700;">✓ Hero Image Ready</span>
         `;
       } else {
         heroPreviewContainer.innerHTML = '<span style="font-size: 0.8rem; color: var(--text-muted);">No hero image uploaded yet</span>';
@@ -3770,15 +3853,35 @@ document.addEventListener('DOMContentLoaded', () => {
       inputRenderingsFile.addEventListener('change', async (e) => {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
-          showToast(`Optimizing & compressing ${files.length} gallery image(s)...`);
+          showToast(`Uploading ${files.length} gallery image(s) to Supabase...`);
+          const client = getSupabaseClient();
           for (const file of files) {
-            const compressed = await compressImageFile(file, 900, 0.75);
-            currentEditRenderings.push(compressed);
-            if (!currentEditHeroImage) currentEditHeroImage = compressed;
+            let publicUrl = '';
+            if (client) {
+              try {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
+                const filePath = `renderings/${fileName}`;
+                const { data, error } = await client.storage.from('project-images').upload(filePath, file, { upsert: true });
+                if (!error) {
+                  const { data: urlData } = client.storage.from('project-images').getPublicUrl(filePath);
+                  publicUrl = urlData.publicUrl;
+                } else {
+                  console.error('Supabase storage upload error:', error);
+                }
+              } catch (err) {
+                console.error('Storage upload exception:', err);
+              }
+            }
+            if (!publicUrl) {
+              publicUrl = await compressImageFile(file, 900, 0.75);
+            }
+            currentEditRenderings.push(publicUrl);
+            if (!currentEditHeroImage) currentEditHeroImage = publicUrl;
           }
           updateInlineHeroPreviewUI();
           updateInlineRenderingsPreviewUI();
-          showToast(`âœ“ ${files.length} gallery image(s) added!`);
+          showToast(`✓ ${files.length} gallery image(s) added!`);
         }
       });
     }
@@ -3789,7 +3892,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderingsGridPreview.innerHTML = currentEditRenderings.map((imgSrc, idx) => `
           <div class="preview-thumb-card" style="position: relative; width: 64px; height: 64px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); background: #ffffff;">
             <img src="${imgSrc}" style="width: 100%; height: 100%; object-fit: cover;">
-            <button type="button" class="remove-rendering-btn" data-idx="${idx}" style="position: absolute; top: 2px; right: 2px; background: rgba(239,68,68,0.9); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;">âœ•</button>
+            <button type="button" class="remove-rendering-btn" data-idx="${idx}" style="position: absolute; top: 2px; right: 2px; background: rgba(239,68,68,0.9); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
           </div>
         `).join('');
 
@@ -3815,20 +3918,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnDrawingsUpload && inputDrawingsFile) {
       btnDrawingsUpload.addEventListener('click', () => inputDrawingsFile.click());
-      inputDrawingsFile.addEventListener('change', (e) => {
+      inputDrawingsFile.addEventListener('change', async (e) => {
         const files = Array.from(e.target.files);
-        files.forEach(file => {
-          const reader = new FileReader();
-          reader.onload = (evt) => {
+        showToast(`Uploading ${files.length} attachment(s) to Supabase...`);
+        const client = getSupabaseClient();
+        for (const file of files) {
+          let publicUrl = '';
+          if (client) {
+            try {
+              const fileExt = file.name.split('.').pop();
+              const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+              const filePath = `drawings/${fileName}`;
+              const { data, error } = await client.storage.from('project-images').upload(filePath, file, { upsert: true });
+              if (!error) {
+                const { data: urlData } = client.storage.from('project-images').getPublicUrl(filePath);
+                publicUrl = urlData.publicUrl;
+              } else {
+                console.error('Supabase attachment upload error:', error);
+              }
+            } catch (err) {
+              console.error('Drawing upload exception:', err);
+            }
+          }
+          if (publicUrl) {
             currentEditDrawings.push({
               title: file.name,
               type: file.name.endsWith('.pdf') ? 'pdf' : 'drawing',
-              link: evt.target.result
+              link: publicUrl
             });
-            updateInlineDrawingsPreviewUI();
-          };
-          reader.readAsDataURL(file);
-        });
+          } else {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+              currentEditDrawings.push({
+                title: file.name,
+                type: file.name.endsWith('.pdf') ? 'pdf' : 'drawing',
+                link: evt.target.result
+              });
+              updateInlineDrawingsPreviewUI();
+            };
+            reader.readAsDataURL(file);
+          }
+        }
+        updateInlineDrawingsPreviewUI();
       });
     }
 
@@ -3837,7 +3968,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (currentEditDrawings.length > 0) {
         drawingsListPreview.innerHTML = currentEditDrawings.map((dw, idx) => `
           <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 0.4rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.8rem;">
-            <span style="font-weight: 600; color: var(--text-main);">ðŸ“„ ${dw.title || 'Drawing File'}</span>
+            <span style="font-weight: 600; color: var(--text-main);">📄 ${dw.title || 'Drawing File'}</span>
             <button type="button" class="remove-drawing-btn" data-idx="${idx}" style="background: transparent; color: #ef4444; border: none; cursor: pointer; font-weight: 700;">Remove</button>
           </div>
         `).join('');
@@ -3854,9 +3985,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Inline Form Submit Event (Add or Update Project)
+    // Inline Form Submit Event (Add or Update Project in Supabase)
     if (inlineForm) {
-      inlineForm.addEventListener('submit', (e) => {
+      inlineForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const editId = document.getElementById('inline-edit-proj-id').value;
         const title = document.getElementById('inline-edit-proj-title').value.trim();
@@ -3875,6 +4006,8 @@ document.addEventListener('DOMContentLoaded', () => {
           renderings.unshift(heroImage);
         }
 
+        const client = getSupabaseClient();
+
         if (editId && projectsMap[editId]) {
           // Editing existing project
           const proj = projectsMap[editId];
@@ -3891,6 +4024,25 @@ document.addEventListener('DOMContentLoaded', () => {
           proj.allGalleryImages = renderings;
           proj.drawings = [...currentEditDrawings];
           proj.attachments = [...currentEditDrawings];
+
+          if (client) {
+            try {
+              const { error } = await client.from('projects').update({
+                title: title,
+                category: category,
+                overview: overview,
+                specs: specs,
+                dfm_tags: dfmTags,
+                image: heroImage,
+                renderings: renderings,
+                drawings: currentEditDrawings
+              }).eq('id', editId);
+              if (error) console.error('Supabase project update error:', error);
+            } catch (err) {
+              console.error('Supabase update exception:', err);
+            }
+          }
+
           showToast(`Project "${title}" updated successfully!`);
         } else {
           // Adding new project
@@ -3909,22 +4061,46 @@ document.addEventListener('DOMContentLoaded', () => {
             specs: specs,
             dfmTags: dfmTags,
             drawings: [...currentEditDrawings],
-            attachments: [...currentEditDrawings]
+            attachments: [...currentEditDrawings],
+            created_at: new Date().toISOString()
           };
+
+          if (client) {
+            try {
+              const { data, error } = await client.from('projects').insert([{
+                id: newId,
+                title: title,
+                category: category,
+                overview: overview,
+                specs: specs,
+                dfm_tags: dfmTags,
+                image: heroImage,
+                renderings: renderings,
+                drawings: currentEditDrawings,
+                created_at: newProj.created_at
+              }]).select();
+
+              if (error) {
+                console.error('Supabase project insert error:', error);
+              } else if (data && data[0] && data[0].id) {
+                newProj.id = data[0].id;
+              }
+            } catch (err) {
+              console.error('Supabase insert exception:', err);
+            }
+          }
+
           projectsData.unshift(newProj);
-          projectsMap[newId] = newProj;
+          projectsMap[newProj.id] = newProj;
           showToast(`New project "${title}" created successfully!`);
         }
 
         markDraftChanged();
-        if (typeof saveProjectsToStorage === 'function') {
-          saveProjectsToStorage();
-        }
         renderProjectCards();
         closeInlineProjectEditor();
-        showToast(`Project "${title}" saved successfully!`);
       });
     }
+
 
     // Inline Text Editing Manager
     let isEditModeActive = false;
