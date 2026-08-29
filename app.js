@@ -3584,12 +3584,13 @@ document.addEventListener('DOMContentLoaded', () => {
               publicUrl = urlData.publicUrl;
             } else {
               console.error('Supabase icon upload error:', error);
-              alert("Supabase Operation Failed: " + error.message);
+              showToast(`Supabase Storage Error: ${error.message}`, true);
             }
           } catch (err) {
             console.error('Icon upload exception:', err);
-            alert("Supabase Operation Failed: " + (err.message || 'Upload Exception'));
+            showToast(`Supabase Storage Exception: ${err.message}`, true);
           }
+
 
         }
 
