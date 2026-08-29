@@ -3474,34 +3474,59 @@ document.addEventListener('DOMContentLoaded', () => {
     let uploadTargetIndex = null;
 
     function openSoftwareCardEditorModal(cardId) {
-      const card = softwareList.find(c => c.id === cardId);
-      if (!card || !swEditorModal) return;
+      if (!swEditorModal) return;
 
-      currentEditingCardId = cardId;
-      tempEditIcons = [...(card.icons || [])];
+      let card = softwareList.find(c => c.id === cardId || String(c.id) === String(cardId));
+      if (!card) {
+        const defaultCard = defaultSoftwareList.find(c => c.id === cardId || String(c.id) === String(cardId));
+        if (defaultCard) {
+          card = JSON.parse(JSON.stringify(defaultCard));
+        } else {
+          card = { id: cardId || 'sw-1', badgeText: 'SOFTWARE SKILL', title: 'Software Tool', description: '', icons: [] };
+        }
+        softwareList.push(card);
+      }
 
-      document.getElementById('sw-edit-card-id').value = card.id;
-      document.getElementById('sw-edit-badge').value = card.badgeText || '';
-      document.getElementById('sw-edit-title').value = card.title || '';
-      document.getElementById('sw-edit-description').value = card.description || '';
+      currentEditingCardId = card.id;
+      tempEditIcons = Array.isArray(card.icons) ? [...card.icons] : [];
+
+      const idElem = document.getElementById('sw-edit-card-id');
+      const badgeElem = document.getElementById('sw-edit-badge');
+      const titleElem = document.getElementById('sw-edit-title');
+      const descElem = document.getElementById('sw-edit-description');
+
+      if (idElem) idElem.value = card.id;
+      if (badgeElem) badgeElem.value = card.badgeText || '';
+      if (titleElem) titleElem.value = card.title || '';
+      if (descElem) descElem.value = card.description || '';
 
       renderModalLogos();
 
       if (typeof swEditorModal.showModal === 'function') {
-        swEditorModal.showModal();
+        try {
+          swEditorModal.showModal();
+        } catch(e) {
+          swEditorModal.setAttribute('open', '');
+        }
       } else {
         swEditorModal.setAttribute('open', '');
       }
     }
+    window.openSoftwareCardEditorModal = openSoftwareCardEditorModal;
 
     function closeSoftwareCardEditorModal() {
       if (!swEditorModal) return;
       if (typeof swEditorModal.close === 'function') {
-        swEditorModal.close();
+        try {
+          swEditorModal.close();
+        } catch(e) {
+          swEditorModal.removeAttribute('open');
+        }
       } else {
         swEditorModal.removeAttribute('open');
       }
     }
+
 
     function renderModalLogos() {
       if (!swLogosContainer) return;
