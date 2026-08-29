@@ -619,7 +619,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return null;
   }
 
-  async function fetchProjectsFromSupabase() {
+  async function fetchAllDataFromSupabase() {
     let client = getSupabaseClient();
     if (!client) {
       for (let i = 0; i < 20; i++) {
@@ -630,25 +630,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (!client) {
-      console.warn('Supabase client not initialized yet. Falling back to mock array.');
+      console.warn('Supabase client not initialized yet. Using fallback defaults.');
       return false;
     }
 
     try {
-      const { data, error } = await client
-        .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const [projectsRes, skillsRes, contentRes] = await Promise.all([
+        client.from('projects').select('*').order('created_at', { ascending: false }),
+        client.from('skills').select('*').order('created_at', { ascending: true }),
+        client.from('site_content').select('*')
+      ]);
 
-      if (error) {
-        console.error('Supabase Save Error:', error);
-        showToast(`Supabase Fetch Error: ${error.message || 'Failed to fetch projects'}`, true);
-        return false;
-      }
+      let loadedAnything = false;
 
-      if (Array.isArray(data) && data.length > 0) {
+      // 1. Hydrate Projects
+      if (!projectsRes.error && Array.isArray(projectsRes.data) && projectsRes.data.length > 0) {
         projectsData.length = 0;
-        data.forEach(item => {
+        projectsRes.data.forEach(item => {
           const p = {
             id: item.id,
             number: item.number || 0,
@@ -664,6 +662,10 @@ document.addEventListener('DOMContentLoaded', () => {
             drawings: Array.isArray(item.drawings) ? item.drawings : (typeof item.drawings === 'string' ? JSON.parse(item.drawings || '[]') : []),
             attachments: Array.isArray(item.drawings) ? item.drawings : [],
             dfmTags: Array.isArray(item.dfmTags || item.dfm_tags) ? (item.dfmTags || item.dfm_tags) : [],
+            materials: item.materials || '',
+            manufacturing_process: item.manufacturing_process || item.manufacturingProcess || '',
+            webgl_url: item.webgl_url || item.webglUrl || '',
+            pdf_url: item.pdf_url || item.pdfUrl || '',
             annotations: item.annotations || [],
             imageTextOverlays: item.imageTextOverlays || {},
             created_at: item.created_at
@@ -675,20 +677,64 @@ document.addEventListener('DOMContentLoaded', () => {
         projectsData.forEach(p => {
           projectsMap[p.id] = p;
         });
-
-        if (typeof renderProjectCards === 'function') {
-          renderProjectCards();
-        }
-        return true;
+        loadedAnything = true;
       }
+
+      // 2. Hydrate Skills
+      if (!skillsRes.error && Array.isArray(skillsRes.data) && skillsRes.data.length > 0) {
+        if (typeof softwareList !== 'undefined' && Array.isArray(softwareList)) {
+          softwareList.length = 0;
+          skillsRes.data.forEach(item => {
+            softwareList.push({
+              id: item.id,
+              badgeText: item.badge_text || item.badgeText || '',
+              title: item.title || '',
+              description: item.description || '',
+              icons: Array.isArray(item.icons) ? item.icons : (typeof item.icons === 'string' ? JSON.parse(item.icons || '[]') : [])
+            });
+          });
+          loadedAnything = true;
+        }
+      }
+
+      // 3. Hydrate Site Content (Text Overrides, Logo, Contact, Social)
+      if (!contentRes.error && Array.isArray(contentRes.data) && contentRes.data.length > 0) {
+        contentRes.data.forEach(row => {
+          if (row.key === 'text_overrides' && row.value) {
+            applySiteTextOverrides(row.value);
+          } else if (row.key === 'brand_logo' && row.value) {
+            const logoUrl = typeof row.value === 'object' ? row.value.url : row.value;
+            const brandLogoElem = document.querySelector('.nav-brand .brand-logo');
+            if (logoUrl && brandLogoElem) {
+              brandLogoElem.innerHTML = `<img src="${logoUrl}" alt="Samuel Alemu Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);">`;
+            }
+          }
+        });
+        loadedAnything = true;
+      }
+
+      if (typeof renderProjectCards === 'function') renderProjectCards();
+      if (typeof renderSoftwareSection === 'function') renderSoftwareSection();
+
+      return loadedAnything;
     } catch (err) {
-      console.error('Supabase Hydration Exception:', err);
+      console.error('Supabase parallel hydration exception:', err);
     }
     return false;
   }
 
+  function applySiteTextOverrides(overrides) {
+    if (!overrides || typeof overrides !== 'object') return;
+    const editableSelectors = '.hero-title, .hero-description, .section-title, .section-description, .brand-name, .brand-title, .stat-number, .stat-label';
+    document.querySelectorAll(editableSelectors).forEach((el, index) => {
+      if (overrides[`elem_${index}`]) {
+        el.innerHTML = overrides[`elem_${index}`];
+      }
+    });
+  }
+
   async function loadSavedProjects() {
-    const fetched = await fetchProjectsFromSupabase();
+    const fetched = await fetchAllDataFromSupabase();
     if (!fetched) {
       const saved = localStorage.getItem('portfolio_admin_projects') || localStorage.getItem('samuel_projects_override');
       if (saved) {
@@ -721,6 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   loadSavedProjects();
+
 
 
 
@@ -775,9 +822,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <!-- Front-Level Card Body -->
           <div class="project-body" style="padding: 1.25rem;">
-            <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1rem;">${project.title}</h3>
+            <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.6rem;">${project.title}</h3>
 
-            <!-- Action Buttons at Bottom (Description, Technical Spec, Attachments) -->
+            ${project.materials ? `
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
+                <span style="font-weight: 700; color: var(--accent-primary);">🛠️ Materials:</span>
+                <span style="color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${project.materials}</span>
+              </div>` : ''}
+
+            ${(project.manufacturing_process || project.manufacturingProcess) ? `
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
+                <span style="font-weight: 700; color: var(--accent-primary);">⚙️ Process:</span>
+                <span style="color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${project.manufacturing_process || project.manufacturingProcess}</span>
+              </div>` : ''}
+
+            <!-- Action Buttons at Bottom (Description, Technical Spec, 3D WebGL, Attachments) -->
             <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
               
               <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="description" data-project="${project.id}">
@@ -790,6 +849,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span>Technical Spec</span>
               </button>
 
+              ${(project.webgl_url || project.webglUrl) ? `
+              <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="webgl" data-project="${project.id}" style="background: rgba(14, 165, 233, 0.12); color: var(--accent-primary); border-color: var(--accent-primary); font-weight: 700;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                <span>3D WebGL</span>
+              </button>` : ''}
+
               ${hasDrawings ? `
               <button type="button" class="btn btn-outline btn-sm card-tab-btn" data-modal-type="attachments" data-project="${project.id}">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
@@ -801,6 +866,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${adminControlsHTML}
 
           </div>
+
 
         </div>
       `;
@@ -1009,6 +1075,32 @@ document.addEventListener('DOMContentLoaded', () => {
                   </ul>
                 </div>
 
+                ${project.materials ? `
+                <div>
+                  <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+                    🛠️ Engineering Materials
+                  </h4>
+                  <p style="font-size: 0.95rem; color: var(--text-main); margin: 0; background: var(--bg-alt); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); font-weight: 600;">${project.materials}</p>
+                </div>` : ''}
+
+                ${(project.manufacturing_process || project.manufacturingProcess) ? `
+                <div>
+                  <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+                    ⚙️ Manufacturing Processes
+                  </h4>
+                  <p style="font-size: 0.95rem; color: var(--text-main); margin: 0; background: var(--bg-alt); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); font-weight: 600;">${project.manufacturing_process || project.manufacturingProcess}</p>
+                </div>` : ''}
+
+                ${(project.pdf_url || project.pdfUrl) ? `
+                <div>
+                  <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+                    📄 Technical Blueprint PDF
+                  </h4>
+                  <a href="${project.pdf_url || project.pdfUrl}" target="_blank" download class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: #2563eb; color: #ffffff; font-weight: 700; text-decoration: none; border-radius: 8px;">
+                    <span>Download Technical PDF Blueprint / Manual 📄</span>
+                  </a>
+                </div>` : ''}
+
                 <!-- 3. TAGS -->
                 <div>
                   <h4 style="font-size: 0.95rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
@@ -1023,6 +1115,30 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             `;
           }
+        } else if (modalType === 'webgl') {
+          const webglSrc = project.webgl_url || project.webglUrl || '';
+          itemModalBody.innerHTML = `
+            <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem; display: flex; flex-direction: column; gap: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                <div>
+                  <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0;">🌐 Interactive 3D WebGL Model Viewer</h4>
+                  <span style="font-size: 0.75rem; color: var(--text-muted);">Inspect parametric geometry, CAD assemblies &amp; exploded components</span>
+                </div>
+                ${webglSrc ? `<a href="${webglSrc}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.8rem; font-weight: 700;">Open Full Screen ↗</a>` : ''}
+              </div>
+              ${webglSrc ? `
+                <div style="width: 100%; height: 500px; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
+                  <iframe src="${webglSrc}" style="width: 100%; height: 100%; border: none;" allowfullscreen title="3D WebGL Model Viewer"></iframe>
+                </div>
+              ` : `
+                <div style="padding: 3rem; text-align: center; color: var(--text-muted); background: var(--bg-alt); border-radius: 10px; border: 1px dashed var(--border-color);">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 0.75rem;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+                  <p style="font-size: 0.95rem; font-weight: 600; margin: 0;">No 3D WebGL URL configured for this project yet.</p>
+                  <span style="font-size: 0.8rem;">Edit project in Admin mode to attach an interactive 3D WebGL viewer URL.</span>
+                </div>
+              `}
+            </div>
+          `;
         } else if (modalType === 'renderings') {
           // Build gallery with HERO IMAGE ALWAYS AS FIRST IMAGE (#1)
           let allImages = project.image ? [project.image] : [];
@@ -1040,7 +1156,7 @@ document.addEventListener('DOMContentLoaded', () => {
           renderLightboxView();
         } else if (modalType === 'attachments') {
           const drawingsList = project.drawings || project.attachments || [];
-          if (!Array.isArray(drawingsList) || drawingsList.length === 0) return;
+          const pdfUrl = project.pdf_url || project.pdfUrl;
 
           const itemsHTML = drawingsList.map((docItem, idx) => {
             const fileLink = typeof docItem === 'object' ? (docItem.link || docItem.url || '') : docItem;
@@ -1069,6 +1185,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
           itemModalBody.innerHTML = `
             <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem;">
+              ${pdfUrl ? `
+                <div style="margin-bottom: 1.25rem; padding: 0.85rem 1rem; background: rgba(37, 99, 235, 0.1); border: 1px solid #2563eb; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <div>
+                      <h5 style="font-size: 0.95rem; font-weight: 800; color: var(--text-main); margin: 0;">Official Technical PDF Blueprint / Manual</h5>
+                      <span style="font-size: 0.75rem; color: var(--text-muted);">High-resolution manufacturing blueprint &amp; documentation</span>
+                    </div>
+                  </div>
+                  <a href="${pdfUrl}" target="_blank" download class="btn btn-primary btn-sm" style="background: #2563eb; color: #ffffff; padding: 0.5rem 1rem; font-weight: 700; text-decoration: none; border-radius: 8px;">Download PDF Blueprint 📄</a>
+                </div>
+              ` : ''}
+
               <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Drawings & Attachments (${drawingsList.length})</h4>
               <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">Technical blueprints, PDF drawings, and engineering documentation for this machine.</p>
               <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
@@ -1077,6 +1206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           `;
         }
+
 
         openModalWindow();
       });
@@ -3400,21 +3530,53 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (softwareIconFileInput) {
-      softwareIconFileInput.addEventListener('change', (e) => {
+      softwareIconFileInput.addEventListener('change', async (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          const dataUrl = evt.target.result;
-          if (uploadMode === 'replace' && uploadTargetIndex !== null) {
-            tempEditIcons[uploadTargetIndex] = dataUrl;
-          } else {
-            tempEditIcons.push(dataUrl);
+        showToast('Uploading skill icon to Supabase storage...');
+        const client = getSupabaseClient();
+        let publicUrl = '';
+
+        if (client) {
+          try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}_icon.${fileExt}`;
+            const filePath = `skills/${fileName}`;
+            const { data, error } = await client.storage.from('project-images').upload(filePath, file, { upsert: true });
+            if (!error) {
+              const { data: urlData } = client.storage.from('project-images').getPublicUrl(filePath);
+              publicUrl = urlData.publicUrl;
+            } else {
+              console.error('Supabase icon upload error:', error);
+            }
+          } catch (err) {
+            console.error('Icon upload exception:', err);
           }
-          renderModalLogos();
-        };
-        reader.readAsDataURL(file);
+        }
+
+        if (!publicUrl) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            const dataUrl = evt.target.result;
+            if (uploadMode === 'replace' && uploadTargetIndex !== null) {
+              tempEditIcons[uploadTargetIndex] = dataUrl;
+            } else {
+              tempEditIcons.push(dataUrl);
+            }
+            renderModalLogos();
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+
+        if (uploadMode === 'replace' && uploadTargetIndex !== null) {
+          tempEditIcons[uploadTargetIndex] = publicUrl;
+        } else {
+          tempEditIcons.push(publicUrl);
+        }
+        renderModalLogos();
+        showToast('✓ Skill icon uploaded successfully!');
       });
     }
 
@@ -3422,7 +3584,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (swEditorCancelBtn) swEditorCancelBtn.addEventListener('click', closeSoftwareCardEditorModal);
 
     if (swEditorSaveBtn) {
-      swEditorSaveBtn.addEventListener('click', () => {
+      swEditorSaveBtn.addEventListener('click', async () => {
         if (!currentEditingCardId) return;
 
         const card = softwareList.find(c => c.id === currentEditingCardId);
@@ -3432,13 +3594,38 @@ document.addEventListener('DOMContentLoaded', () => {
           card.description = document.getElementById('sw-edit-description').value.trim();
           card.icons = [...tempEditIcons];
 
+          const client = getSupabaseClient();
+          if (client) {
+            try {
+              const { error } = await client.from('skills').upsert([{
+                id: card.id,
+                title: card.title,
+                badge_text: card.badgeText,
+                description: card.description,
+                icons: card.icons,
+                updated_at: new Date().toISOString()
+              }]);
+
+              if (error) {
+                console.error('Supabase Save Error (skills):', error);
+                showToast(`Supabase Error: ${error.message}`, true);
+              } else {
+                showToast(`Skill "${card.title}" saved to database!`);
+                await fetchAllDataFromSupabase();
+              }
+            } catch (err) {
+              console.error('Supabase skills upsert exception:', err);
+              showToast(`Supabase Exception: ${err.message}`, true);
+            }
+          }
+
           markDraftChanged();
           renderSoftwareSection();
           closeSoftwareCardEditorModal();
-          showToast(`Software card "${card.title}" updated (draft)! Click "Save Changes" to persist.`);
         }
       });
     }
+
 
     loadSavedSoftwareData();
     renderSoftwareSection();
@@ -3795,6 +3982,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // In-Context Inline Editor Functions
     function openInlineProjectEditor(projectId = null) {
       if (!inlineContainer) return;
+
+      const matElem = document.getElementById('inline-edit-proj-materials');
+      const mfgElem = document.getElementById('inline-edit-proj-manufacturing');
+      const webglElem = document.getElementById('inline-edit-proj-webgl');
+      const pdfElem = document.getElementById('inline-edit-proj-pdf');
       
       if (projectId && projectsMap[projectId]) {
         const proj = projectsMap[projectId];
@@ -3804,6 +3996,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('inline-edit-proj-overview').value = proj.overview || proj.description || '';
         document.getElementById('inline-edit-proj-specs').value = Array.isArray(proj.specs) ? proj.specs.join('\n') : (proj.specs || '');
         document.getElementById('inline-edit-proj-tags').value = Array.isArray(proj.dfmTags) ? proj.dfmTags.join(', ') : '';
+
+        if (matElem) matElem.value = proj.materials || '';
+        if (mfgElem) mfgElem.value = proj.manufacturing_process || proj.manufacturingProcess || '';
+        if (webglElem) webglElem.value = proj.webgl_url || proj.webglUrl || '';
+        if (pdfElem) pdfElem.value = proj.pdf_url || proj.pdfUrl || '';
 
         currentEditHeroImage = proj.image || '';
         const existingRenderings = proj.renderings || proj.allGalleryImages || proj.gallery || proj.galleryPhotos || [];
@@ -3820,6 +4017,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('inline-edit-proj-overview').value = '';
         document.getElementById('inline-edit-proj-specs').value = '';
         document.getElementById('inline-edit-proj-tags').value = '';
+
+        if (matElem) matElem.value = '';
+        if (mfgElem) mfgElem.value = '';
+        if (webglElem) webglElem.value = '';
+        if (pdfElem) pdfElem.value = '';
 
         currentEditHeroImage = '';
         currentEditRenderings = [];
@@ -3839,6 +4041,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {}
       }
     }
+
 
     function closeInlineProjectEditor() {
       if (inlineContainer) {
@@ -4080,6 +4283,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const rawSpecs = document.getElementById('inline-edit-proj-specs').value.trim();
         const rawTags = document.getElementById('inline-edit-proj-tags').value.trim();
 
+        const materialsVal = document.getElementById('inline-edit-proj-materials') ? document.getElementById('inline-edit-proj-materials').value.trim() : '';
+        const manufacturingVal = document.getElementById('inline-edit-proj-manufacturing') ? document.getElementById('inline-edit-proj-manufacturing').value.trim() : '';
+        const webglVal = document.getElementById('inline-edit-proj-webgl') ? document.getElementById('inline-edit-proj-webgl').value.trim() : '';
+        const pdfVal = document.getElementById('inline-edit-proj-pdf') ? document.getElementById('inline-edit-proj-pdf').value.trim() : '';
+
         const specs = rawSpecs ? rawSpecs.split('\n').map(s => s.trim()).filter(Boolean) : [];
         const dfmTags = rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : [category];
 
@@ -4093,120 +4301,70 @@ document.addEventListener('DOMContentLoaded', () => {
         const client = getSupabaseClient();
         let operationSuccess = false;
 
-        if (editId && projectsMap[editId]) {
-          // Editing existing project
-          const proj = projectsMap[editId];
-          proj.title = title;
-          proj.category = category;
-          proj.overview = overview;
-          proj.description = overview;
-          proj.specs = specs;
-          proj.dfmTags = dfmTags;
-          proj.image = heroImage;
-          proj.renderings = renderings;
-          proj.gallery = renderings;
-          proj.galleryPhotos = renderings;
-          proj.allGalleryImages = renderings;
-          proj.drawings = [...currentEditDrawings];
-          proj.attachments = [...currentEditDrawings];
+        const projId = editId || `proj_${Date.now()}`;
+        const projCreatedAt = (editId && projectsMap[editId] && projectsMap[editId].created_at) ? projectsMap[editId].created_at : new Date().toISOString();
 
-          if (client) {
-            try {
-              const { error } = await client.from('projects').update({
-                title: title,
-                category: category,
-                overview: overview,
-                specs: specs,
-                dfm_tags: dfmTags,
-                image: heroImage,
-                renderings: renderings,
-                drawings: currentEditDrawings
-              }).eq('id', editId);
+        const projectPayload = {
+          id: projId,
+          title: title,
+          category: category,
+          overview: overview,
+          specs: specs,
+          dfm_tags: dfmTags,
+          image: heroImage,
+          renderings: renderings,
+          drawings: currentEditDrawings,
+          materials: materialsVal,
+          manufacturing_process: manufacturingVal,
+          webgl_url: webglVal,
+          pdf_url: pdfVal,
+          created_at: projCreatedAt
+        };
 
-              if (error) {
-                console.error('Supabase Save Error:', error);
-                showToast(`Supabase Save Error: ${error.message || 'Failed to update project'}`, true);
-              } else {
-                operationSuccess = true;
-                showToast(`Project "${title}" updated in database!`);
-              }
-            } catch (err) {
-              console.error('Supabase Save Error:', err);
-              showToast(`Supabase Save Exception: ${err.message}`, true);
+        if (client) {
+          try {
+            const { data, error } = await client.from('projects').upsert([projectPayload]).select();
+
+            if (error) {
+              console.error('Supabase Save Error (projects):', error);
+              showToast(`Supabase Save Error: ${error.message || 'Failed to save project'}`, true);
+            } else {
+              operationSuccess = true;
+              showToast(`Project "${title}" saved to database!`);
             }
-          } else {
-            operationSuccess = true;
-            showToast(`Project "${title}" updated locally!`);
+          } catch (err) {
+            console.error('Supabase Save Exception:', err);
+            showToast(`Supabase Save Exception: ${err.message}`, true);
           }
         } else {
-          // Adding new project
-          const newId = `proj_${Date.now()}`;
-          const newProj = {
-            id: newId,
-            title: title,
-            category: category,
-            image: heroImage,
-            renderings: renderings,
-            gallery: renderings,
-            galleryPhotos: renderings,
-            allGalleryImages: renderings,
-            overview: overview,
+          const localProj = {
+            ...projectPayload,
             description: overview,
-            specs: specs,
             dfmTags: dfmTags,
-            drawings: [...currentEditDrawings],
-            attachments: [...currentEditDrawings],
-            created_at: new Date().toISOString()
+            attachments: currentEditDrawings
           };
-
-          if (client) {
-            try {
-              const { data, error } = await client.from('projects').insert([{
-                id: newId,
-                title: title,
-                category: category,
-                overview: overview,
-                specs: specs,
-                dfm_tags: dfmTags,
-                image: heroImage,
-                renderings: renderings,
-                drawings: currentEditDrawings,
-                created_at: newProj.created_at
-              }]).select();
-
-              if (error) {
-                console.error('Supabase Save Error:', error);
-                showToast(`Supabase Save Error: ${error.message || 'Failed to insert project'}`, true);
-              } else {
-                if (data && data[0] && data[0].id) {
-                  newProj.id = data[0].id;
-                }
-                operationSuccess = true;
-                showToast(`New project "${title}" created in database!`);
-              }
-            } catch (err) {
-              console.error('Supabase Save Error:', err);
-              showToast(`Supabase Save Exception: ${err.message}`, true);
-            }
+          if (editId && projectsMap[editId]) {
+            const idx = projectsData.findIndex(p => p.id === editId);
+            if (idx !== -1) projectsData[idx] = localProj;
           } else {
-            projectsData.unshift(newProj);
-            projectsMap[newProj.id] = newProj;
-            operationSuccess = true;
-            showToast(`New project "${title}" created locally!`);
+            projectsData.unshift(localProj);
           }
+          projectsMap[projId] = localProj;
+          operationSuccess = true;
+          showToast(`Project "${title}" updated locally!`);
         }
 
         markDraftChanged();
         closeInlineProjectEditor();
 
-        // Optimistic update & re-fetch to synchronize UI with database
         if (client && operationSuccess) {
-          await fetchProjectsFromSupabase();
+          await fetchAllDataFromSupabase();
         } else {
           renderProjectCards();
         }
       });
     }
+
 
 
 
@@ -4248,33 +4406,46 @@ document.addEventListener('DOMContentLoaded', () => {
       hasUnsavedChanges = true;
     }
 
-    function saveAllWebpageEdits() {
+    async function saveAllWebpageEdits() {
       const overrides = {};
       const editableSelectors = '.hero-title, .hero-description, .section-title, .section-description, .brand-name, .brand-title, .stat-number, .stat-label';
       document.querySelectorAll(editableSelectors).forEach((el, index) => {
         overrides[`elem_${index}`] = el.innerHTML;
       });
 
-      try {
-        const serialized = JSON.stringify(projectsData);
-        localStorage.setItem('portfolio_admin_projects', serialized);
-        localStorage.setItem('samuel_site_text_overrides', JSON.stringify(overrides));
-        localStorage.setItem('samuel_projects_override', serialized);
-        saveExperienceData();
-        saveSoftwareData();
+      const draftLogo = localStorage.getItem('samuel_brand_logo_draft');
+      if (draftLogo) {
+        localStorage.setItem('samuel_brand_logo', draftLogo);
+        localStorage.removeItem('samuel_brand_logo_draft');
+      }
+      const logoVal = draftLogo || localStorage.getItem('samuel_brand_logo') || '';
 
-        const draftLogo = localStorage.getItem('samuel_brand_logo_draft');
-        if (draftLogo) {
-          localStorage.setItem('samuel_brand_logo', draftLogo);
-          localStorage.removeItem('samuel_brand_logo_draft');
+      const client = getSupabaseClient();
+      if (client) {
+        try {
+          await Promise.all([
+            client.from('site_content').upsert([{ key: 'text_overrides', value: overrides, updated_at: new Date().toISOString() }]),
+            client.from('site_content').upsert([{ key: 'brand_logo', value: { url: logoVal }, updated_at: new Date().toISOString() }]),
+            client.from('site_content').upsert([{ key: 'projects_backup', value: projectsData, updated_at: new Date().toISOString() }])
+          ]);
+          showToast('✓ All webpage text edits committed to Supabase database!');
+          await fetchAllDataFromSupabase();
+        } catch (err) {
+          console.error('Supabase Save Error (site_content):', err);
+          showToast(`Supabase Save Error: ${err.message}`, true);
         }
-      } catch(e) {
-        console.error('Error saving edits to storage:', e);
+      } else {
+        try {
+          localStorage.setItem('samuel_site_text_overrides', JSON.stringify(overrides));
+          saveExperienceData();
+          saveSoftwareData();
+        } catch(e) {}
+        showToast('All webpage edits saved locally!');
       }
 
       hasUnsavedChanges = false;
-      showToast('All webpage edits & project changes committed and saved successfully!');
     }
+
 
     function loadSavedWebpageEdits() {
       loadSavedProjects();
