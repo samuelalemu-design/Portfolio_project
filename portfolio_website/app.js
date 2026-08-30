@@ -1153,13 +1153,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
     } else {
-      // PUBLIC MODE: Dynamic Theme Native HTML (No hardcoded white background block)
+      // PUBLIC MODE: Dynamic Theme Native HTML
+      itemModalBody.scrollTop = 0;
       const deliverablesHTML = specsList.map(spec => `<li style="padding: 0.35rem 0; font-size: 0.95rem; color: var(--text-main); display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: var(--accent-primary); font-weight: 800;">&bull;</span> <span>${spec}</span></li>`).join('');
       const toolsHTML = toolsList.map(tool => `<li style="font-size: 0.95rem; color: var(--text-main); display: flex; align-items: flex-start; gap: 0.5rem;"><span style="color: var(--accent-primary); font-weight: 800;">&bull;</span> <span>${tool}</span></li>`).join('');
       const tagsHTML = Array.from(derivedTags).map(tag => `<span class="badge" style="font-size: 0.8rem; background: var(--accent-light); color: var(--accent-primary); border: 1px solid var(--border-color); font-weight: 600; padding: 0.3rem 0.75rem; border-radius: 20px;"># ${tag}</span>`).join('');
 
       itemModalBody.innerHTML = `
-        <div style="background: var(--bg-card); color: var(--text-main); display: flex; flex-direction: column; gap: 1.5rem; padding: 0.5rem;">
+        <div style="background: var(--bg-card); color: var(--text-main); display: flex; flex-direction: column; gap: 1.5rem; padding: 1.25rem 0.5rem 0.5rem 0.5rem;">
           
           <!-- Description Section -->
           <div>
