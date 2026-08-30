@@ -999,23 +999,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (tabName === 'renderings' || tabName === 'webgl') {
       if (wrapper) {
-        wrapper.style.maxWidth = '1100px';
-        wrapper.style.width = '96%';
+        wrapper.style.maxWidth = '95vw';
+        wrapper.style.width = '95vw';
       }
       if (footerThumbs) footerThumbs.style.display = 'flex';
       if (counter) counter.style.display = 'inline-block';
     } else if (tabName === 'attachments') {
       if (wrapper) {
-        wrapper.style.maxWidth = '860px';
-        wrapper.style.width = '92%';
+        wrapper.style.maxWidth = '90vw';
+        wrapper.style.width = '90vw';
       }
       if (footerThumbs) footerThumbs.style.display = 'none';
       if (counter) counter.style.display = 'none';
     } else {
       // specs / overview / description
       if (wrapper) {
-        wrapper.style.maxWidth = '800px';
-        wrapper.style.width = '92%';
+        wrapper.style.maxWidth = '85vw';
+        wrapper.style.width = '85vw';
       }
       if (footerThumbs) footerThumbs.style.display = 'none';
       if (counter) counter.style.display = 'none';
@@ -1229,8 +1229,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const project = currentProject;
     const webglSrc = project.webgl_url || project.webglUrl || '';
     itemModalBody.innerHTML = `
-      <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem; display: flex; flex-direction: column; gap: 1rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+      <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem; display: flex; flex-direction: column; gap: 1rem; width: 100%; height: 100%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; flex-shrink: 0;">
           <div>
             <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0;">🌐 Interactive 3D WebGL Model Viewer</h4>
             <span style="font-size: 0.75rem; color: var(--text-muted);">Inspect parametric geometry, CAD assemblies &amp; exploded components</span>
@@ -1238,7 +1238,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${webglSrc ? `<a href="${webglSrc}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.8rem; font-weight: 700;">Open Full Screen ↗</a>` : ''}
         </div>
         ${webglSrc ? `
-          <div style="width: 100%; height: 500px; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
+          <div class="lib-image-viewer" style="width: 100%; height: 78vh; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
             <iframe src="${webglSrc}" style="width: 100%; height: 100%; border: none;" allowfullscreen title="3D WebGL Model Viewer"></iframe>
           </div>
         ` : `
@@ -2085,13 +2085,13 @@ document.addEventListener('DOMContentLoaded', () => {
     ` : '';
 
     itemModalBody.innerHTML = `
-      <div id="item-modal-stage-wrapper" style="position: relative; width: 100%; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 1.25rem 3.5rem; margin: 0; box-sizing: border-box;">
+      <div id="item-modal-stage-wrapper" style="position: relative; width: 100%; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0.5rem 1.5rem; margin: 0; box-sizing: border-box;">
         ${prevNavHTML}
         ${nextNavHTML}
 
         <!-- Framed Canvas Stage Box with Theme-Aware Container Wrapper -->
-        <div id="item-modal-framed-stage" class="project-img-stage" style="position: relative; width: 100%; height: 100%; max-height: 76vh; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; transition: background-color 0.3s ease, box-shadow 0.3s ease;">
-          <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; height: 100%; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease; border-radius: 12px;">
+        <div id="item-modal-framed-stage" class="project-img-stage lib-image-viewer" style="position: relative; width: 100%; height: 100%; max-height: 84vh; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; transition: background-color 0.3s ease, box-shadow 0.3s ease;">
+          <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; height: 100%; max-height: 84vh; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease; border-radius: 12px;">
         </div>
       </div>
     `;
@@ -3035,37 +3035,42 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          let width = img.width;
-          let height = img.height;
+      // Non-blocking async processing for image reading and canvas compression
+      setTimeout(() => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            requestAnimationFrame(() => {
+              let width = img.width;
+              let height = img.height;
 
-          if (width > maxDimension || height > maxDimension) {
-            if (width > height) {
-              height = Math.round((height * maxDimension) / width);
-              width = maxDimension;
-            } else {
-              width = Math.round((width * maxDimension) / height);
-              height = maxDimension;
-            }
-          }
+              if (width > maxDimension || height > maxDimension) {
+                if (width > height) {
+                  height = Math.round((height * maxDimension) / width);
+                  width = maxDimension;
+                } else {
+                  width = Math.round((width * maxDimension) / height);
+                  height = maxDimension;
+                }
+              }
 
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
 
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
 
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-          resolve(compressedDataUrl);
+              const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+              resolve(compressedDataUrl);
+            });
+          };
+          img.onerror = () => resolve(e.target.result);
+          img.src = e.target.result;
         };
-        img.onerror = () => resolve(e.target.result);
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      }, 0);
     });
   }
 
@@ -4475,6 +4480,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inlineForm) {
       inlineForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const submitBtn = inlineForm.querySelector('button[type="submit"]');
+        const originalBtnHTML = submitBtn ? submitBtn.innerHTML : 'Save Project';
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = `<span class="btn-spinner"></span> Saving Project...`;
+        }
+
+        await new Promise(r => setTimeout(r, 0));
+
         const editId = document.getElementById('inline-edit-proj-id').value;
         const title = document.getElementById('inline-edit-proj-title').value.trim();
         const category = document.getElementById('inline-edit-proj-category').value;
@@ -4527,31 +4542,49 @@ document.addEventListener('DOMContentLoaded', () => {
             if (error) {
               console.error('Supabase Save Error (projects):', error);
               showToast(`Supabase Save Error: ${error.message || 'Failed to save project'}`, true);
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHTML;
+              }
               return;
             } else {
               operationSuccess = true;
-              showToast("Changes saved to database successfully!");
+              showToast("✓ Project saved to database successfully!");
             }
           } catch (err) {
             console.error('Supabase Save Exception:', err);
             showToast(`Supabase Save Exception: ${err.message}`, true);
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = originalBtnHTML;
+            }
             return;
           }
         } else {
           showToast("Database client not connected", true);
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHTML;
+          }
           return;
         }
 
-
         if (client && operationSuccess) {
           await fetchAllDataFromSupabase();
+          if (typeof renderProjectCards === 'function') {
+            renderProjectCards();
+          }
         }
 
         markDraftChanged();
+
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalBtnHTML;
+        }
+
         closeInlineProjectEditor();
       });
-
-
     }
 
 
