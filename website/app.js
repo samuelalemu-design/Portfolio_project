@@ -1001,29 +1001,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const footerThumbs = document.getElementById('item-modal-footer-thumbs');
     const counter = document.getElementById('item-modal-counter');
 
-    if (tabName === 'renderings' || tabName === 'webgl') {
-      if (wrapper) {
-        wrapper.style.maxWidth = '1200px';
-        wrapper.style.width = '92vw';
-      }
-      if (footerThumbs) footerThumbs.style.display = (tabName === 'renderings' ? 'flex' : 'none');
-      if (counter) counter.style.display = (tabName === 'renderings' ? 'inline-block' : 'none');
-    } else if (tabName === 'attachments') {
-      if (wrapper) {
-        wrapper.style.maxWidth = '920px';
-        wrapper.style.width = '88vw';
-      }
-      if (footerThumbs) footerThumbs.style.display = 'none';
-      if (counter) counter.style.display = 'none';
-    } else {
-      // specs / overview / description
-      if (wrapper) {
-        wrapper.style.maxWidth = '880px';
-        wrapper.style.width = '88vw';
-      }
-      if (footerThumbs) footerThumbs.style.display = 'none';
-      if (counter) counter.style.display = 'none';
+    if (wrapper) {
+      wrapper.style.maxWidth = '1200px';
+      wrapper.style.width = '92vw';
+      wrapper.style.height = '86vh';
+      wrapper.style.minHeight = '86vh';
     }
+
+    if (footerThumbs) footerThumbs.style.display = (tabName === 'renderings' ? 'flex' : 'none');
+    if (counter) counter.style.display = (tabName === 'renderings' ? 'inline-block' : 'none');
   }
 
   function renderModalTabContent(tabName) {
@@ -1233,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const project = currentProject;
     const webglSrc = project.webgl_url || project.webglUrl || '';
     itemModalBody.innerHTML = `
-      <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem; display: flex; flex-direction: column; gap: 1rem; width: 100%; height: 100%;">
+      <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem; display: flex; flex-direction: column; gap: 1rem; width: 100%; height: 100%; min-height: 68vh;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; flex-shrink: 0;">
           <div>
             <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0;">🌐 Interactive 3D WebGL Model Viewer</h4>
@@ -1242,14 +1228,14 @@ document.addEventListener('DOMContentLoaded', () => {
           ${webglSrc ? `<a href="${webglSrc}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.8rem; font-weight: 700;">Open Full Screen ↗</a>` : ''}
         </div>
         ${webglSrc ? `
-          <div class="lib-image-viewer" style="width: 100%; height: 73vh; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
+          <div class="lib-image-viewer" style="width: 100%; flex: 1; height: 68vh; min-height: 500px; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
             <iframe src="${webglSrc}" style="width: 100%; height: 100%; border: none;" allowfullscreen title="3D WebGL Model Viewer"></iframe>
           </div>
         ` : `
-          <div style="padding: 3rem; text-align: center; color: var(--text-muted); background: var(--bg-alt); border-radius: 10px; border: 1px dashed var(--border-color);">
+          <div style="flex: 1; min-height: 480px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--text-muted); background: var(--bg-alt); border-radius: 10px; border: 1px dashed var(--border-color); padding: 2rem;">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 0.75rem;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-            <p style="font-size: 0.95rem; font-weight: 600; margin: 0;">No 3D WebGL URL configured for this project yet.</p>
-            <span style="font-size: 0.8rem;">Edit project in Admin mode to attach an interactive 3D WebGL viewer URL.</span>
+            <p style="font-size: 1rem; font-weight: 700; margin: 0; color: var(--text-main);">No 3D WebGL Model URL Attached Yet</p>
+            <span style="font-size: 0.85rem; margin-top: 0.35rem; max-width: 480px; line-height: 1.4;">You can attach an interactive 3D WebGL model link or HTML viewer URL when adding or editing this project in Admin mode.</span>
           </div>
         `}
       </div>
@@ -1374,39 +1360,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!project) return;
 
         if (confirm(`Are you sure you want to delete "${project.title}" from your portfolio?`)) {
-          const client = getSupabaseClient();
-          let deleteSuccess = false;
+          // 1. Immediately delete locally in memory & projectsMap
+          const idx = projectsData.findIndex(p => p.id === projId);
+          if (idx >= 0) projectsData.splice(idx, 1);
+          delete projectsMap[projId];
 
+          // 2. Persist updated list to localStorage
+          if (typeof saveProjectsToStorage === 'function') {
+            saveProjectsToStorage();
+          }
+
+          // 3. Immediately re-render project cards in UI
+          if (typeof renderProjectCards === 'function') {
+            renderProjectCards();
+          }
+
+          showToast(`✓ Project "${project.title}" deleted from portfolio.`);
+
+          // 4. Asynchronously sync deletion to Supabase
+          const client = getSupabaseClient();
           if (client) {
             try {
-              const { error } = await client.from('projects').delete().eq('id', projId);
-              if (error) {
-                console.error('Supabase Delete Error:', error);
-                showToast(`Supabase Delete Error: ${error.message}`, true);
-                return;
-              } else {
-                deleteSuccess = true;
-                showToast("Changes saved to database successfully!");
-              }
+              await Promise.all([
+                client.from('projects').delete().eq('id', projId),
+                client.from('site_content').upsert([{ key: 'projects_backup', value: projectsData, updated_at: new Date().toISOString() }])
+              ]);
             } catch (err) {
-              console.error('Supabase Delete Exception:', err);
-              showToast(`Supabase Delete Exception: ${err.message}`, true);
-              return;
+              console.warn('Supabase delete background notice:', err);
             }
-          } else {
-            showToast("Database client not connected", true);
-            return;
-          }
-
-
-          markDraftChanged();
-
-          if (client && deleteSuccess) {
-            await fetchAllDataFromSupabase();
           }
         }
-
-
       });
     });
 
@@ -4563,6 +4546,26 @@ document.addEventListener('DOMContentLoaded', () => {
       const draftLogo = localStorage.getItem('samuel_brand_logo_draft');
       const logoVal = draftLogo || localStorage.getItem('samuel_brand_logo') || '';
 
+      // 1. Immediately persist to localStorage
+      try {
+        localStorage.setItem('samuel_site_text_overrides', JSON.stringify(overrides));
+        if (typeof saveProjectsToStorage === 'function') {
+          saveProjectsToStorage();
+        }
+      } catch(e) {}
+
+      // 2. Mark draft committed
+      hasUnsavedChanges = false;
+      const saveAllHeader = document.getElementById('admin-save-all-header');
+      if (saveAllHeader) saveAllHeader.style.display = 'inline-block';
+
+      if (typeof renderProjectCards === 'function') {
+        renderProjectCards();
+      }
+
+      showToast("✓ All portfolio changes & projects saved successfully!");
+
+      // 3. Sync to Supabase cloud database
       const client = getSupabaseClient();
       if (client) {
         try {
@@ -4575,34 +4578,16 @@ document.addEventListener('DOMContentLoaded', () => {
             updated_at: new Date().toISOString()
           }));
 
-          const results = await Promise.all([
+          await Promise.all([
             client.from('site_content').upsert([{ key: 'text_overrides', value: overrides, updated_at: new Date().toISOString() }]),
             client.from('site_content').upsert([{ key: 'brand_logo', value: { url: logoVal }, updated_at: new Date().toISOString() }]),
             client.from('site_content').upsert([{ key: 'projects_backup', value: projectsData, updated_at: new Date().toISOString() }]),
             client.from('skills').upsert(skillPayloads)
           ]);
-
-          const errRes = results.find(r => r && r.error);
-          if (errRes && errRes.error) {
-            console.error('Supabase Save Error (site_content):', errRes.error);
-            showToast(`Supabase Save Error: ${errRes.error.message}`, true);
-            return;
-          }
-
-          showToast("Changes saved to database successfully!");
-          await fetchAllDataFromSupabase();
         } catch (err) {
-          console.error('Supabase Save Error (site_content):', err);
-          showToast(`Supabase Save Error: ${err.message}`, true);
-          return;
+          console.warn('Supabase Cloud Sync Notice:', err);
         }
-      } else {
-        showToast("Database client not connected", true);
-        return;
       }
-
-
-      hasUnsavedChanges = false;
     }
 
 

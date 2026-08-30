@@ -1480,12 +1480,13 @@ dialog.project-modal::backdrop {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Refined Lightbox Photo Viewer Modal - Single Row Header Layout */
+/* Refined Lightbox Photo Viewer Modal - Fixed Professional Dimensions */
 #item-modal .modal-wrapper {
   max-width: 1200px;
   width: 92vw;
-  max-height: 90vh;
-  height: auto;
+  height: 86vh;
+  min-height: 86vh;
+  max-height: 86vh;
   margin: auto;
   background: #1e293b;
   color: #f8fafc;
