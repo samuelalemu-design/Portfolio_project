@@ -683,42 +683,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let loadedAnything = false;
 
-      // 1. Hydrate Projects - Merge with local state to preserve user additions
-      if (!projectsRes.error && Array.isArray(projectsRes.data) && projectsRes.data.length > 0) {
+      // Helper to standardize project format
+      function formatProjectItem(item) {
+        return {
+          id: item.id,
+          number: item.number || 0,
+          title: item.title || '',
+          category: item.category || 'Real Projects',
+          overview: item.overview || item.description || '',
+          description: item.overview || item.description || '',
+          specs: Array.isArray(item.specs) ? item.specs : (typeof item.specs === 'string' ? JSON.parse(item.specs || '[]') : []),
+          image: item.image || item.hero_image || '',
+          renderings: Array.isArray(item.renderings) ? item.renderings : (typeof item.renderings === 'string' ? JSON.parse(item.renderings || '[]') : []),
+          gallery: Array.isArray(item.renderings) ? item.renderings : [],
+          allGalleryImages: Array.isArray(item.renderings) ? item.renderings : [],
+          drawings: Array.isArray(item.drawings) ? item.drawings : (typeof item.drawings === 'string' ? JSON.parse(item.drawings || '[]') : []),
+          attachments: Array.isArray(item.drawings) ? item.drawings : [],
+          dfmTags: Array.isArray(item.dfmTags || item.dfm_tags) ? (item.dfmTags || item.dfm_tags) : [],
+          materials: item.materials || '',
+          manufacturing_process: item.manufacturing_process || item.manufacturingProcess || '',
+          webgl_url: item.webgl_url || item.webglUrl || '',
+          pdf_url: item.pdf_url || item.pdfUrl || '',
+          annotations: item.annotations || [],
+          imageTextOverlays: item.imageTextOverlays || {},
+          created_at: item.created_at || new Date().toISOString()
+        };
+      }
+
+      // 1. Hydrate Projects - Direct Cloud State from Supabase
+      let projectsLoadedFromCloud = false;
+
+      // Primary: Supabase site_content key 'projects_backup' (Authoritative Cloud State)
+      if (contentRes && !contentRes.error && Array.isArray(contentRes.data)) {
+        const backupRow = contentRes.data.find(r => r.key === 'projects_backup');
+        if (backupRow && Array.isArray(backupRow.value) && backupRow.value.length > 0) {
+          projectsData.length = 0;
+          backupRow.value.forEach(item => {
+            projectsData.push(formatProjectItem(item));
+          });
+          projectsLoadedFromCloud = true;
+        }
+      }
+
+      // Secondary: Supabase projects table
+      if (!projectsLoadedFromCloud && !projectsRes.error && Array.isArray(projectsRes.data) && projectsRes.data.length > 0) {
+        projectsData.length = 0;
         projectsRes.data.forEach(item => {
-          const p = {
-            id: item.id,
-            number: item.number || 0,
-            title: item.title || '',
-            category: item.category || 'Real Projects',
-            overview: item.overview || item.description || '',
-            description: item.overview || item.description || '',
-            specs: Array.isArray(item.specs) ? item.specs : (typeof item.specs === 'string' ? JSON.parse(item.specs || '[]') : []),
-            image: item.image || item.hero_image || '',
-            renderings: Array.isArray(item.renderings) ? item.renderings : (typeof item.renderings === 'string' ? JSON.parse(item.renderings || '[]') : []),
-            gallery: Array.isArray(item.renderings) ? item.renderings : [],
-            allGalleryImages: Array.isArray(item.renderings) ? item.renderings : [],
-            drawings: Array.isArray(item.drawings) ? item.drawings : (typeof item.drawings === 'string' ? JSON.parse(item.drawings || '[]') : []),
-            attachments: Array.isArray(item.drawings) ? item.drawings : [],
-            dfmTags: Array.isArray(item.dfmTags || item.dfm_tags) ? (item.dfmTags || item.dfm_tags) : [],
-            materials: item.materials || '',
-            manufacturing_process: item.manufacturing_process || item.manufacturingProcess || '',
-            webgl_url: item.webgl_url || item.webglUrl || '',
-            pdf_url: item.pdf_url || item.pdfUrl || '',
-            annotations: item.annotations || [],
-            imageTextOverlays: item.imageTextOverlays || {},
-            created_at: item.created_at
-          };
-
-          projectsMap[p.id] = p;
-          const existingIndex = projectsData.findIndex(existing => existing.id === p.id);
-          if (existingIndex >= 0) {
-            projectsData[existingIndex] = p;
-          } else {
-            projectsData.push(p);
-          }
+          projectsData.push(formatProjectItem(item));
         });
+        projectsLoadedFromCloud = true;
+      }
 
+      if (projectsLoadedFromCloud) {
+        Object.keys(projectsMap).forEach(k => delete projectsMap[k]);
+        projectsData.forEach(p => {
+          projectsMap[p.id] = p;
+        });
         if (typeof saveProjectsToStorage === 'function') saveProjectsToStorage();
         loadedAnything = true;
       }
@@ -741,7 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      // 3. Hydrate Site Content (Text Overrides, Logo) - Direct database state overwrite
+      // 3. Hydrate Site Content (Text Overrides, Logo)
       if (!contentRes.error && Array.isArray(contentRes.data) && contentRes.data.length > 0) {
         contentRes.data.forEach(row => {
           if (row.key === 'text_overrides' && row.value) {
@@ -781,37 +801,39 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function loadSavedProjects() {
-    // 1. Load local custom projects from localStorage first so added projects persist across refreshes
-    const saved = localStorage.getItem('portfolio_admin_projects') || localStorage.getItem('samuel_projects_override');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          projectsData.length = 0;
-          parsed.forEach(p => {
-            p.annotations = p.annotations || [];
-            p.imageTextOverlays = p.imageTextOverlays || {};
-            projectsData.push(p);
-          });
+    // 1. Synchronize from Supabase cloud database first (Cloud Single Source of Truth)
+    const fetched = await fetchAllDataFromSupabase();
+
+    // 2. Fallback to localStorage if Supabase is offline / unreachable
+    if (!fetched) {
+      const saved = localStorage.getItem('portfolio_admin_projects') || localStorage.getItem('samuel_projects_override');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            projectsData.length = 0;
+            parsed.forEach(p => {
+              p.annotations = p.annotations || [];
+              p.imageTextOverlays = p.imageTextOverlays || {};
+              projectsData.push(p);
+            });
+          }
+        } catch (e) {
+          console.error('Failed to load portfolio_admin_projects from localStorage:', e);
         }
-      } catch (e) {
-        console.error('Failed to load portfolio_admin_projects from localStorage:', e);
+      }
+
+      Object.keys(projectsMap).forEach(k => delete projectsMap[k]);
+      projectsData.forEach(p => {
+        p.annotations = p.annotations || [];
+        p.imageTextOverlays = p.imageTextOverlays || {};
+        projectsMap[p.id] = p;
+      });
+
+      if (typeof renderProjectCards === 'function') {
+        renderProjectCards();
       }
     }
-
-    Object.keys(projectsMap).forEach(k => delete projectsMap[k]);
-    projectsData.forEach(p => {
-      p.annotations = p.annotations || [];
-      p.imageTextOverlays = p.imageTextOverlays || {};
-      projectsMap[p.id] = p;
-    });
-
-    if (typeof renderProjectCards === 'function') {
-      renderProjectCards();
-    }
-
-    // 2. Synchronize / merge from Supabase database without overwriting local additions
-    await fetchAllDataFromSupabase();
   }
 
   loadSavedProjects();
