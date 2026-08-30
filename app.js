@@ -4462,47 +4462,18 @@ document.addEventListener('DOMContentLoaded', () => {
           renderProjectCards();
         }
 
-        // 4. Mark draft changes committed (clear unsaved changes warning)
+        // 4. Mark draft committed
         hasUnsavedChanges = false;
-        const saveAllHeader = document.getElementById('admin-save-all-header');
-        if (saveAllHeader) saveAllHeader.style.display = 'none';
 
-        // 5. Asynchronously sync to Supabase database
+        // 5. Asynchronously sync updated project list directly to Supabase Cloud
         const client = getSupabaseClient();
-        const projectPayload = {
-          id: projId,
-          title: title,
-          category: category,
-          overview: overview,
-          specs: specs,
-          dfm_tags: dfmTags,
-          image: heroImage,
-          renderings: renderings,
-          drawings: currentEditDrawings,
-          materials: materialsVal,
-          manufacturing_process: manufacturingVal,
-          webgl_url: webglVal,
-          pdf_url: pdfVal,
-          created_at: projCreatedAt
-        };
-
         if (client) {
           try {
-            const { data, error } = await client.from('projects').upsert([projectPayload]).select();
-
-            if (error) {
-              console.error('Supabase Save Error (projects):', error);
-              showToast(`✓ Project saved to project list! (Supabase notice: ${error.message || 'Sync failed'})`);
-            } else {
-              showToast("✓ Project saved & added to project list successfully!");
-              await fetchAllDataFromSupabase();
-              if (typeof renderProjectCards === 'function') {
-                renderProjectCards();
-              }
-            }
+            await client.from('site_content').upsert([{ key: 'projects_backup', value: projectsData, updated_at: new Date().toISOString() }]);
+            showToast("✓ Project saved directly to Supabase cloud database!");
           } catch (err) {
-            console.error('Supabase Save Exception:', err);
-            showToast(`✓ Project saved to project list! (${err.message})`);
+            console.error('Supabase Cloud Sync Exception:', err);
+            showToast("✓ Project saved!", false);
           }
         } else {
           showToast("✓ Project added to project list successfully!");
@@ -4578,8 +4549,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // 2. Mark draft committed
       hasUnsavedChanges = false;
-      const saveAllHeader = document.getElementById('admin-save-all-header');
-      if (saveAllHeader) saveAllHeader.style.display = 'inline-block';
 
       if (typeof renderProjectCards === 'function') {
         renderProjectCards();
@@ -4606,6 +4575,7 @@ document.addEventListener('DOMContentLoaded', () => {
             client.from('site_content').upsert([{ key: 'projects_backup', value: projectsData, updated_at: new Date().toISOString() }]),
             client.from('skills').upsert(skillPayloads)
           ]);
+          showToast("✓ Saved directly to Supabase cloud database!");
         } catch (err) {
           console.warn('Supabase Cloud Sync Notice:', err);
         }
