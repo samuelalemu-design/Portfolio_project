@@ -1467,8 +1467,8 @@ dialog.project-modal::backdrop {
   border: none;
   border-radius: var(--radius-lg);
   padding: 0;
-  max-width: 1120px;
-  width: 90vw;
+  max-width: 1200px;
+  width: 92vw;
   background-color: var(--bg-card);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
   margin: auto;
@@ -1480,11 +1480,11 @@ dialog.project-modal::backdrop {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Refined Lightbox Photo Viewer Modal - Professional Scaling */
+/* Refined Lightbox Photo Viewer Modal - Single Row Header Layout */
 #item-modal .modal-wrapper {
-  max-width: 1120px;
-  width: 90vw;
-  max-height: 86vh;
+  max-width: 1200px;
+  width: 92vw;
+  max-height: 90vh;
   height: auto;
   margin: auto;
   background: #1e293b;
@@ -1497,12 +1497,12 @@ dialog.project-modal::backdrop {
   flex-direction: column;
 }
 
-/* Expanded Media Viewer Stage */
+/* Expanded Media Viewer Stage (Maximized Viewport) */
 .lib-image-viewer {
   width: 100% !important;
   height: 100% !important;
   max-width: 100% !important;
-  max-height: 68vh !important;
+  max-height: 75vh !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1517,7 +1517,7 @@ dialog.project-modal::backdrop {
   width: 100% !important;
   height: 100% !important;
   max-width: 100% !important;
-  max-height: 68vh !important;
+  max-height: 75vh !important;
   object-fit: contain !important;
   border-radius: 12px;
 }
