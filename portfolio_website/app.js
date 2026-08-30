@@ -1202,14 +1202,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <p style="font-size: 0.975rem; line-height: 1.6; color: var(--text-main); margin: 0; white-space: pre-wrap;">${project.manufacturing_process || project.manufacturingProcess || 'CNC Laser & Plasma Cutting, Precision Brake Press Sheet Metal Bending, MIG/TIG Structural Tube Welding, and High-Durability Powder Coating Surface Finishing.'}</p>
           </div>
 
-          <!-- Engineering Materials Section -->
-          <div>
-            <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-              ENGINEERING MATERIALS
-            </h4>
-            <p style="font-size: 0.975rem; line-height: 1.6; color: var(--text-main); margin: 0; white-space: pre-wrap;">${project.materials || 'High-Strength Structural Steel (ASTM A36), 6061-T6 Aluminum Alloy, Precision Stainless Steel Fasteners, and Heavy-Duty Polyurethane Components.'}</p>
-          </div>
 
           ${(project.pdf_url || project.pdfUrl) ? `
           <div style="padding: 1rem; background: var(--accent-light); border: 1px solid var(--accent-primary); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
