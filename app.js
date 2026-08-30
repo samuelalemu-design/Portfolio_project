@@ -1165,7 +1165,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div>
             <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              Description
+              DESCRIPTION
             </h4>
             <p style="font-size: 0.975rem; line-height: 1.7; color: var(--text-main); margin: 0; white-space: pre-wrap;">${project.overview || project.description || 'Custom mechanical design engineering project developed using SolidWorks CAD, DFM optimization, and technical production blueprints.'}</p>
           </div>
