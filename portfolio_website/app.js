@@ -892,19 +892,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           <!-- Front-Level Card Body -->
           <div class="project-body" style="padding: 1.25rem;">
-            <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.6rem;">${project.title}</h3>
-
-            ${project.materials ? `
-              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
-                <span style="font-weight: 700; color: var(--accent-primary);">🛠️ Materials:</span>
-                <span style="color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${project.materials}</span>
-              </div>` : ''}
-
-            ${(project.manufacturing_process || project.manufacturingProcess) ? `
-              <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.35rem;">
-                <span style="font-weight: 700; color: var(--accent-primary);">⚙️ Process:</span>
-                <span style="color: var(--text-main); text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${project.manufacturing_process || project.manufacturingProcess}</span>
-              </div>` : ''}
+            <h3 class="project-title" style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.85rem;">${project.title}</h3>
 
             <!-- Action Buttons at Bottom (Description, Technical Spec, 3D WebGL, Attachments) -->
             <div class="card-btn-bar" style="display: flex; gap: 0.45rem; flex-wrap: wrap;">
