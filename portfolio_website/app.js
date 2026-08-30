@@ -683,9 +683,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let loadedAnything = false;
 
-      // 1. Hydrate Projects - Direct database state overwrite
+      // 1. Hydrate Projects - Merge with local state to preserve user additions
       if (!projectsRes.error && Array.isArray(projectsRes.data) && projectsRes.data.length > 0) {
-        projectsData.length = 0;
         projectsRes.data.forEach(item => {
           const p = {
             id: item.id,
@@ -710,13 +709,17 @@ document.addEventListener('DOMContentLoaded', () => {
             imageTextOverlays: item.imageTextOverlays || {},
             created_at: item.created_at
           };
-          projectsData.push(p);
+
+          projectsMap[p.id] = p;
+          const existingIndex = projectsData.findIndex(existing => existing.id === p.id);
+          if (existingIndex >= 0) {
+            projectsData[existingIndex] = p;
+          } else {
+            projectsData.push(p);
+          }
         });
 
-        Object.keys(projectsMap).forEach(k => delete projectsMap[k]);
-        projectsData.forEach(p => {
-          projectsMap[p.id] = p;
-        });
+        if (typeof saveProjectsToStorage === 'function') saveProjectsToStorage();
         loadedAnything = true;
       }
 
@@ -778,36 +781,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function loadSavedProjects() {
-    const fetched = await fetchAllDataFromSupabase();
-    if (!fetched) {
-      const saved = localStorage.getItem('portfolio_admin_projects') || localStorage.getItem('samuel_projects_override');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            projectsData.length = 0;
-            parsed.forEach(p => {
-              p.annotations = p.annotations || [];
-              p.imageTextOverlays = p.imageTextOverlays || {};
-              projectsData.push(p);
-            });
-          }
-        } catch (e) {
-          console.error('Failed to load portfolio_admin_projects from localStorage:', e);
+    // 1. Load local custom projects from localStorage first so added projects persist across refreshes
+    const saved = localStorage.getItem('portfolio_admin_projects') || localStorage.getItem('samuel_projects_override');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          projectsData.length = 0;
+          parsed.forEach(p => {
+            p.annotations = p.annotations || [];
+            p.imageTextOverlays = p.imageTextOverlays || {};
+            projectsData.push(p);
+          });
         }
-      }
-
-      Object.keys(projectsMap).forEach(k => delete projectsMap[k]);
-      projectsData.forEach(p => {
-        p.annotations = p.annotations || [];
-        p.imageTextOverlays = p.imageTextOverlays || {};
-        projectsMap[p.id] = p;
-      });
-
-      if (typeof renderProjectCards === 'function') {
-        renderProjectCards();
+      } catch (e) {
+        console.error('Failed to load portfolio_admin_projects from localStorage:', e);
       }
     }
+
+    Object.keys(projectsMap).forEach(k => delete projectsMap[k]);
+    projectsData.forEach(p => {
+      p.annotations = p.annotations || [];
+      p.imageTextOverlays = p.imageTextOverlays || {};
+      projectsMap[p.id] = p;
+    });
+
+    if (typeof renderProjectCards === 'function') {
+      renderProjectCards();
+    }
+
+    // 2. Synchronize / merge from Supabase database without overwriting local additions
+    await fetchAllDataFromSupabase();
   }
 
   loadSavedProjects();
@@ -1300,9 +1304,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem;">Drawings & Attachments (${drawingsList.length})</h4>
         <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">Technical blueprints, PDF drawings, and engineering documentation for this machine.</p>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
-          ${itemsHTML || '<p style="color: var(--text-muted); font-size: 0.9rem;">No standalone drawing files attached yet.</p>'}
-        </div>
+        ${drawingsList.length > 0 ? `
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem;">
+            ${itemsHTML}
+          </div>
+        ` : `
+          <div style="padding: 2.5rem 1.5rem; text-align: center; color: var(--text-muted); background: var(--bg-alt); border-radius: 10px; border: 1px dashed var(--border-color);">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 0.5rem;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <p style="font-size: 0.95rem; font-weight: 700; margin: 0; color: var(--text-main);">No standalone drawing files attached yet.</p>
+            <span style="font-size: 0.8rem; margin-top: 0.25rem; display: block;">You can attach PDF drawings or CAD blueprints when editing this project in Admin mode.</span>
+          </div>
+        `}
       </div>
     `;
   }
@@ -1312,6 +1324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.modal-tab-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
+        e.stopPropagation(); // Stop event bubbling so modal backdrop click listener DOES NOT exit/close the window!
         const tabName = btn.getAttribute('data-tab');
         if (currentProject) {
           renderModalTabContent(tabName);
@@ -4444,7 +4457,12 @@ document.addEventListener('DOMContentLoaded', () => {
           renderProjectCards();
         }
 
-        // 4. Asynchronously sync to Supabase database
+        // 4. Mark draft changes committed (clear unsaved changes warning)
+        hasUnsavedChanges = false;
+        const saveAllHeader = document.getElementById('admin-save-all-header');
+        if (saveAllHeader) saveAllHeader.style.display = 'none';
+
+        // 5. Asynchronously sync to Supabase database
         const client = getSupabaseClient();
         const projectPayload = {
           id: projId,
@@ -4469,7 +4487,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (error) {
               console.error('Supabase Save Error (projects):', error);
-              showToast(`Saved project locally! (Supabase notice: ${error.message || 'Sync failed'})`);
+              showToast(`✓ Project saved to project list! (Supabase notice: ${error.message || 'Sync failed'})`);
             } else {
               showToast("✓ Project saved & added to project list successfully!");
               await fetchAllDataFromSupabase();
@@ -4479,13 +4497,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           } catch (err) {
             console.error('Supabase Save Exception:', err);
-            showToast(`Saved project locally! (${err.message})`);
+            showToast(`✓ Project saved to project list! (${err.message})`);
           }
         } else {
           showToast("✓ Project added to project list successfully!");
         }
-
-        markDraftChanged();
 
         if (submitBtn) {
           submitBtn.disabled = false;
