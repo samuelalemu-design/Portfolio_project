@@ -1618,124 +1618,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function autoCropImage(src, callback) {
-    if (!src) {
-      callback(src);
-      return;
-    }
-    if (croppedImageCache.has(src)) {
-      callback(croppedImageCache.get(src));
-      return;
-    }
-
-    analyzeImageBackground(src, (analysis) => {
-      // FOR REAL PHOTOGRAPHS: DISABLE automatic border cropping completely!
-      if (!analysis || !analysis.isSolidBg) {
-        croppedImageCache.set(src, src);
-        callback(src);
-        return;
-      }
-
-      // FOR SOLID CAD RENDERS: Execute bounding-box margin trimming
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = function() {
-        try {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          const w = img.naturalWidth;
-          const h = img.naturalHeight;
-          if (!w || !h) {
-            croppedImageCache.set(src, src);
-            callback(src);
-            return;
-          }
-
-          canvas.width = w;
-          canvas.height = h;
-          ctx.drawImage(img, 0, 0);
-
-          const imgData = ctx.getImageData(0, 0, w, h);
-          const data = imgData.data;
-
-          let minX = w, minY = h, maxX = 0, maxY = 0;
-          let foundContent = false;
-
-          const bgR = data[0];
-          const bgG = data[1];
-          const bgB = data[2];
-          const isWhiteBg = (bgR > 230 && bgG > 230 && bgB > 230);
-
-          for (let y = 0; y < h; y += 2) {
-            for (let x = 0; x < w; x += 2) {
-              const idx = (y * w + x) * 4;
-              const r = data[idx];
-              const g = data[idx + 1];
-              const b = data[idx + 2];
-              const a = data[idx + 3];
-
-              if (a < 15) continue;
-
-              let isBg = false;
-              if (isWhiteBg) {
-                if (r > 235 && g > 235 && b > 235) isBg = true;
-              } else {
-                const diff = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
-                if (diff < 25) isBg = true;
-              }
-
-              if (!isBg) {
-                foundContent = true;
-                if (x < minX) minX = x;
-                if (x > maxX) maxX = x;
-                if (y < minY) minY = y;
-                if (y > maxY) maxY = y;
-              }
-            }
-          }
-
-          if (!foundContent || maxX <= minX || maxY <= minY) {
-            croppedImageCache.set(src, src);
-            callback(src);
-            return;
-          }
-
-          const padX = Math.round((maxX - minX) * 0.02);
-          const padY = Math.round((maxY - minY) * 0.02);
-
-          minX = Math.max(0, minX - padX);
-          minY = Math.max(0, minY - padY);
-          maxX = Math.min(w - 1, maxX + padX);
-          maxY = Math.min(h - 1, maxY + padY);
-
-          const cropW = maxX - minX;
-          const cropH = maxY - minY;
-
-          if (cropW >= w * 0.96 && cropH >= h * 0.96) {
-            croppedImageCache.set(src, src);
-            callback(src);
-            return;
-          }
-
-          const cropCanvas = document.createElement('canvas');
-          cropCanvas.width = cropW;
-          cropCanvas.height = cropH;
-          const cropCtx = cropCanvas.getContext('2d');
-          cropCtx.drawImage(canvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
-
-          const croppedDataUrl = cropCanvas.toDataURL('image/png');
-          croppedImageCache.set(src, croppedDataUrl);
-          callback(croppedDataUrl);
-        } catch (err) {
-          croppedImageCache.set(src, src);
-          callback(src);
-        }
-      };
-      img.onerror = function() {
-        croppedImageCache.set(src, src);
-        callback(src);
-      };
-      img.src = src;
-    });
+    if (callback) callback(src);
+    return src;
   }
 
   /* ------------------------------------------------------------------------
@@ -4476,7 +4360,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Inline Form Submit Event (Add or Update Project in Supabase)
+    // Inline Form Submit Event (Add or Update Project in Supabase & Local Memory)
     if (inlineForm) {
       inlineForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -4512,12 +4396,56 @@ document.addEventListener('DOMContentLoaded', () => {
           renderings.unshift(heroImage);
         }
 
-        const client = getSupabaseClient();
-        let operationSuccess = false;
-
         const projId = editId || `proj_${Date.now()}`;
         const projCreatedAt = (editId && projectsMap[editId] && projectsMap[editId].created_at) ? projectsMap[editId].created_at : new Date().toISOString();
 
+        // Formatted Local Project Object
+        const localProject = {
+          id: projId,
+          number: (editId && projectsMap[editId] && projectsMap[editId].number) ? projectsMap[editId].number : projectsData.length + 1,
+          title: title,
+          category: category,
+          overview: overview,
+          description: overview,
+          specs: specs,
+          dfm_tags: dfmTags,
+          dfmTags: dfmTags,
+          image: heroImage,
+          renderings: renderings,
+          gallery: renderings,
+          allGalleryImages: renderings,
+          drawings: currentEditDrawings,
+          attachments: currentEditDrawings,
+          materials: materialsVal,
+          manufacturing_process: manufacturingVal,
+          webgl_url: webglVal,
+          pdf_url: pdfVal,
+          created_at: projCreatedAt,
+          annotations: [],
+          imageTextOverlays: {}
+        };
+
+        // 1. Immediately update local in-memory arrays & projectsMap
+        projectsMap[projId] = localProject;
+        const existingIdx = projectsData.findIndex(p => p.id === projId);
+        if (existingIdx >= 0) {
+          projectsData[existingIdx] = localProject;
+        } else {
+          projectsData.unshift(localProject);
+        }
+
+        // 2. Persist to localStorage fallback
+        if (typeof saveProjectsToStorage === 'function') {
+          saveProjectsToStorage();
+        }
+
+        // 3. Immediately re-render project cards in UI & Admin lists
+        if (typeof renderProjectCards === 'function') {
+          renderProjectCards();
+        }
+
+        // 4. Asynchronously sync to Supabase database
+        const client = getSupabaseClient();
         const projectPayload = {
           id: projId,
           title: title,
@@ -4541,39 +4469,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (error) {
               console.error('Supabase Save Error (projects):', error);
-              showToast(`Supabase Save Error: ${error.message || 'Failed to save project'}`, true);
-              if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnHTML;
-              }
-              return;
+              showToast(`Saved project locally! (Supabase notice: ${error.message || 'Sync failed'})`);
             } else {
-              operationSuccess = true;
-              showToast("✓ Project saved to database successfully!");
+              showToast("✓ Project saved & added to project list successfully!");
+              await fetchAllDataFromSupabase();
+              if (typeof renderProjectCards === 'function') {
+                renderProjectCards();
+              }
             }
           } catch (err) {
             console.error('Supabase Save Exception:', err);
-            showToast(`Supabase Save Exception: ${err.message}`, true);
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.innerHTML = originalBtnHTML;
-            }
-            return;
+            showToast(`Saved project locally! (${err.message})`);
           }
         } else {
-          showToast("Database client not connected", true);
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnHTML;
-          }
-          return;
-        }
-
-        if (client && operationSuccess) {
-          await fetchAllDataFromSupabase();
-          if (typeof renderProjectCards === 'function') {
-            renderProjectCards();
-          }
+          showToast("✓ Project added to project list successfully!");
         }
 
         markDraftChanged();
