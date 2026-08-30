@@ -860,7 +860,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderProjectCards() {
     if (!projectsGrid) return;
 
-    projectsGrid.innerHTML = projectsData.map((project, idx) => {
+    projectsGrid.innerHTML = projectsData.map(project => {
       let categoryClass = 'badge-real';
       if (project.category === 'Experimental Projects') categoryClass = 'badge-experimental';
       if (project.category === 'Educational Projects') categoryClass = 'badge-educational';
@@ -869,45 +869,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const hasDrawings = drawingsList.length > 0;
       const drawingCount = drawingsList.length;
       const isAdmin = sessionStorage.getItem('samuel_alemu_admin') === 'true';
-      const isFirst = idx === 0;
-      const isLast = idx === projectsData.length - 1;
 
       const adminControlsHTML = isAdmin ? `
-        <div class="admin-card-actions" style="margin-top: 0.75rem; display: flex; justify-content: space-between; align-items: center; gap: 0.35rem; border-top: 1px dashed var(--border-color); padding-top: 0.6rem; flex-wrap: wrap;">
-          
-          <div style="display: flex; gap: 0.25rem; align-items: center;">
-            <button type="button" class="btn btn-sm admin-move-card-btn" data-dir="-1" data-index="${idx}" title="Move project up/earlier in list" ${isFirst ? 'disabled style="opacity: 0.4; cursor: not-allowed; padding: 0.3rem 0.5rem;"' : 'style="background: var(--bg-alt); color: var(--accent-primary); border: 1px solid var(--border-color); font-size: 0.75rem; padding: 0.3rem 0.55rem; border-radius: 6px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 0.2rem;"'}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-              <span>Up</span>
-            </button>
-            <button type="button" class="btn btn-sm admin-move-card-btn" data-dir="1" data-index="${idx}" title="Move project down/later in list" ${isLast ? 'disabled style="opacity: 0.4; cursor: not-allowed; padding: 0.3rem 0.5rem;"' : 'style="background: var(--bg-alt); color: var(--accent-primary); border: 1px solid var(--border-color); font-size: 0.75rem; padding: 0.3rem 0.55rem; border-radius: 6px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 0.2rem;"'}>
-              <span>Down</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-          </div>
-
-          <div style="display: flex; gap: 0.3rem; align-items: center;">
-            <button type="button" class="btn btn-sm live-edit-card-btn" data-project="${project.id}">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> <span>Edit</span>
-            </button>
-            <button type="button" class="btn btn-sm admin-delete-proj-btn" data-project="${project.id}" style="background: #ef4444; color: #ffffff; border: none; font-size: 0.75rem; padding: 0.3rem 0.55rem; border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.2rem;">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> <span>Delete</span>
-            </button>
-          </div>
-
-        </div>
-      ` : '';
-
-      const dragHandleHTML = isAdmin ? `
-        <div class="admin-drag-handle-badge" data-index="${idx}" style="position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(15, 23, 42, 0.88); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 0.25rem 0.55rem; border-radius: 20px; font-size: 0.72rem; font-weight: 700; cursor: grab; display: flex; align-items: center; gap: 0.3rem; backdrop-filter: blur(4px);" title="Drag card to reorder sequence">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/></svg>
-          <span>Shuffle #${idx + 1}</span>
+        <div class="admin-card-actions" style="margin-top: 0.75rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; border-top: 1px dashed var(--border-color); padding-top: 0.6rem;">
+          <button type="button" class="btn btn-sm live-edit-card-btn" data-project="${project.id}">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> <span>Edit Card</span>
+          </button>
+          <button type="button" class="btn btn-sm admin-delete-proj-btn" data-project="${project.id}" style="background: #ef4444; color: #ffffff; border: none; font-size: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> <span>Delete</span>
+          </button>
         </div>
       ` : '';
 
       return `
-        <div class="project-card card" data-category="${project.category}" data-project="${project.id}" data-index="${idx}" id="card-${project.id}" ${isAdmin ? 'draggable="true"' : ''}>
-          ${dragHandleHTML}
+        <div class="project-card card" data-category="${project.category}" data-project="${project.id}" id="card-${project.id}">
           
           <!-- Front-Level Hero Image Container with Theme-Aware Stage Wrapper -->
           <div class="project-img-wrapper project-img-stage" style="display: flex; align-items: center; justify-content: center; padding: 0.5rem; min-height: 360px; max-height: 440px; overflow: hidden; position: relative; cursor: pointer;" title="Click hero image to open gallery" data-modal-type="renderings" data-project="${project.id}">
@@ -949,6 +924,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ${adminControlsHTML}
 
           </div>
+
+
         </div>
       `;
     }).join('');
@@ -1417,71 +1394,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         }
-    // Admin Move Up/Down card buttons listener
-    document.querySelectorAll('.admin-move-card-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const currentIdx = parseInt(btn.getAttribute('data-index'), 10);
-        const direction = parseInt(btn.getAttribute('data-dir'), 10);
-        const targetIdx = currentIdx + direction;
-
-        if (targetIdx >= 0 && targetIdx < projectsData.length) {
-          const [movedItem] = projectsData.splice(currentIdx, 1);
-          projectsData.splice(targetIdx, 0, movedItem);
-          saveProjectsToStorage();
-          renderProjectCards();
-          showToast(`✓ Reordered "${movedItem.title}" to position #${targetIdx + 1}`);
-        }
       });
     });
 
-    // Admin Drag & Drop reordering listeners
-    let dragSrcIndex = null;
-    document.querySelectorAll('.project-card[draggable="true"]').forEach(card => {
-      card.addEventListener('dragstart', (e) => {
-        dragSrcIndex = parseInt(card.getAttribute('data-index'), 10);
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/plain', dragSrcIndex);
-        card.style.opacity = '0.5';
-      });
 
-      card.addEventListener('dragend', () => {
-        card.style.opacity = '1';
-        document.querySelectorAll('.project-card').forEach(c => {
-          c.style.border = '';
-          c.style.boxShadow = '';
-        });
-      });
-
-      card.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        card.style.border = '2px dashed var(--accent-primary)';
-        card.style.boxShadow = '0 0 15px rgba(56, 189, 248, 0.3)';
-      });
-
-      card.addEventListener('dragleave', () => {
-        card.style.border = '';
-        card.style.boxShadow = '';
-      });
-
-      card.addEventListener('drop', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        card.style.border = '';
-        card.style.boxShadow = '';
-
-        const targetIndex = parseInt(card.getAttribute('data-index'), 10);
-        if (dragSrcIndex !== null && dragSrcIndex !== targetIndex && !isNaN(targetIndex)) {
-          const [movedItem] = projectsData.splice(dragSrcIndex, 1);
-          projectsData.splice(targetIndex, 0, movedItem);
-          saveProjectsToStorage();
-          renderProjectCards();
-          showToast(`✓ Shuffled "${movedItem.title}" to position #${targetIndex + 1}!`);
-        }
-      });
-    });
   }
 
   /* ------------------------------------------------------------------------
@@ -3055,109 +2971,6 @@ document.addEventListener('DOMContentLoaded', () => {
         sessionStorage.setItem('samuel_projects_override', dataStr);
       } catch (e2) {}
     }
-
-    const client = getSupabaseClient();
-    if (client) {
-      client.from('site_content')
-        .upsert([{ key: 'projects_backup', value: projectsData, updated_at: new Date().toISOString() }])
-        .then(() => console.log('✅ Project array sequence synced live to Supabase cloud!'))
-        .catch(err => console.error('Supabase project sequence sync error:', err));
-    }
-  }
-
-  /* ------------------------------------------------------------------------
-   * Admin Shuffle & Reorder Projects Modal Manager
-   * ------------------------------------------------------------------------ */
-  function initAdminReorderModal() {
-    const reorderBtn = document.getElementById('admin-reorder-projects-btn');
-    const reorderModal = document.getElementById('admin-reorder-modal');
-    const closeBtn = document.getElementById('admin-reorder-close-btn');
-    const cancelBtn = document.getElementById('admin-reorder-cancel-btn');
-    const saveBtn = document.getElementById('admin-reorder-save-btn');
-    const listBody = document.getElementById('admin-reorder-list-body');
-
-    if (!reorderBtn || !reorderModal || !listBody) return;
-
-    let tempProjects = [];
-
-    function renderReorderList() {
-      listBody.innerHTML = tempProjects.map((proj, idx) => `
-        <div class="reorder-item" data-index="${idx}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 0.85rem; background: var(--bg-alt); border: 1px solid var(--border-color); border-radius: 8px; gap: 0.75rem;">
-          <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; overflow: hidden;">
-            <span style="font-weight: 800; font-size: 0.85rem; color: var(--accent-primary); width: 32px; flex-shrink: 0;">#${idx + 1}</span>
-            <img src="${proj.image}" alt="${proj.title}" style="width: 44px; height: 44px; object-fit: contain; background: #ffffff; border-radius: 6px; border: 1px solid var(--border-color); flex-shrink: 0;">
-            <div style="overflow: hidden; flex: 1;">
-              <span style="font-weight: 700; font-size: 0.95rem; color: var(--text-main); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${proj.title}</span>
-              <span style="font-size: 0.75rem; color: var(--text-muted);">${proj.category}</span>
-            </div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
-            <button type="button" class="btn btn-sm reorder-up-btn" data-index="${idx}" ${idx === 0 ? 'disabled style="opacity: 0.3; padding: 0.25rem 0.5rem;"' : 'style="background: var(--bg-card); color: var(--accent-primary); border: 1px solid var(--border-color); padding: 0.25rem 0.55rem; border-radius: 6px; font-weight: 800; cursor: pointer;"'}>▲ Up</button>
-            <button type="button" class="btn btn-sm reorder-down-btn" data-index="${idx}" ${idx === tempProjects.length - 1 ? 'disabled style="opacity: 0.3; padding: 0.25rem 0.5rem;"' : 'style="background: var(--bg-card); color: var(--accent-primary); border: 1px solid var(--border-color); padding: 0.25rem 0.55rem; border-radius: 6px; font-weight: 800; cursor: pointer;"'}>▼ Down</button>
-          </div>
-        </div>
-      `).join('');
-
-      listBody.querySelectorAll('.reorder-up-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const i = parseInt(btn.getAttribute('data-index'), 10);
-          if (i > 0) {
-            const [item] = tempProjects.splice(i, 1);
-            tempProjects.splice(i - 1, 0, item);
-            renderReorderList();
-          }
-        });
-      });
-
-      listBody.querySelectorAll('.reorder-down-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const i = parseInt(btn.getAttribute('data-index'), 10);
-          if (i < tempProjects.length - 1) {
-            const [item] = tempProjects.splice(i, 1);
-            tempProjects.splice(i + 1, 0, item);
-            renderReorderList();
-          }
-        });
-      });
-    }
-
-    reorderBtn.addEventListener('click', () => {
-      tempProjects = [...projectsData];
-      renderReorderList();
-      if (typeof reorderModal.showModal === 'function') {
-        reorderModal.showModal();
-      } else {
-        reorderModal.setAttribute('open', '');
-      }
-    });
-
-    function closeReorderModal() {
-      if (typeof reorderModal.close === 'function') {
-        reorderModal.close();
-      } else {
-        reorderModal.removeAttribute('open');
-      }
-    }
-
-    if (closeBtn) closeBtn.addEventListener('click', closeReorderModal);
-    if (cancelBtn) cancelBtn.addEventListener('click', closeReorderModal);
-
-    if (saveBtn) {
-      saveBtn.addEventListener('click', () => {
-        projectsData = [...tempProjects];
-        saveProjectsToStorage();
-        renderProjectCards();
-        closeReorderModal();
-        showToast('✓ New project card sequence saved & synced live to cloud!');
-      });
-    }
-  }
-
-  // Initialize Reorder Modal
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAdminReorderModal);
-  } else {
-    initAdminReorderModal();
   }
 
   /* ------------------------------------------------------------------------
