@@ -999,22 +999,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (tabName === 'renderings' || tabName === 'webgl') {
       if (wrapper) {
-        wrapper.style.maxWidth = '95vw';
-        wrapper.style.width = '95vw';
+        wrapper.style.maxWidth = '1120px';
+        wrapper.style.width = '90vw';
       }
       if (footerThumbs) footerThumbs.style.display = 'flex';
       if (counter) counter.style.display = 'inline-block';
     } else if (tabName === 'attachments') {
       if (wrapper) {
-        wrapper.style.maxWidth = '90vw';
-        wrapper.style.width = '90vw';
+        wrapper.style.maxWidth = '880px';
+        wrapper.style.width = '85vw';
       }
       if (footerThumbs) footerThumbs.style.display = 'none';
       if (counter) counter.style.display = 'none';
     } else {
       // specs / overview / description
       if (wrapper) {
-        wrapper.style.maxWidth = '85vw';
+        wrapper.style.maxWidth = '820px';
         wrapper.style.width = '85vw';
       }
       if (footerThumbs) footerThumbs.style.display = 'none';
@@ -1238,7 +1238,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${webglSrc ? `<a href="${webglSrc}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.8rem; font-weight: 700;">Open Full Screen ↗</a>` : ''}
         </div>
         ${webglSrc ? `
-          <div class="lib-image-viewer" style="width: 100%; height: 78vh; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
+          <div class="lib-image-viewer" style="width: 100%; height: 65vh; background: #000; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);">
             <iframe src="${webglSrc}" style="width: 100%; height: 100%; border: none;" allowfullscreen title="3D WebGL Model Viewer"></iframe>
           </div>
         ` : `
@@ -2085,13 +2085,13 @@ document.addEventListener('DOMContentLoaded', () => {
     ` : '';
 
     itemModalBody.innerHTML = `
-      <div id="item-modal-stage-wrapper" style="position: relative; width: 100%; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0.5rem 1.5rem; margin: 0; box-sizing: border-box;">
+      <div id="item-modal-stage-wrapper" style="position: relative; width: 100%; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0.75rem 2rem; margin: 0; box-sizing: border-box;">
         ${prevNavHTML}
         ${nextNavHTML}
 
         <!-- Framed Canvas Stage Box with Theme-Aware Container Wrapper -->
-        <div id="item-modal-framed-stage" class="project-img-stage lib-image-viewer" style="position: relative; width: 100%; height: 100%; max-height: 84vh; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; transition: background-color 0.3s ease, box-shadow 0.3s ease;">
-          <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; height: 100%; max-height: 84vh; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease; border-radius: 12px;">
+        <div id="item-modal-framed-stage" class="project-img-stage lib-image-viewer" style="position: relative; width: 100%; height: 100%; max-height: 68vh; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; transition: background-color 0.3s ease, box-shadow 0.3s ease;">
+          <img id="item-modal-main-img" src="${activeSrc}" alt="${currentProject ? currentProject.title : 'Image'} ${currentRenderIndex + 1}" style="width: 100%; height: 100%; max-height: 68vh; object-fit: contain; margin: 0; user-select: none; -webkit-user-select: none; transition: opacity 0.2s ease; border-radius: 12px;">
         </div>
       </div>
     `;
