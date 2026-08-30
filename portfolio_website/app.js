@@ -1041,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Highlight top tab bar buttons
     document.querySelectorAll('.modal-tab-btn').forEach(btn => {
       const btnTab = btn.getAttribute('data-tab');
-      if (btnTab === tabName || (tabName === 'description' && btnTab === 'specs') || (tabName === 'webgl' && btnTab === 'renderings')) {
+      if (btnTab === tabName || (tabName === 'description' && btnTab === 'specs')) {
         btn.classList.add('active');
         btn.style.background = 'var(--accent-primary)';
         btn.style.color = '#ffffff';
@@ -1166,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="background: var(--bg-alt); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color);">
             <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--accent-primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-              Machine Engineering Overview
+              Description
             </h3>
             <p style="font-size: 0.975rem; line-height: 1.7; color: var(--text-main); margin: 0; white-space: pre-wrap;">${project.overview}</p>
           </div>` : ''}
@@ -1244,7 +1244,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div style="background: var(--bg-card); color: var(--text-main); padding: 0.5rem; display: flex; flex-direction: column; gap: 1rem; width: 100%; height: 100%; min-height: 68vh;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; flex-shrink: 0;">
           <div>
-            <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0;">🌐 Interactive 3D WebGL Model Viewer</h4>
+            <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0;">🌐 Interactive 3D Model Viewer</h4>
             <span style="font-size: 0.75rem; color: var(--text-muted);">Inspect parametric geometry, CAD assemblies &amp; exploded components</span>
           </div>
           ${webglSrc ? `<a href="${webglSrc}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.8rem; font-weight: 700;">Open Full Screen ↗</a>` : ''}
