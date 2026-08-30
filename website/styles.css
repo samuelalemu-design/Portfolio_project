@@ -1605,17 +1605,14 @@ dialog.project-modal::backdrop {
 }
 
 #item-modal .modal-body {
-  padding: 0;
-  background: transparent;
-  color: #f8fafc;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  padding: 1.25rem;
+  background: var(--bg-card);
+  color: var(--text-main);
+  overflow-y: auto;
+  display: block;
   flex: 1;
   min-height: 0;
   position: relative;
-  align-items: center;
-  justify-content: center;
 }
 
 #item-modal-stage-wrapper {

@@ -1193,21 +1193,23 @@ document.addEventListener('DOMContentLoaded', () => {
             </ul>
           </div>
 
-          ${project.materials ? `
+          <!-- Manufacturing Process Section -->
           <div>
-            <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
-              🛠️ Engineering Materials
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              MANUFACTURING PROCESS
             </h4>
-            <p style="font-size: 0.95rem; color: var(--text-main); margin: 0; background: var(--bg-alt); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); font-weight: 600;">${project.materials}</p>
-          </div>` : ''}
+            <p style="font-size: 0.975rem; line-height: 1.6; color: var(--text-main); margin: 0; white-space: pre-wrap;">${project.manufacturing_process || project.manufacturingProcess || 'CNC Laser & Plasma Cutting, Precision Brake Press Sheet Metal Bending, MIG/TIG Structural Tube Welding, and High-Durability Powder Coating Surface Finishing.'}</p>
+          </div>
 
-          ${(project.manufacturing_process || project.manufacturingProcess) ? `
+          <!-- Engineering Materials Section -->
           <div>
-            <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
-              ⚙️ Manufacturing Processes
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              ENGINEERING MATERIALS
             </h4>
-            <p style="font-size: 0.95rem; color: var(--text-main); margin: 0; background: var(--bg-alt); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); font-weight: 600;">${project.manufacturing_process || project.manufacturingProcess}</p>
-          </div>` : ''}
+            <p style="font-size: 0.975rem; line-height: 1.6; color: var(--text-main); margin: 0; white-space: pre-wrap;">${project.materials || 'High-Strength Structural Steel (ASTM A36), 6061-T6 Aluminum Alloy, Precision Stainless Steel Fasteners, and Heavy-Duty Polyurethane Components.'}</p>
+          </div>
 
           ${(project.pdf_url || project.pdfUrl) ? `
           <div style="padding: 1rem; background: var(--accent-light); border: 1px solid var(--accent-primary); border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
